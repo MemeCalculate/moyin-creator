@@ -1,0 +1,222 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1770782939928,
+  "projectRoot": "D:\\TestProject\\moyin-creator",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "react",
+        "version": "18.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "18.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "5.1.6",
+        "category": "build"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "electron-vite dev",
+      "build": "electron-vite build && electron-builder --win",
+      "prebuild": "powershell -Command \"Stop-Process -Name 'moyin-creator' -ErrorAction SilentlyContinue; Stop-Process -Name '魔因漫创' -ErrorAction SilentlyContinue; Stop-Process -Name 'moyin-creator-*-setup' -ErrorAction SilentlyContinue; if (Test-Path release) { Remove-Item -Recurse -Force release -ErrorAction SilentlyContinue }\"",
+      "build:win": "electron-vite build && electron-builder --win",
+      "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+      "preview": "electron-vite preview"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "public",
+      "scripts",
+      "src"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "build": {
+      "path": "build",
+      "purpose": "Build output",
+      "fileCount": 2,
+      "lastAccessed": 1770782939899,
+      "keyFiles": [
+        "icon.ico",
+        "icon.png"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1770782939899,
+      "keyFiles": [
+        "SCRIPT_FORMAT_EXAMPLE.md",
+        "WORKFLOW_GUIDE.md"
+      ]
+    },
+    "electron": {
+      "path": "electron",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1770782939906,
+      "keyFiles": [
+        "electron-env.d.ts",
+        "main.ts",
+        "preload.ts"
+      ]
+    },
+    "out": {
+      "path": "out",
+      "purpose": "Build output",
+      "fileCount": 0,
+      "lastAccessed": 1770782939906,
+      "keyFiles": []
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 1,
+      "lastAccessed": 1770782939906,
+      "keyFiles": [
+        "vite.svg"
+      ]
+    },
+    "release": {
+      "path": "release",
+      "purpose": null,
+      "fileCount": 4,
+      "lastAccessed": 1770782939906,
+      "keyFiles": [
+        "builder-effective-config.yaml",
+        "moyin-creator-0.1.2-setup.exe",
+        "moyin-creator-0.1.2-x64.nsis.7z",
+        "__uninstaller-nsis-moyin-creator.exe"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1770782939907,
+      "keyFiles": [
+        "generate-icon.mjs"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 5,
+      "lastAccessed": 1770782939907,
+      "keyFiles": [
+        "App.css",
+        "App.tsx",
+        "index.css",
+        "main.tsx",
+        "vite-env.d.ts"
+      ]
+    },
+    "src\\app": {
+      "path": "src\\app",
+      "purpose": "Application code",
+      "fileCount": 0,
+      "lastAccessed": 1770782939908,
+      "keyFiles": []
+    },
+    "src\\assets": {
+      "path": "src\\assets",
+      "purpose": "Static assets",
+      "fileCount": 1,
+      "lastAccessed": 1770782939908,
+      "keyFiles": [
+        "react.svg"
+      ]
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 9,
+      "lastAccessed": 1770782939908,
+      "keyFiles": [
+        "BatchProgressOverlay.tsx",
+        "Dashboard.tsx",
+        "Layout.tsx"
+      ]
+    },
+    "src\\lib": {
+      "path": "src\\lib",
+      "purpose": "Library code",
+      "fileCount": 10,
+      "lastAccessed": 1770782939909,
+      "keyFiles": [
+        "api-key-manager.ts",
+        "image-host.ts",
+        "image-storage.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "C:\\Users\\HP\\.claude\\hud\\omc-hud.mjs",
+      "accessCount": 1,
+      "lastAccessed": 1770783371039,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\HP\\.claude\\settings.json",
+      "accessCount": 1,
+      "lastAccessed": 1770783371086,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1770783854213,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}]
+}

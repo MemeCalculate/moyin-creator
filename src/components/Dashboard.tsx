@@ -73,18 +73,28 @@ export function Dashboard() {
 
   const handleCreateProject = async () => {
     if (newProjectName.trim()) {
-      const project = createProject(newProjectName.trim());
-      setNewProjectName("");
-      setShowNewProject(false);
-      await switchProject(project.id);
-      setActiveTab("script");
+      try {
+        const project = createProject(newProjectName.trim());
+        setNewProjectName("");
+        setShowNewProject(false);
+        await switchProject(project.id);
+        setActiveTab("script");
+      } catch (err) {
+        console.error("[Dashboard] Create project failed:", err);
+        toast.error(`创建项目失败: ${(err as Error).message}`);
+      }
     }
   };
 
   const handleOpenProject = async (projectId: string) => {
     if (selectionMode) return; // Don't open in selection mode
-    await switchProject(projectId);
-    setActiveTab("script");
+    try {
+      await switchProject(projectId);
+      setActiveTab("script");
+    } catch (err) {
+      console.error("[Dashboard] Open project failed:", err);
+      toast.error(`打开项目失败: ${(err as Error).message}`);
+    }
   };
 
   // ==================== Selection ====================
@@ -116,11 +126,16 @@ export function Dashboard() {
   // ==================== Batch Delete ====================
 
   const handleBatchDelete = useCallback(() => {
-    selectedIds.forEach((id) => deleteProject(id));
-    toast.success(`已删除 ${selectedIds.size} 个项目`);
-    setSelectedIds(new Set());
-    setBatchDeleteConfirm(false);
-    setSelectionMode(false);
+    try {
+      selectedIds.forEach((id) => deleteProject(id));
+      toast.success(`已删除 ${selectedIds.size} 个项目`);
+      setSelectedIds(new Set());
+      setBatchDeleteConfirm(false);
+      setSelectionMode(false);
+    } catch (err) {
+      console.error("[Dashboard] Batch delete failed:", err);
+      toast.error(`批量删除失败: ${(err as Error).message}`);
+    }
   }, [selectedIds, deleteProject]);
 
   // ==================== Rename ====================
@@ -456,8 +471,13 @@ export function Dashboard() {
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
                               onClick={() => {
-                                deleteProject(project.id);
-                                toast.success(`已删除「${project.name}」`);
+                                try {
+                                  deleteProject(project.id);
+                                  toast.success(`已删除「${project.name}」`);
+                                } catch (err) {
+                                  console.error("[Dashboard] Delete project failed:", err);
+                                  toast.error(`删除失败: ${(err as Error).message}`);
+                                }
                               }}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />

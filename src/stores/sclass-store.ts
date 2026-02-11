@@ -17,6 +17,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { createProjectScopedStorage } from '@/lib/project-storage';
+import { isPlainObject } from '@/lib/utils/safe-merge';
 
 // ==================== Types ====================
 
@@ -697,38 +698,47 @@ export const useSClassStore = create<SClassStore>()(
           // Don't persist: selectedGroupId (transient UI state)
         };
       },
-      merge: (persisted: any, current: any) => {
-        if (!persisted) return current;
+      merge: (persisted: unknown, current: SClassStore) => {
+        if (!isPlainObject(persisted)) return current;
 
         // 迁移辅助：清理 SClassConfig 中已移除的冗余字段（aspectRatio/resolution 已由 director-store 管理）
-        const migrateConfig = (config: any) => {
+        const migrateConfig = (config: Record<string, unknown>) => {
           if (!config) return config;
           const { aspectRatio, resolution, ...clean } = config;
           return clean;
         };
-        const migrateProjectData = (pd: any) => {
-          if (!pd || !pd.config) return pd;
-          return { ...pd, config: migrateConfig(pd.config) };
+        const migrateProjectData = (pd: Record<string, unknown>) => {
+          if (!pd || !isPlainObject(pd.config)) return pd;
+          return { ...pd, config: migrateConfig(pd.config as Record<string, unknown>) };
         };
 
         // Legacy format
-        if (persisted.projects && typeof persisted.projects === 'object') {
-          const migratedProjects: any = {};
-          for (const [k, v] of Object.entries(persisted.projects)) {
-            migratedProjects[k] = migrateProjectData(v);
+        if (isPlainObject(persisted.projects)) {
+          const migratedProjects: Record<string, SClassProjectData> = {};
+          for (const [k, v] of Object.entries(persisted.projects as Record<string, unknown>)) {
+            if (isPlainObject(v)) {
+              migratedProjects[k] = migrateProjectData(v) as SClassProjectData;
+            }
           }
-          return { ...current, ...persisted, projects: migratedProjects };
+          return {
+            ...current,
+            activeProjectId: (persisted.activeProjectId as string | null) ?? current.activeProjectId,
+            projects: migratedProjects,
+            generationMode: (persisted.generationMode as SClassState['generationMode']) ?? current.generationMode,
+          };
         }
 
         // Per-project format
-        const { activeProjectId: pid, projectData, generationMode } = persisted;
-        const updates: any = { ...current };
-        if (generationMode) updates.generationMode = generationMode;
-        if (pid) updates.activeProjectId = pid;
-        if (pid && projectData) {
-          updates.projects = { ...current.projects, [pid]: migrateProjectData(projectData) };
+        const pid = persisted.activeProjectId as string | undefined;
+        const projectData = persisted.projectData as Record<string, unknown> | undefined;
+        const generationMode = persisted.generationMode as SClassState['generationMode'] | undefined;
+        const result = { ...current };
+        if (generationMode) result.generationMode = generationMode;
+        if (pid) result.activeProjectId = pid;
+        if (pid && isPlainObject(projectData)) {
+          result.projects = { ...current.projects, [pid]: migrateProjectData(projectData) as SClassProjectData };
         }
-        return updates;
+        return result;
       },
     }
   )

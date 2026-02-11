@@ -4,6 +4,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { createProjectScopedStorage } from "@/lib/project-storage";
+import { isPlainObject } from "@/lib/utils/safe-merge";
 import type { ScriptData, Shot, Episode, ScriptScene, ScriptCharacter, EpisodeRawScript, ProjectBackground } from "@/types/script";
 
 export type ParseStatus = "idle" | "parsing" | "ready" | "error";
@@ -648,18 +649,23 @@ export const useScriptStore = create<ScriptStore>()(
           projectData: state.projects[pid],
         };
       },
-      merge: (persisted: any, current: any) => {
-        if (!persisted) return current;
-        
+      merge: (persisted: unknown, current: ScriptStore) => {
+        if (!isPlainObject(persisted)) return current;
+
         // Legacy format: has `projects` as Record (from old monolithic file)
-        if (persisted.projects && typeof persisted.projects === 'object') {
-          return { ...current, ...persisted };
+        if (isPlainObject(persisted.projects)) {
+          return {
+            ...current,
+            activeProjectId: (persisted.activeProjectId as string | null) ?? current.activeProjectId,
+            projects: persisted.projects as Record<string, ScriptProjectData>,
+          };
         }
-        
+
         // New per-project format: has `projectData` for single project
-        const { activeProjectId: pid, projectData } = persisted;
+        const pid = persisted.activeProjectId as string | undefined;
+        const projectData = persisted.projectData as ScriptProjectData | undefined;
         if (!pid || !projectData) return current;
-        
+
         return {
           ...current,
           activeProjectId: pid,

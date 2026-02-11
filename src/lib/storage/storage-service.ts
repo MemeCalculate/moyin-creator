@@ -158,7 +158,51 @@ class StorageService {
   }
 
   async deleteProject({ id }: { id: string }): Promise<void> {
+    // Load the project first to get scene IDs for timeline cleanup
+    let sceneIds: string[] = [];
+    try {
+      const project = await this.loadProject({ id });
+      if (project?.scenes) {
+        sceneIds = project.scenes.map((s) => s.id);
+      }
+    } catch (error) {
+      console.warn("[StorageService] Failed to load project scenes for cleanup:", error);
+    }
+
+    // Remove the project record
     await this.projectsAdapter.remove(id);
+
+    // Cascade-delete media IndexedDB database
+    try {
+      await IndexedDBAdapter.deleteDatabase(`${this.config.mediaDb}-${id}`);
+    } catch (error) {
+      console.warn("[StorageService] Failed to delete media DB:", error);
+    }
+
+    // Cascade-delete base timeline IndexedDB database
+    try {
+      await IndexedDBAdapter.deleteDatabase(`${this.config.timelineDb}-${id}`);
+    } catch (error) {
+      console.warn("[StorageService] Failed to delete timeline DB:", error);
+    }
+
+    // Cascade-delete per-scene timeline IndexedDB databases
+    for (const sceneId of sceneIds) {
+      try {
+        await IndexedDBAdapter.deleteDatabase(`${this.config.timelineDb}-${id}-${sceneId}`);
+      } catch (error) {
+        console.warn(`[StorageService] Failed to delete scene timeline DB (${sceneId}):`, error);
+      }
+    }
+
+    // Cascade-delete OPFS media directory
+    try {
+      await OPFSAdapter.removeDirectory(`media-files-${id}`);
+    } catch (error) {
+      if ((error as Error).name !== "NotFoundError") {
+        console.warn("[StorageService] Failed to remove OPFS directory:", error);
+      }
+    }
   }
 
   // Media operations
@@ -337,10 +381,26 @@ class StorageService {
 
   // Utility methods
   async clearAllData(): Promise<void> {
-    // Clear all projects
-    await this.projectsAdapter.clear();
+    try {
+      // 1. Load all projects to get their IDs
+      const projects = await this.loadAllProjects();
 
-    // Note: Project-specific media and timelines will be cleaned up when projects are deleted
+      // 2. Delete each project (cleans up media/timelines/OPFS)
+      for (const project of projects) {
+        await this.deleteProject({ id: project.id });
+      }
+
+      // 3. Clear the main projects database
+      await this.projectsAdapter.clear();
+
+      // 4. Clear saved sounds
+      await this.savedSoundsAdapter.clear();
+
+      console.log("[StorageService] All data cleared successfully");
+    } catch (error) {
+      console.error("[StorageService] Failed to clear all data:", error);
+      throw error;
+    }
   }
 
   async getStorageInfo(): Promise<{

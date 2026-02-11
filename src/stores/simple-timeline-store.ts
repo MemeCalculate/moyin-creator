@@ -10,6 +10,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { createProjectScopedStorage } from "@/lib/project-storage";
+import { safeMerge } from "@/lib/utils/safe-merge";
 import { nanoid } from "nanoid";
 
 export interface TimelineClip {
@@ -157,13 +158,8 @@ export const useSimpleTimelineStore = create<SimpleTimelineStore>()(
         clips: state.clips,
         totalDuration: state.totalDuration,
       }),
-      merge: (persisted: any, current: any) => {
-        if (!persisted) return current;
-        return {
-          ...current,
-          clips: persisted.clips ?? current.clips,
-          totalDuration: persisted.totalDuration ?? current.totalDuration,
-        };
+      merge: (persisted: unknown, current: SimpleTimelineStore) => {
+        return safeMerge(persisted, current, ['clips', 'totalDuration']);
       },
     }
   )

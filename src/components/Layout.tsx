@@ -23,6 +23,7 @@ import { ScenesView } from "@/components/panels/scenes";
 import { MediaView } from "@/components/panels/media";
 import { SettingsPanel } from "@/components/panels/SettingsPanel";
 import { ExportView } from "@/components/panels/export";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 export function Layout() {
   const { activeTab, inProject } = useMediaPanelStore();
@@ -48,11 +49,11 @@ export function Layout() {
         <TabBar />
         <div className="flex-1 flex flex-col">
           <ProjectHeader />
-          {activeTab === "export" && <ExportView />}
-          {activeTab === "settings" && <SettingsPanel />}
-          {activeTab === "script" && <ScriptView />}
-          {activeTab === "characters" && <CharactersView />}
-          {activeTab === "scenes" && <ScenesView />}
+          {activeTab === "export" && <ErrorBoundary fallbackLabel="导出"><ExportView /></ErrorBoundary>}
+          {activeTab === "settings" && <ErrorBoundary fallbackLabel="设置"><SettingsPanel /></ErrorBoundary>}
+          {activeTab === "script" && <ErrorBoundary fallbackLabel="剧本"><ScriptView /></ErrorBoundary>}
+          {activeTab === "characters" && <ErrorBoundary fallbackLabel="角色"><CharactersView /></ErrorBoundary>}
+          {activeTab === "scenes" && <ErrorBoundary fallbackLabel="场景"><ScenesView /></ErrorBoundary>}
         </div>
       </div>
     );
@@ -65,22 +66,22 @@ export function Layout() {
   const renderLeftPanel = () => {
     switch (activeTab) {
       case "script":
-        return <ScriptView />;
+        return <ErrorBoundary fallbackLabel="剧本"><ScriptView /></ErrorBoundary>;
       case "director":
         // 保持原有 AI 导演功能
-        return <DirectorView />;
+        return <ErrorBoundary fallbackLabel="导演"><DirectorView /></ErrorBoundary>;
       case "sclass":
-        return <SClassView />;
+        return <ErrorBoundary fallbackLabel="S级"><SClassView /></ErrorBoundary>;
       case "characters":
-        return <CharactersView />;
+        return <ErrorBoundary fallbackLabel="角色"><CharactersView /></ErrorBoundary>;
       case "scenes":
-        return <ScenesView />;
+        return <ErrorBoundary fallbackLabel="场景"><ScenesView /></ErrorBoundary>;
       case "media":
-        return <MediaView />;
+        return <ErrorBoundary fallbackLabel="媒体"><MediaView /></ErrorBoundary>;
       case "settings":
-        return <SettingsPanel />;
+        return <ErrorBoundary fallbackLabel="设置"><SettingsPanel /></ErrorBoundary>;
       default:
-        return <ScriptView />;
+        return <ErrorBoundary fallbackLabel="剧本"><ScriptView /></ErrorBoundary>;
     }
   };
 

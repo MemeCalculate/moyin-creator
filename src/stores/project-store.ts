@@ -5,6 +5,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { fileStorage } from "@/lib/indexed-db-storage";
 import { generateUUID } from "@/lib/utils";
+import { storageService } from "@/lib/storage/storage-service";
 
 export interface Project {
   id: string;
@@ -95,7 +96,11 @@ export const useProjectStore = create<ProjectStore>()(
             activeProject: nextActive,
           };
         });
-        // Clean up per-project storage directory
+        // Clean up all per-project storage (IndexedDB databases + OPFS directory)
+        storageService.deleteProject({ id }).catch((err) =>
+          console.warn(`[ProjectStore] Failed to clean up storage for project ${id}:`, err)
+        );
+        // Clean up per-project file storage directory
         if (window.fileStorage?.removeDir) {
           window.fileStorage.removeDir(`_p/${id}`).catch((err: any) =>
             console.warn(`[ProjectStore] Failed to remove project dir _p/${id}:`, err)

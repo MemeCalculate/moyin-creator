@@ -11,6 +11,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { createSplitStorage } from '@/lib/project-storage';
 import { saveImageToLocal, isElectron } from '@/lib/image-storage';
+import { safeMerge } from '@/lib/utils/safe-merge';
 
 // ==================== Types ====================
 
@@ -314,13 +315,8 @@ export const useSceneStore = create<SceneStore>()(
         })),
         folders: state.folders,
       }),
-      merge: (persisted: any, current: any) => {
-        if (!persisted) return current;
-        return {
-          ...current,
-          scenes: persisted.scenes ?? current.scenes,
-          folders: persisted.folders ?? current.folders,
-        };
+      merge: (persisted: unknown, current: SceneStore) => {
+        return safeMerge(persisted, current, ['scenes', 'folders']);
       },
       // Migration: convert base64 contactSheetImage to local-image:// on rehydration
       onRehydrateStorage: () => {

@@ -3,23 +3,46 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 import { ipcRenderer, contextBridge } from 'electron'
 
+// Allowlist of valid channels
+const validChannels = [
+  'save-image', 'get-image-path', 'delete-image', 'read-image-base64', 'get-absolute-path',
+  'file-storage-get', 'file-storage-set', 'file-storage-remove', 'file-storage-exists',
+  'file-storage-list', 'file-storage-remove-dir',
+  'storage-get-paths', 'storage-select-directory', 'storage-validate-data-dir',
+  'storage-move-data', 'storage-link-data', 'storage-export-data', 'storage-import-data',
+  'storage-get-cache-size', 'storage-clear-cache', 'storage-update-config',
+  'save-file-dialog',
+  // Add other channels used by the app here if needed
+  'window-minimize', 'window-maximize', 'window-close', 'open-external'
+];
+
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
-  on(...args: Parameters<typeof ipcRenderer.on>) {
-    const [channel, listener] = args
-    return ipcRenderer.on(channel, (event, ...args) => listener(event, ...args))
+  on(channel: string, listener: (...args: any[]) => void) {
+    if (validChannels.includes(channel)) {
+      return ipcRenderer.on(channel, (event, ...args) => listener(event, ...args))
+    }
+    console.warn(`Blocked access to restricted channel 'on': ${channel}`)
+    return this
   },
-  off(...args: Parameters<typeof ipcRenderer.off>) {
-    const [channel, ...omit] = args
-    return ipcRenderer.off(channel, ...omit)
+  off(channel: string, ...omit: any[]) {
+    if (validChannels.includes(channel)) {
+      return ipcRenderer.off(channel, ...omit)
+    }
+    return this
   },
-  send(...args: Parameters<typeof ipcRenderer.send>) {
-    const [channel, ...omit] = args
-    return ipcRenderer.send(channel, ...omit)
+  send(channel: string, ...omit: any[]) {
+    if (validChannels.includes(channel)) {
+      return ipcRenderer.send(channel, ...omit)
+    }
+    console.warn(`Blocked access to restricted channel 'send': ${channel}`)
   },
-  invoke(...args: Parameters<typeof ipcRenderer.invoke>) {
-    const [channel, ...omit] = args
-    return ipcRenderer.invoke(channel, ...omit)
+  invoke(channel: string, ...omit: any[]) {
+    if (validChannels.includes(channel)) {
+      return ipcRenderer.invoke(channel, ...omit)
+    }
+    console.warn(`Blocked access to restricted channel 'invoke': ${channel}`)
+    return Promise.reject(new Error(`Blocked access to restricted channel: ${channel}`))
   },
 })
 

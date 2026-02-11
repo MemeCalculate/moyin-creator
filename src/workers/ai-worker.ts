@@ -340,9 +340,14 @@ async function pollTaskCompletion(
       throw new Error('Cancelled');
     }
     
-    // Task polling requires apiKey and provider as query params
+    // Task polling requires apiKey in headers for security
     const statusResponse = await fetch(
-      buildApiUrl(`/api/ai/task/${taskId}?provider=${provider}&type=${type}&apiKey=${encodeURIComponent(apiKey)}`)
+      buildApiUrl(`/api/ai/task/${taskId}?provider=${provider}&type=${type}`),
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      }
     );
     
     if (!statusResponse.ok) {

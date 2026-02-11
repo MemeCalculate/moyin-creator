@@ -11,6 +11,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { migrateFromLocalStorage } from '@/lib/indexed-db-storage';
 import { createSplitStorage } from '@/lib/project-storage';
+import { safeMerge } from '@/lib/utils/safe-merge';
 import type { CharacterIdentityAnchors, CharacterNegativePrompt } from '@/types/script';
 
 // ==================== Types ====================
@@ -464,14 +465,8 @@ export const useCharacterLibraryStore = create<CharacterLibraryStore>()(
           })),
         })),
       }),
-      merge: (persisted: any, current: any) => {
-        if (!persisted) return current;
-        return {
-          ...current,
-          folders: persisted.folders ?? current.folders,
-          characters: persisted.characters ?? current.characters,
-          currentFolderId: persisted.currentFolderId ?? current.currentFolderId,
-        };
+      merge: (persisted: unknown, current: CharacterLibraryStore) => {
+        return safeMerge(persisted, current, ['folders', 'characters', 'currentFolderId']);
       },
       onRehydrateStorage: () => (state, error) => {
         if (error) {

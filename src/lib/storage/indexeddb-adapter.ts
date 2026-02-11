@@ -32,61 +32,94 @@ export class IndexedDBAdapter<T> implements StorageAdapter<T> {
 
   async get(key: string): Promise<T | null> {
     const db = await this.getDB();
-    const transaction = db.transaction([this.storeName], "readonly");
-    const store = transaction.objectStore(this.storeName);
+    try {
+      const transaction = db.transaction([this.storeName], "readonly");
+      const store = transaction.objectStore(this.storeName);
 
-    return new Promise((resolve, reject) => {
-      const request = store.get(key);
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result || null);
-    });
+      return await new Promise((resolve, reject) => {
+        const request = store.get(key);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result || null);
+      });
+    } finally {
+      db.close();
+    }
   }
 
   async set(key: string, value: T): Promise<void> {
     const db = await this.getDB();
-    const transaction = db.transaction([this.storeName], "readwrite");
-    const store = transaction.objectStore(this.storeName);
+    try {
+      const transaction = db.transaction([this.storeName], "readwrite");
+      const store = transaction.objectStore(this.storeName);
 
-    return new Promise((resolve, reject) => {
-      const request = store.put({ id: key, ...value });
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
-    });
+      return await new Promise((resolve, reject) => {
+        const request = store.put({ id: key, ...value });
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+      });
+    } finally {
+      db.close();
+    }
   }
 
   async remove(key: string): Promise<void> {
     const db = await this.getDB();
-    const transaction = db.transaction([this.storeName], "readwrite");
-    const store = transaction.objectStore(this.storeName);
+    try {
+      const transaction = db.transaction([this.storeName], "readwrite");
+      const store = transaction.objectStore(this.storeName);
 
-    return new Promise((resolve, reject) => {
-      const request = store.delete(key);
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
-    });
+      return await new Promise((resolve, reject) => {
+        const request = store.delete(key);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+      });
+    } finally {
+      db.close();
+    }
   }
 
   async list(): Promise<string[]> {
     const db = await this.getDB();
-    const transaction = db.transaction([this.storeName], "readonly");
-    const store = transaction.objectStore(this.storeName);
+    try {
+      const transaction = db.transaction([this.storeName], "readonly");
+      const store = transaction.objectStore(this.storeName);
 
-    return new Promise((resolve, reject) => {
-      const request = store.getAllKeys();
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result as string[]);
-    });
+      return await new Promise((resolve, reject) => {
+        const request = store.getAllKeys();
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result as string[]);
+      });
+    } finally {
+      db.close();
+    }
   }
 
   async clear(): Promise<void> {
     const db = await this.getDB();
-    const transaction = db.transaction([this.storeName], "readwrite");
-    const store = transaction.objectStore(this.storeName);
+    try {
+      const transaction = db.transaction([this.storeName], "readwrite");
+      const store = transaction.objectStore(this.storeName);
 
+      return await new Promise((resolve, reject) => {
+        const request = store.clear();
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+      });
+    } finally {
+      db.close();
+    }
+  }
+
+  static deleteDatabase(dbName: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const request = store.clear();
+      const request = indexedDB.deleteDatabase(dbName);
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();
+      request.onblocked = () => {
+        console.warn(`[IndexedDBAdapter] Delete database ${dbName} blocked. Closing connections...`);
+        // The delete operation is pending until connections close.
+        // We can't force close from here, but this handler indicates we are waiting.
+      };
     });
   }
 }

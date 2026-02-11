@@ -8,6 +8,7 @@ import { storageService } from "@/lib/storage/storage-service";
 import { generateUUID } from "@/lib/utils";
 import { MediaType, MediaFile, MediaFolder, MediaFolderCategory } from "@/types/media";
 import { saveImageToLocal, isElectron } from "@/lib/image-storage";
+import { safeMerge } from "@/lib/utils/safe-merge";
 import type { ImageCategory } from "@/lib/image-storage";
 
 // ==================== Split/Merge for per-project storage ====================
@@ -660,14 +661,8 @@ export const useMediaStore = create<MediaStore>()(
             };
           }),
       }),
-      merge: (persisted: any, current: any) => {
-        if (!persisted) return current;
-        // Replace arrays completely on rehydrate (don't merge/append)
-        return {
-          ...current,
-          folders: persisted.folders ?? current.folders,
-          mediaFiles: persisted.mediaFiles ?? current.mediaFiles,
-        };
+      merge: (persisted: unknown, current: MediaStore) => {
+        return safeMerge(persisted, current, ['folders', 'mediaFiles']);
       },
       onRehydrateStorage: () => (state) => {
         if (!state) return;

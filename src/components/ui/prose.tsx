@@ -3,6 +3,7 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 import { cn } from "@/lib/utils";
 import type React from "react";
+import DOMPurify from "dompurify";
 
 type ProseProps = React.HTMLAttributes<HTMLElement> & {
   as?: "article";
@@ -10,6 +11,8 @@ type ProseProps = React.HTMLAttributes<HTMLElement> & {
 };
 
 function Prose({ children, html, className }: ProseProps) {
+  const sanitizedHtml = html ? DOMPurify.sanitize(html) : "";
+
   return (
     <article
       className={cn(
@@ -17,7 +20,7 @@ function Prose({ children, html, className }: ProseProps) {
         className
       )}
     >
-      {html ? <div dangerouslySetInnerHTML={{ __html: html }} /> : children}
+      {html ? <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} /> : children}
     </article>
   );
 }

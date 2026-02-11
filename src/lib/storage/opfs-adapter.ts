@@ -69,6 +69,11 @@ export class OPFSAdapter implements StorageAdapter<File> {
     }
   }
 
+  static async removeDirectory(dirName: string): Promise<void> {
+    const root = await navigator.storage.getDirectory();
+    await root.removeEntry(dirName, { recursive: true });
+  }
+
   // Helper method to check OPFS support
   static isSupported(): boolean {
     return "storage" in navigator && "getDirectory" in navigator.storage;

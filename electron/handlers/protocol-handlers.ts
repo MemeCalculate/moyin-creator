@@ -5,6 +5,7 @@ import { protocol } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs'
 import { getMediaRoot } from './path-utils'
+import { MIME_TYPES, DEFAULT_MIME_TYPE } from './constants'
 
 export function registerSchemes() {
   protocol.registerSchemesAsPrivileged([{
@@ -29,22 +30,7 @@ export function registerProtocolHandlers() {
       const data = fs.readFileSync(filePath)
 
       const ext = path.extname(filename).toLowerCase()
-      const mimeTypes: Record<string, string> = {
-        // Images
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.gif': 'image/gif',
-        '.webp': 'image/webp',
-        '.svg': 'image/svg+xml',
-        // Videos
-        '.mp4': 'video/mp4',
-        '.webm': 'video/webm',
-        '.mov': 'video/quicktime',
-        '.avi': 'video/x-msvideo',
-        '.mkv': 'video/x-matroska',
-      }
-      const mimeType = mimeTypes[ext] || 'application/octet-stream'
+      const mimeType = MIME_TYPES[ext] || DEFAULT_MIME_TYPE
 
       return new Response(data, {
         headers: { 'Content-Type': mimeType }

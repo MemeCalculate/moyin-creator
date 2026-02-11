@@ -6,6 +6,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { getImagesDir, getMediaRoot } from './path-utils'
 import { downloadImage } from './network-utils'
+import { MIME_TYPES, DEFAULT_IMAGE_MIME_TYPE } from './constants'
 
 export function register() {
   ipcMain.handle('save-image', async (_event, { url, category, filename }) => {
@@ -95,14 +96,7 @@ export function register() {
 
       const data = fs.readFileSync(filePath)
       const ext = path.extname(filePath).toLowerCase()
-      const mimeTypes: Record<string, string> = {
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.gif': 'image/gif',
-        '.webp': 'image/webp',
-      }
-      const mimeType = mimeTypes[ext] || 'image/png'
+      const mimeType = MIME_TYPES[ext] || DEFAULT_IMAGE_MIME_TYPE
       const base64 = `data:${mimeType};base64,${data.toString('base64')}`
 
       return { success: true, base64, mimeType, size: data.length }

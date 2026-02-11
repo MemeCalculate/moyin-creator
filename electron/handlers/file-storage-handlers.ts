@@ -4,7 +4,7 @@
 import { ipcMain } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs'
-import { getDataDir, ensureDir } from './storage-config'
+import { getDataDir, ensureDir } from './path-utils'
 
 export function register() {
   ipcMain.handle('file-storage-get', async (_event, key: string) => {

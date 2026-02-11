@@ -344,33 +344,33 @@ export const useDirectorStore = create<DirectorStore>()(
     const initialized = scenes.map(s => ({
       ...s,
       // 场景基本信息
-      sceneName: (s as any).sceneName ?? '',
-      sceneLocation: (s as any).sceneLocation ?? '',
-      
+      sceneName: s.sceneName ?? '',
+      sceneLocation: s.sceneLocation ?? '',
+
       // ========== 首帧相关 ==========
-      imageHttpUrl: (s as any).imageHttpUrl ?? null,
+      imageHttpUrl: s.imageHttpUrl ?? null,
       // 首帧提示词（新增）
-      imagePrompt: (s as any).imagePrompt ?? s.videoPrompt ?? '',
-      imagePromptZh: (s as any).imagePromptZh ?? s.videoPromptZh ?? s.videoPrompt ?? '',
+      imagePrompt: s.imagePrompt ?? s.videoPrompt ?? '',
+      imagePromptZh: s.imagePromptZh ?? s.videoPromptZh ?? s.videoPrompt ?? '',
       // 首帧生成状态
       imageStatus: s.imageStatus || 'completed' as const,
       imageProgress: s.imageProgress ?? 100,
       imageError: s.imageError ?? null,
-      
+
       // ========== 尾帧相关 ==========
       // 是否需要尾帧（新增，默认 false）
-      needsEndFrame: (s as any).needsEndFrame ?? false,
+      needsEndFrame: s.needsEndFrame ?? false,
       endFrameImageUrl: s.endFrameImageUrl ?? null,
-      endFrameHttpUrl: (s as any).endFrameHttpUrl ?? null,
+      endFrameHttpUrl: s.endFrameHttpUrl ?? null,
       endFrameSource: s.endFrameSource ?? null,
       // 尾帧提示词（新增）
-      endFramePrompt: (s as any).endFramePrompt ?? '',
-      endFramePromptZh: (s as any).endFramePromptZh ?? '',
+      endFramePrompt: s.endFramePrompt ?? '',
+      endFramePromptZh: s.endFramePromptZh ?? '',
       // 尾帧生成状态（新增）
-      endFrameStatus: (s as any).endFrameStatus || 'idle' as const,
-      endFrameProgress: (s as any).endFrameProgress ?? 0,
-      endFrameError: (s as any).endFrameError ?? null,
-      
+      endFrameStatus: s.endFrameStatus || 'idle' as const,
+      endFrameProgress: s.endFrameProgress ?? 0,
+      endFrameError: s.endFrameError ?? null,
+
       // ========== 视频相关 ==========
       videoPromptZh: s.videoPromptZh ?? s.videoPrompt ?? '',
       videoStatus: s.videoStatus || 'idle' as const,
@@ -378,48 +378,48 @@ export const useDirectorStore = create<DirectorStore>()(
       videoUrl: s.videoUrl ?? null,
       videoError: s.videoError ?? null,
       videoMediaId: s.videoMediaId ?? null,
-      
+
       // ========== 角色与情绪 ==========
       characterIds: s.characterIds ?? [],
       emotionTags: s.emotionTags ?? [],
-      
+
       // ========== 剧本导入信息 ==========
       dialogue: s.dialogue ?? '',
       actionSummary: s.actionSummary ?? '',
       cameraMovement: s.cameraMovement ?? '',
-      soundEffectText: (s as any).soundEffectText ?? '',
-      
+      soundEffectText: s.soundEffectText ?? '',
+
       // ========== 视频参数 ==========
       shotSize: s.shotSize ?? null,
       duration: s.duration ?? 5,
       ambientSound: s.ambientSound ?? '',
       soundEffects: s.soundEffects ?? [],
-      
+
       // ========== 灯光师 (Gaffer) — 每个分镜独立 ==========
       lightingStyle: s.lightingStyle ?? undefined,
       lightingDirection: s.lightingDirection ?? undefined,
       colorTemperature: s.colorTemperature ?? undefined,
       lightingNotes: s.lightingNotes ?? undefined,
-      
+
       // ========== 跟焦员 (Focus Puller) — 每个分镜独立 ==========
       depthOfField: s.depthOfField ?? undefined,
       focusTarget: s.focusTarget ?? undefined,
       focusTransition: s.focusTransition ?? undefined,
-      
+
       // ========== 器材组 (Camera Rig) — 每个分镜独立 ==========
       cameraRig: s.cameraRig ?? undefined,
       movementSpeed: s.movementSpeed ?? undefined,
-      
+
       // ========== 特效师 (On-set SFX) — 每个分镜独立 ==========
       atmosphericEffects: s.atmosphericEffects ?? undefined,
       effectIntensity: s.effectIntensity ?? undefined,
-      
+
       // ========== 速度控制 (Speed Ramping) — 每个分镜独立 ==========
       playbackSpeed: s.playbackSpeed ?? undefined,
-      
+
       // ========== 特殊拍摄手法 — 每个分镜独立 ==========
       specialTechnique: s.specialTechnique ?? undefined,
-      
+
       // ========== 场记/连戏 (Continuity) — 每个分镜独立 ==========
       continuityRef: s.continuityRef ?? undefined,
     }));
@@ -718,12 +718,12 @@ export const useDirectorStore = create<DirectorStore>()(
 
   // Workflow actions
   startScreenplayGeneration: (prompt, images) => {
-    set({ 
-      screenplayStatus: 'generating', 
+    updateActiveProject(get, set, {
+      screenplayStatus: 'generating',
       screenplayError: null,
       screenplay: null,
     });
-    
+
     // WorkerBridge will handle the actual generation
     // This is called from the UI, which will also call workerBridge.generateScreenplay()
     console.log('[DirectorStore] Starting screenplay generation for:', prompt.substring(0, 50));
@@ -731,17 +731,20 @@ export const useDirectorStore = create<DirectorStore>()(
 
   // Step 1: Start generating images only
   startImageGeneration: () => {
-    const { screenplay } = get();
-    if (!screenplay) {
+    const { projects, activeProjectId } = get();
+    if (!activeProjectId) return;
+    const project = projects[activeProjectId];
+
+    if (!project?.screenplay) {
       console.error('[DirectorStore] No screenplay to generate images');
       return;
     }
-    
-    set({ screenplayStatus: 'generating_images' });
-    
+
+    updateActiveProject(get, set, { screenplayStatus: 'generating_images' });
+
     // Initialize progress for all scenes (image stage)
     const progressMap = new Map<number, SceneProgress>();
-    for (const scene of screenplay.scenes) {
+    for (const scene of project.screenplay.scenes) {
       progressMap.set(scene.sceneId, {
         sceneId: scene.sceneId,
         status: 'pending',
@@ -750,23 +753,26 @@ export const useDirectorStore = create<DirectorStore>()(
       });
     }
     set({ sceneProgress: progressMap });
-    
-    console.log('[DirectorStore] Starting image generation for', screenplay.scenes.length, 'scenes');
+
+    console.log('[DirectorStore] Starting image generation for', project.screenplay.scenes.length, 'scenes');
   },
-  
+
   // Step 2: Start generating videos from confirmed images
   startVideoGeneration: () => {
-    const { screenplay, sceneProgress } = get();
-    if (!screenplay) {
+    const { projects, activeProjectId, sceneProgress } = get();
+    if (!activeProjectId) return;
+    const project = projects[activeProjectId];
+
+    if (!project?.screenplay) {
       console.error('[DirectorStore] No screenplay to generate videos');
       return;
     }
-    
-    set({ screenplayStatus: 'generating_videos' });
-    
+
+    updateActiveProject(get, set, { screenplayStatus: 'generating_videos' });
+
     // Update progress for video stage (keep existing imageUrl)
     const progressMap = new Map<number, SceneProgress>();
-    for (const scene of screenplay.scenes) {
+    for (const scene of project.screenplay.scenes) {
       const existing = sceneProgress.get(scene.sceneId);
       progressMap.set(scene.sceneId, {
         sceneId: scene.sceneId,
@@ -777,8 +783,8 @@ export const useDirectorStore = create<DirectorStore>()(
       });
     }
     set({ sceneProgress: progressMap });
-    
-    console.log('[DirectorStore] Starting video generation for', screenplay.scenes.length, 'scenes');
+
+    console.log('[DirectorStore] Starting video generation for', project.screenplay.scenes.length, 'scenes');
   },
   
   // Retry generating image for a single scene

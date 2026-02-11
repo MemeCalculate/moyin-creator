@@ -32,7 +32,11 @@ export {
 
 // Image Splitter
 export {
-  splitStoryboardImage,
+  smartSplit as splitStoryboardImage,
+} from './image-splitter-smart';
+
+export {
+  splitStoryboardImage as splitStoryboardImageLegacy,
   loadImage,
   getEnergyProfile,
   findSegments,

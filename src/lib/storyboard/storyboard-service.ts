@@ -183,6 +183,74 @@ async function submitApimartImageTask(
 }
 
 /**
+ * Submit image generation task via Chat Completion API (e.g. Gemini, GPT-4o)
+ * Parses Markdown image links from the response content.
+ */
+async function submitChatImageTask(
+  prompt: string,
+  apiKey: string,
+  model: string,
+  baseUrl: string
+): Promise<{ imageUrl: string; estimatedTime: number }> {
+  const endpoint = buildEndpoint(baseUrl, 'chat/completions');
+
+  // Construct user message for image generation
+  // Some models need explicit instruction to "draw" or "generate image"
+  const content = `Please generate an image based on the following description. Return ONLY the image URL or Markdown image syntax.\n\nDescription: ${prompt}`;
+
+  console.log('[StoryboardService] Submitting Chat Image task:', { model, endpoint });
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [{ role: 'user', content }],
+      stream: false, // Image generation via chat usually requires non-streaming or full aggregation
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[StoryboardService] Chat API error:', response.status, errorText);
+    throw new Error(`Chat API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  const messageContent = data.choices?.[0]?.message?.content;
+
+  if (!messageContent) {
+    throw new Error('Chat API returned empty content');
+  }
+
+  // Extract image URL from Markdown: ![alt](url)
+  const markdownMatch = messageContent.match(/!\[.*?\]\((.*?)\)/);
+  if (markdownMatch && markdownMatch[1]) {
+    return { imageUrl: markdownMatch[1], estimatedTime: 0 };
+  }
+
+  // Extract raw URL (http/https) if no markdown
+  const urlMatch = messageContent.match(/(https?:\/\/[^\s)]+)/);
+  if (urlMatch && urlMatch[1]) {
+    return { imageUrl: urlMatch[1], estimatedTime: 0 };
+  }
+
+  // Check for Base64 image
+  // Some APIs might return raw base64 or data:image/...
+  if (messageContent.startsWith('data:image/') || messageContent.length > 1000) {
+     // Naive check: if content is huge and looks like base64, treat as data URL
+     // But usually it's wrapped in markdown.
+     // Let's assume URL extraction is primary.
+  }
+
+  console.error('[StoryboardService] Could not parse image from chat response:', messageContent.substring(0, 200));
+  throw new Error('Could not find image URL in Chat response');
+}
+
+/**
  * Submit image generation task to Zhipu API
  */
 async function submitZhipuImageTask(
@@ -437,8 +505,25 @@ export async function generateStoryboardImage(
   if (!baseUrl) {
     throw new Error('请先在设置中配置图片生成服务映射');
   }
+
+  // Routing Logic:
+  // 1. Zhipu -> submitZhipuImageTask
+  // 2. Chat Models (Gemini, GPT-4o, etc) -> submitChatImageTask (NEW)
+  // 3. Default -> submitApimartImageTask
+
+  const isChatModel = (m: string) => {
+    const lower = m.toLowerCase();
+    return lower.includes('gemini') ||
+           lower.includes('gpt-4') ||
+           lower.includes('claude') ||
+           lower.includes('chat');
+  };
+
   if (provider === 'zhipu') {
     result = await submitZhipuImageTask(prompt, outputSize, apiKey, config.model, baseUrl);
+  } else if (config.model && isChatModel(config.model)) {
+    console.log('[StoryboardService] Detected Chat Model, using Chat API flow');
+    result = await submitChatImageTask(prompt, apiKey, config.model, baseUrl);
   } else {
     result = await submitApimartImageTask(
       prompt,

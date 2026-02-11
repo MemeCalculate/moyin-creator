@@ -57,6 +57,8 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toast } from "sonner";
 import { StylePicker } from "@/components/ui/style-picker";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   VISUAL_STYLE_PRESETS, 
   STYLE_CATEGORIES,
@@ -72,6 +74,8 @@ interface GenerationPanelProps {
 }
 
 export function GenerationPanel({ selectedScene, onSceneCreated }: GenerationPanelProps) {
+  const [forceGeometric, setForceGeometric] = useState(false); // Force geometric split for complex grids
+
   const {
     addScene,
     updateScene,
@@ -2373,13 +2377,29 @@ ${anchor} 的背面直视镜头。展示后部结构。背景是物体面向的�
               <div className="space-y-2">
                 <Label className="text-xs">联合图预览</Label>
                 <div className="relative rounded-lg overflow-hidden border bg-muted">
-                  <img 
-                    src={contactSheetImage} 
+                  <img
+                    src={contactSheetImage}
                     alt="联合图预览"
                     className="w-full h-auto"
                   />
                 </div>
-                <Button 
+
+                {/* Options */}
+                <div className="flex items-center space-x-2 px-1">
+                  <Checkbox
+                    id="force-geometric-scene"
+                    checked={forceGeometric}
+                    onCheckedChange={(checked) => setForceGeometric(!!checked)}
+                  />
+                  <Label
+                    htmlFor="force-geometric-scene"
+                    className="text-xs font-normal text-muted-foreground cursor-pointer select-none"
+                  >
+                    强制平均切割 (解决切图错位问题)
+                  </Label>
+                </div>
+
+                <Button
                   onClick={handleSplitContactSheet} 
                   className="w-full" 
                   disabled={isSplitting}

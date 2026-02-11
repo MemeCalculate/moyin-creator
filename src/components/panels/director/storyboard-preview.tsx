@@ -13,15 +13,18 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useDirectorStore, useActiveDirectorProject } from "@/stores/director-store";
 import { splitStoryboardImage, type SplitResult } from "@/lib/storyboard/image-splitter";
-import { 
-  RefreshCw, 
-  Scissors, 
-  ArrowLeft, 
-  Loader2, 
+import {
+  RefreshCw,
+  Scissors,
+  ArrowLeft,
+  Loader2,
   ImageIcon,
   AlertCircle,
-  CheckCircle2 
+  CheckCircle2,
+  Grid3X3
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -38,6 +41,7 @@ interface StoryboardPreviewProps {
 export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreviewProps) {
   const [isSplitting, setIsSplitting] = useState(false);
   const [splitError, setSplitError] = useState<string | null>(null);
+  const [forceGeometric, setForceGeometric] = useState(false); // New state
 
   // Get current project data
   const projectData = useActiveDirectorProject();
@@ -140,6 +144,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
           filterEmpty: true,
           threshold: 30,
           edgeMarginPercent: 0.03, // 3% edge crop for separator line tolerance
+          forceGeometric, // Pass the checkbox state
         },
       });
 
@@ -308,6 +313,23 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
             <p className="font-medium">切割失败</p>
             <p>{splitError}</p>
           </div>
+        </div>
+      )}
+
+      {/* Options */}
+      {storyboardConfig.sceneCount > 1 && (
+        <div className="flex items-center space-x-2 px-1">
+          <Checkbox
+            id="force-geometric"
+            checked={forceGeometric}
+            onCheckedChange={(checked) => setForceGeometric(!!checked)}
+          />
+          <Label
+            htmlFor="force-geometric"
+            className="text-xs font-normal text-muted-foreground cursor-pointer select-none"
+          >
+            强制平均切割 (解决切图错位问题)
+          </Label>
         </div>
       )}
 

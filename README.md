@@ -34,6 +34,7 @@
   <img src="docs/images/screenshot.png" width="800" alt="Screenshot" />
 </p>
 -->
+![Uploading 1771428968476_3nkjdd.png…]()
 
 ## 简介
 
@@ -42,7 +43,11 @@
 > **📝 剧本 → 🎭 角色 → 🌄 场景 → 🎬 导演 → ⭐ S级（Seedance 2.0）**
 
 每一步的产出自动流入下一步，无需手动搅合。支持多种主流 AI 大模型，适合短剧、动漫番剧、预告片等场景的批量化生产。
+
+
 基础设置教程：https://www.bilibili.com/video/BV1FsZDBHExJ/?vd_source=802462c0708e775ce81f95b2e486f175
+
+
 ## 功能特性
 
 ### ⭐ S级板块 — Seedance 2.0 多模态创作
@@ -189,4 +194,5 @@ moyin-creator/
 ---
 
 <p align="center">Made with ❤️ by <a href="https://github.com/MemeCalculate">MemeCalculate</a></p>
+
 

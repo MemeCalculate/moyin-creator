@@ -94,6 +94,8 @@
 - 支持多个 AI 图像/视频生成服务商
 - API Key 轮询负载均衡
 - 任务队列管理，自动重试
+### 下载
+https://pan.baidu.com/s/1iKAsHhvCJ31duN1lHTK3MA 提取码: 8888 
 
 ## 快速开始
 
@@ -195,6 +197,7 @@ moyin-creator/
 ---
 
 <p align="center">Made with ❤️ by <a href="https://github.com/MemeCalculate">MemeCalculate</a></p>
+
 
 
 

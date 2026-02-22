@@ -95,7 +95,7 @@
 - API Key 轮询负载均衡
 - 任务队列管理，自动重试
 ### 下载
-
+打包程序版本0.1.7，对应开源源码
 链接: https://pan.baidu.com/s/1ImH6tOIiuFxIDXC0fC-6Lg 提取码: 8888 
 
 
@@ -199,6 +199,7 @@ moyin-creator/
 ---
 
 <p align="center">Made with ❤️ by <a href="https://github.com/MemeCalculate">MemeCalculate</a></p>
+
 
 
 

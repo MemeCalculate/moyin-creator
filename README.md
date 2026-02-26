@@ -1,7 +1,8 @@
 <p align="center">
   <img src="build/icon.png" width="120" alt="魔因漫创 Logo" />
 </p>
-
+<img width="512" height="512" alt="icon" src="https://github.com/user-attachments/assets/2f27bf9a-82c9-4d06-904c-1bbb507d8c81" />
+<img src="https://github.com/user-attachments/assets/2f27bf9a-82c9-4d06-904c-1bbb507d8c81" width="120" alt="魔因漫创 Logo" />
 <h1 align="center">魔因漫创 Moyin Creator</h1>
 
 <p align="center">
@@ -188,13 +189,15 @@ moyin-creator/
 
 ### 联系我们
 
-<img src="https://github.com/user-attachments/assets/85a9cbf6-754d-4d4d-9b0e-6feab9e8eec3" width="200" alt="交流群" />
+<img src="https://github.com/user-attachments/assets/c7db8599-e763-4616-a891-c9177b6eed74" width="200" alt="交流群" />
+
 <img src="docs/images/wechat-contact.png" width="200" alt="微信联系" />
 
 
 ---
 
 <p align="center">Made with ❤️ by <a href="https://github.com/MemeCalculate">MemeCalculate</a></p>
+
 
 
 

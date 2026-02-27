@@ -18,7 +18,7 @@ asarUnpack:
   - "**/node_modules/sharp/**"
 
 # 图标配置
-icon: build/icon.ico
+icon: build/icon.png
 
 win:
   executableName: moyin-creator
@@ -28,6 +28,17 @@ win:
     - target: nsis
       arch:
         - x64
+
+mac:
+  icon: build/icon.png
+  target:
+    - dmg
+    - zip
+
+linux:
+  icon: build/icon.png
+  target:
+    - AppImage
 
 # NSIS 安装包配置
 nsis:

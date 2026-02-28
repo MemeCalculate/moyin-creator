@@ -1,7 +1,7 @@
 {
   "name": "moyin-creator",
   "productName": "魔因漫创",
-"version": "0.1.7",
+  "version": "0.1.7",
   "description": "AI 驱动的动漫/短剧分镜创作工具",
   "author": "MemeCalculate",
   "license": "AGPL-3.0-or-later",
@@ -16,9 +16,15 @@
   "type": "module",
   "scripts": {
     "dev": "electron-vite dev",
-    "build": "electron-vite build && electron-builder --win",
-    "prebuild": "powershell -Command \"Stop-Process -Name 'moyin-creator' -ErrorAction SilentlyContinue; Stop-Process -Name '魔因漫创' -ErrorAction SilentlyContinue; Stop-Process -Name 'moyin-creator-*-setup' -ErrorAction SilentlyContinue; if (Test-Path release) { Remove-Item -Recurse -Force release -ErrorAction SilentlyContinue }\"",
-    "build:win": "electron-vite build && electron-builder --win",
+    "clean:release": "node ./scripts/clean-release.mjs",
+    "build:app": "electron-vite build",
+    "pack:win": "electron-builder --win",
+    "pack:mac": "electron-builder --mac",
+    "pack:linux": "electron-builder --linux",
+    "build": "node ./scripts/build-by-platform.mjs",
+    "build:win": "npm run clean:release && npm run build:app && npm run pack:win",
+    "build:mac": "npm run clean:release && npm run build:app && npm run pack:mac",
+    "build:linux": "npm run clean:release && npm run build:app && npm run pack:linux",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "electron-vite preview"
   },

@@ -82,6 +82,22 @@ const PLATFORM_ICONS: Record<string, React.ReactNode> = {
   custom: <Settings className="h-5 w-5" />,
 };
 
+function normalizeModels(models: string[] | undefined): string[] {
+  return (models || [])
+    .map((m) => m.trim())
+    .filter((m) => m.length > 0);
+}
+
+function modelsChanged(prev: string[] | undefined, next: string[] | undefined): boolean {
+  const a = normalizeModels(prev);
+  const b = normalizeModels(next);
+  if (a.length !== b.length) return true;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return true;
+  }
+  return false;
+}
+
 export function SettingsPanel() {
   const {
     providers,
@@ -1456,7 +1472,14 @@ export function SettingsPanel() {
         onOpenChange={setEditDialogOpen}
         provider={editingProvider}
         onSave={(provider) => {
+          const hasManualModelChange = modelsChanged(editingProvider?.model, provider.model);
           updateProvider(provider);
+
+          // 用户手动修改模型时，优先保留用户输入，避免被自动同步覆盖
+          if (hasManualModelChange) {
+            return;
+          }
+
           // 编辑保存后自动同步模型列表和端点元数据
           if (parseApiKeys(provider.apiKey).length > 0) {
             setSyncingProvider(provider.id);

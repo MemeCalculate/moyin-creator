@@ -20,7 +20,7 @@ import os from 'node:os'
 //
 process.env.APP_ROOT = path.join(__dirname, '../..')
 
-export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
+export const VITE_DEV_SERVER_URL = process.env['ELECTRON_RENDERER_URL'] || process.env['VITE_DEV_SERVER_URL']
 export const MAIN_DIST = path.join(__dirname)
 export const RENDERER_DIST = path.join(__dirname, '../renderer')
 

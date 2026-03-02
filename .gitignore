@@ -63,3 +63,4 @@ S级*
 *.njsproj
 *.sln
 *.sw?
+package-lock.json

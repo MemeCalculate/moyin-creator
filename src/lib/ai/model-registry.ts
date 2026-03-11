@@ -73,6 +73,8 @@ const STATIC_REGISTRY: Record<string, ModelLimits> = {
   'kimi-k2':                { contextWindow: 128000,   maxOutput: 8192   },
   'qwen3-max':              { contextWindow: 128000,   maxOutput: 8192   },
   'qwen3-max-preview':      { contextWindow: 128000,   maxOutput: 8192   },
+  'minimax-m2.5':           { contextWindow: 204800,   maxOutput: 192000 },
+  'minimax-m2.5-highspeed': { contextWindow: 204800,   maxOutput: 192000 },
   'minimax-m2.1':           { contextWindow: 128000,   maxOutput: 8192   },
 
   // ==================== 通用 prefix 规则 ====================
@@ -82,6 +84,7 @@ const STATIC_REGISTRY: Record<string, ModelLimits> = {
   'glm-':                   { contextWindow: 128000,   maxOutput: 8192   },
   'claude-':                { contextWindow: 200000,   maxOutput: 8192   },
   'gpt-':                   { contextWindow: 128000,   maxOutput: 16384  },
+  'minimax-':               { contextWindow: 204800,   maxOutput: 8192   },
   'doubao-':                { contextWindow: 32000,    maxOutput: 4096   },
 
   // ==================== 默认值 ====================

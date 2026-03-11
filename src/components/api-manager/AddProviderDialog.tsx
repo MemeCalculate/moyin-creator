@@ -76,6 +76,17 @@ const PLATFORM_PRESETS: Array<{
     models: ["2009613632530812930"],
   },
   {
+    platform: "minimax",
+    name: "MiniMax",
+    baseUrl: "https://api.minimax.io/v1",
+    description: "MiniMax 大模型，支持 MiniMax-M2.5 系列",
+    services: ["对话"],
+    models: [
+      "MiniMax-M2.5",
+      "MiniMax-M2.5-highspeed",
+    ],
+  },
+  {
     platform: "custom",
     name: "自定义",
     baseUrl: "",
@@ -167,9 +178,9 @@ export function AddProviderDialog({
     toast.success(isMemefastAppend ? `已追加 Key 到 ${name}` : `已添加 ${name}`);
   };
 
-  // Filter out already existing platforms (except custom and memefast which allow repeat add)
+  // Filter out already existing platforms (except custom, memefast, and minimax which allow repeat add)
   const availablePlatforms = PLATFORM_PRESETS.filter(
-    (p) => p.platform === "custom" || p.platform === "memefast" || !existingPlatforms.includes(p.platform)
+    (p) => p.platform === "custom" || p.platform === "memefast" || p.platform === "minimax" || !existingPlatforms.includes(p.platform)
   );
   const isMemefastAppend = platform === "memefast" && existingPlatforms.includes("memefast");
 
@@ -241,6 +252,11 @@ export function AddProviderDialog({
             <p className="text-xs text-muted-foreground">
               支持多个 Key，用逗号分隔
             </p>
+            {platform === "minimax" && (
+              <div className="rounded-md bg-blue-50 dark:bg-blue-950/30 p-3 text-xs space-y-1 text-blue-700 dark:text-blue-300">
+                <p>从 <a href="https://platform.minimax.io" target="_blank" rel="noopener noreferrer" className="underline font-medium">platform.minimax.io</a> 获取 API Key，设置环境变量 <code className="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">MINIMAX_API_KEY</code> 或在此处直接填入。</p>
+              </div>
+            )}
             {platform === "memefast" && (
               <div className="rounded-md bg-red-600 p-3 text-xs space-y-1.5 text-white">
                 <p className="font-bold text-sm">⚠️ 令牌分组配置提醒</p>

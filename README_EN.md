@@ -82,7 +82,7 @@ Each stage's output automatically flows into the next — no manual glue require
 - Designed for short drama / anime series batch production
 
 ### 🤖 Multi-Provider AI Orchestration
-- Supports multiple AI image/video generation providers
+- Built-in [MiniMax](https://platform.minimax.io), MemeFast, and more AI providers, plus custom OpenAI-compatible API support
 - API key rotation with load balancing
 - Task queue management with automatic retry
 

@@ -73,6 +73,8 @@ const STATIC_REGISTRY: Record<string, ModelLimits> = {
   'kimi-k2':                { contextWindow: 128000,   maxOutput: 8192   },
   'qwen3-max':              { contextWindow: 128000,   maxOutput: 8192   },
   'qwen3-max-preview':      { contextWindow: 128000,   maxOutput: 8192   },
+  'minimax-m2.7':           { contextWindow: 204800,   maxOutput: 192000 },
+  'minimax-m2.7-highspeed': { contextWindow: 204800,   maxOutput: 192000 },
   'minimax-m2.5':           { contextWindow: 204800,   maxOutput: 192000 },
   'minimax-m2.5-highspeed': { contextWindow: 204800,   maxOutput: 192000 },
   'minimax-m2.1':           { contextWindow: 128000,   maxOutput: 8192   },

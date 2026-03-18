@@ -79,9 +79,11 @@ const PLATFORM_PRESETS: Array<{
     platform: "minimax",
     name: "MiniMax",
     baseUrl: "https://api.minimax.io/v1",
-    description: "MiniMax 大模型，支持 MiniMax-M2.5 系列",
+    description: "MiniMax 大模型，支持 MiniMax-M2.7 系列",
     services: ["对话"],
     models: [
+      "MiniMax-M2.7",
+      "MiniMax-M2.7-highspeed",
       "MiniMax-M2.5",
       "MiniMax-M2.5-highspeed",
     ],

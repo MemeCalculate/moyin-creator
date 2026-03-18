@@ -90,7 +90,7 @@
 - 适合短剧/动漫番剧批量生产
 
 ### 🤖 多供应商 AI 调度
-- 支持多个 AI 图像/视频生成服务商
+- 内置 [MiniMax](https://platform.minimax.io)、魔因API 等多个 AI 供应商，也支持自定义 OpenAI 兼容 API
 - API Key 轮询负载均衡
 - 任务队列管理，自动重试
 ### 下载

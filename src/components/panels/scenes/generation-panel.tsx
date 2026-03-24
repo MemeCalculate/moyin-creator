@@ -92,7 +92,7 @@ export function GenerationPanel({ selectedScene, onSceneCreated }: GenerationPan
   const { pendingSceneData, setPendingSceneData } = useMediaPanelStore();
   const { addMediaFromUrl, getOrCreateCategoryFolder } = useMediaStore();
   
-  // 获取当前项目的分镜数据，用于提取场景道具
+  // Get current project's storyboard data for extracting scene props
   const { activeProjectId: scriptProjectId, projects } = useScriptStore();
   const { activeProjectId: resourceProjectId } = useProjectStore();
   const scriptProject = useActiveScriptProject();

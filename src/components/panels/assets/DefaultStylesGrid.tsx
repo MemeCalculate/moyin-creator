@@ -4,8 +4,8 @@
 "use client";
 
 /**
- * DefaultStylesGrid - 内置风格网格浏览（只读）
- * 按分类分组展示 48 个预设风格
+ * DefaultStylesGrid - Built-in style grid browser (read-only)
+ * Display 48 preset styles grouped by category
  */
 
 import { useState } from "react";
@@ -32,12 +32,12 @@ export function DefaultStylesGrid() {
   return (
     <ScrollArea className="h-full">
       <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">默认风格</h2>
-          <span className="text-xs text-muted-foreground">
-            {STYLE_CATEGORIES.reduce((n, c) => n + c.styles.length, 0)} 个预设
-          </span>
-        </div>
+       <div className="flex items-center justify-between">
+           <h2 className="text-sm font-semibold text-foreground">Default Styles</h2>
+           <span className="text-xs text-muted-foreground">
+             {STYLE_CATEGORIES.reduce((n, c) => n + c.styles.length, 0)} presets
+           </span>
+         </div>
 
         {STYLE_CATEGORIES.map((category) => (
           <div key={category.id}>

@@ -2,16 +2,16 @@
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 /**
- * S级 Store — Seedance 2.0 多模态创作板块状态管理
+ * S Class Store — Seedance 2.0 Multimodal Creation Module State Management
  *
- * 核心概念：
- * - ShotGroup：将 director-store 中的 SplitScene 按组合并，用于多镜头叙事视频生成
- * - AssetRef：@引用资产（图片/视频/音频），在提示词中以 @Image1 @Video1 @Audio1 形式引用
- * - 双模式：分镜模式（从剧本流水线导入）+ 自由模式（纯素材上传）
+ * Core Concepts:
+ * - ShotGroup: Combine SplitScenes from director-store by group for multi-shot narrative video generation
+ * - AssetRef: @referenced assets (images/videos/audio), referenced in prompts as @Image1 @Video1 @Audio1
+ * - Dual Mode: Storyboard mode (imported from script pipeline) + Free mode (pure asset upload)
  *
- * Seedance 2.0 限制：
- * - 输入：≤9图片 + ≤3视频(≤15s) + ≤3音频(MP3,≤15s) + 文本(5000字符) ，总文件≤12
- * - 输出：4-15s，480p/720p/1080p，16:9/9:16/4:3/3:4/21:9/1:1
+ * Seedance 2.0 Limitations:
+ * - Input: ≤9 images + ≤3 videos (≤15s) + ≤3 audio (MP3,≤15s) + text (5000 characters), total files ≤12
+ * - Output: 4-15s, 480p/720p/1080p, 16:9/9:16/4:3/3:4/21:9/1:1
  */
 
 import { create } from 'zustand';
@@ -20,73 +20,71 @@ import { createProjectScopedStorage } from '@/lib/project-storage';
 
 // ==================== Types ====================
 
-/** @引用资产类型 */
-export type AssetType = 'image' | 'video' | 'audio';
-
-/** 素材用途（Seedance 2.0 @素材用途精确标注） */
+/** @referenced asset type */
+/** Asset purpose (Seedance 2.0 @asset purpose precise annotation) */
 export type AssetPurpose =
-  | 'character_ref'     // 角色参考
-  | 'scene_ref'         // 场景参考
-  | 'first_frame'       // 首帧
-  | 'grid_image'        // 格子图
-  | 'camera_replicate'  // 运镜复刻
-  | 'action_replicate'  // 动作复刻
-  | 'effect_replicate'  // 特效复刻
-  | 'beat_sync'         // 音乐卡点
-  | 'bgm'              // 背景音乐
-  | 'voice_ref'        // 语音参考
-  | 'prev_video'       // 前组延长
-  | 'video_extend'     // 被延长的视频
-  | 'video_edit_src'   // 被编辑的源视频
-  | 'general'          // 通用参考
+  | 'character_ref'     // character reference
+  | 'scene_ref'         // scene reference
+  | 'first_frame'       // first frame
+  | 'grid_image'        // grid image
+  | 'camera_replicate'  // camera replicate
+  | 'action_replicate'  // action replicate
+  | 'effect_replicate'  // effect replicate
+  | 'beat_sync'         // beat sync
+  | 'bgm'              // background music
+  | 'voice_ref'        // voice reference
+  | 'prev_video'       // previous group extension
+  | 'video_extend'     // extended video
+  | 'video_edit_src'   // source video to be edited
+  | 'general'          // general reference
 ;
 
-/** 视频生成状态 */
+/** Video generation status */
 export type VideoGenStatus = 'idle' | 'generating' | 'completed' | 'failed';
 
-/** 输出视频画幅比 */
+/** Output video aspect ratio */
 export type SClassAspectRatio = '16:9' | '9:16' | '4:3' | '3:4' | '21:9' | '1:1';
 
-/** 输出视频分辨率 */
+/** Output video resolution */
 export type SClassResolution = '480p' | '720p' | '1080p';
 
-/** 输出视频时长（秒） */
+/** Output video duration (seconds) */
 export type SClassDuration = 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
 
-/** 创作模式 */
+/** Creation mode */
 export type SClassMode = 'storyboard' | 'free';
 
-/** 组生成类型 */
+/** Group generation type */
 export type GroupGenerationType = 'new' | 'extend' | 'edit';
 
-/** 延长方向 */
+/** Extension direction */
 export type ExtendDirection = 'forward' | 'backward';
 
-/** 编辑类型 */
+/** Edit type */
 export type EditType = 'plot_change' | 'character_swap' | 'attribute_modify' | 'element_add';
 
 // ==================== Interfaces ====================
 
 /**
- * @引用资产
- * 在提示词中以 @Image1, @Video1, @Audio1 方式引用
+ * @referenced asset
+ * Referenced in prompts as @Image1, @Video1, @Audio1
  */
 export interface AssetRef {
   id: string;
   type: AssetType;
-  /** 资产标签，如 @Image1, @Video2 */
+  /** Asset tag, e.g. @Image1, @Video2 */
   tag: string;
-  /** 本地文件路径或 data URL */
+  /** Local file path or data URL */
   localUrl: string;
-  /** HTTP URL（上传到 API 后获得） */
+  /** HTTP URL (obtained after uploading to API) */
   httpUrl: string | null;
-  /** 文件名（用于显示） */
+  /** File name (for display) */
   fileName: string;
-  /** 文件大小（字节） */
+  /** File size (bytes) */
   fileSize: number;
-  /** 视频/音频时长（秒），图片为 null */
+  /** Video/audio duration (seconds), null for images */
   duration: number | null;
-  /** 素材用途（Seedance 2.0 @素材用途精确标注） */
+  /** Asset purpose (Seedance 2.0 @asset purpose precise annotation) */
   purpose?: AssetPurpose;
 }
 
@@ -183,11 +181,11 @@ export interface ShotGroup {
  */
 export interface SingleShotOverride {
   sceneId: number;
-  /** 单镜头独立提示词（覆盖分镜原始提示词） */
+  /** Single shot independent prompt (overrides original storyboard prompt) */
   prompt: string;
-  /** @引用资产 */
+  /** @referenced asset */
   assetRefs: AssetRef[];
-  /** 生成的视频 URL */
+  /** Generated video URL */
   videoUrl: string | null;
   videoMediaId: string | null;
   videoStatus: VideoGenStatus;
@@ -200,21 +198,21 @@ export interface SingleShotOverride {
 
 /** S级项目级数据 */
 export interface SClassProjectData {
-  /** 镜头组列表 */
+  /** Shot groups list */
   shotGroups: ShotGroup[];
-  /** 单镜生成覆盖表 (sceneId -> override) */
+  /** Single shot generation overrides table (sceneId -> override) */
   singleShotOverrides: Record<number, SingleShotOverride>;
-  /** 全局 @引用资产（自由模式下使用） */
+  /** Global @referenced assets (used in free mode) */
   globalAssetRefs: AssetRef[];
-  /** 生成配置 */
+  /** Generation configuration */
   config: SClassConfig;
-  /** 当前模式 */
+  /** Current mode */
   mode: SClassMode;
-  /** 是否已从 director 数据自动分组过 */
+  /** Whether auto-grouped from director data */
   hasAutoGrouped: boolean;
-  /** 最近一次九宫格生成的原始大图 URL（用于视频生成时复用，避免重新合并） */
+  /** Original large image URL from last grid generation (used for video generation reuse, avoiding re-merging) */
   lastGridImageUrl: string | null;
-  /** lastGridImageUrl 对应的分镜 ID 列表（用于判断是否可复用） */
+  /** Shot ID list corresponding to lastGridImageUrl (used to determine if reusable) */
   lastGridSceneIds: number[] | null;
   editorPrefs: SClassEditorPrefs;
 }
@@ -333,7 +331,7 @@ const initialState: SClassState = {
 
 // ==================== Helpers ====================
 
-/** 获取当前项目数据 */
+/** Get current project data */
 const getCurrentProject = (state: SClassState): SClassProjectData | null => {
   if (!state.activeProjectId) return null;
   return state.projects[state.activeProjectId] || null;
@@ -859,7 +857,7 @@ export const useSClassStore = create<SClassStore>()(
 
 // ==================== Selectors ====================
 
-/** 获取当前活跃项目的 S级数据 */
+/** Get current active project's S-class data */
 export const useActiveSClassProject = (): SClassProjectData | null => {
   return useSClassStore((state) => {
     if (!state.activeProjectId) return null;
@@ -867,7 +865,7 @@ export const useActiveSClassProject = (): SClassProjectData | null => {
   });
 };
 
-/** 获取当前项目的镜头组列表 */
+/** Get current project's shot groups list */
 export const useShotGroups = (): ShotGroup[] => {
   return useSClassStore((state) => {
     if (!state.activeProjectId) return [];
@@ -876,7 +874,7 @@ export const useShotGroups = (): ShotGroup[] => {
   });
 };
 
-/** 获取指定镜头组 */
+/** Get specified shot group */
 export const useShotGroup = (groupId: string): ShotGroup | null => {
   return useSClassStore((state) => {
     if (!state.activeProjectId) return null;

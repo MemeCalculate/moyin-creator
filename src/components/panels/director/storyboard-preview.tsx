@@ -69,7 +69,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
   // Or directly use the image as single scene when sceneCount is 1
   const handleSplit = useCallback(async () => {
     if (!storyboardImage) {
-      toast.error("没有可处理的故事板图片");
+      toast.error("No storyboard image to process");
       return;
     }
 
@@ -93,7 +93,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
           imagePrompt: '',
           imagePromptZh: '',
           videoPrompt: '',
-          videoPromptZh: '场景 1',
+          videoPromptZh: 'Scene 1',
           needsEndFrame: false,
           endFramePrompt: '',
           endFramePromptZh: '',
@@ -128,7 +128,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
 
         setSplitScenes([singleScene]);
         setStoryboardStatus('editing');
-        toast.success('已进入场景编辑');
+        toast.success('Entered scene editing');
         onSplitComplete?.();
         return;
       }
@@ -147,7 +147,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
       });
 
       if (splitResults.length === 0) {
-        throw new Error("切割结果为空，请检查图片是否正确");
+        throw new Error("Split result is empty, please check if the image is correct");
       }
 
       // Convert split results to SplitScene format
@@ -166,8 +166,8 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
           height: result.height,
           imagePrompt: '',
           imagePromptZh: '',
-          videoPrompt: '', // 英文提示词，等待 AI 生成
-          videoPromptZh: `场景 ${index + 1}`, // 中文提示词默认值
+          videoPrompt: '', // English prompt, waiting for AI generation
+          videoPromptZh: `Scene ${index + 1}`, // Chinese prompt default
           needsEndFrame: false,
           endFramePrompt: '',
           endFramePromptZh: '',
@@ -183,7 +183,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
           characterIds: [],
           emotionTags: [],
           shotSize: null,
-          duration: 5, // 默认 5 秒，支持 4-12 秒
+          duration: 5, // Default 5 seconds, supports 4-12 seconds
           ambientSound: '',
           soundEffects: [],
           soundEffectText: '',
@@ -203,7 +203,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
 
       setSplitScenes(splitScenes);
       setStoryboardStatus('editing');
-      toast.success(`成功切割为 ${splitScenes.length} 个场景`);
+      toast.success(`Successfully split into ${splitScenes.length} scenes`);
       onSplitComplete?.();
     } catch (error) {
       const err = error as Error;
@@ -211,7 +211,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
       setSplitError(err.message);
       setStoryboardError(err.message);
       setStoryboardStatus('error');
-      toast.error(`切割失败: ${err.message}`);
+      toast.error(`Split failed: ${err.message}`);
     } finally {
       setIsSplitting(false);
     }

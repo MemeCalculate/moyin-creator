@@ -29,7 +29,7 @@ interface ProjectStore {
 // Default project for desktop app
 const DEFAULT_PROJECT: Project = {
   id: "default-project",
-  name: "魔因漫创项目",
+  name: "Moyin Comic Creation Project",
   createdAt: Date.now(),
   updatedAt: Date.now(),
 };
@@ -62,14 +62,14 @@ export const useProjectStore = create<ProjectStore>()(
       createProject: (name) => {
         const newProject: Project = {
           id: generateUUID(),
-          name: name?.trim() || `新项目 ${new Date().toLocaleDateString('zh-CN')}`,
+          name: name?.trim() || `New Project ${new Date().toLocaleDateString('zh-CN')}`,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
         set((state) => ({
           projects: [newProject, ...state.projects],
-          // 不在这里设置 activeProjectId —— 由 switchProject() 统一处理
-          // 避免 switchProject 因 ID 已相同而跳过 rehydration
+          // Do not set activeProjectId here — handled uniformly by switchProject()
+          // Avoid switchProject skipping rehydration due to identical ID
         }));
         return newProject;
       },
@@ -140,8 +140,8 @@ export const useProjectStore = create<ProjectStore>()(
         state.activeProjectId = project?.id || null;
         state.activeProject = project;
 
-        // 异步扫描磁盘上 _p/ 目录，将遗漏的项目恢复到列表中
-        // 解决路径切换/导入/迁移后项目列表为空的问题
+        // Asynchronously scan the _p/ directory on disk to restore missing projects to the list
+        // Solve the issue where the project list is empty after storage path change, import, or migration
         discoverProjectsFromDisk().catch((err) =>
           console.warn('[ProjectStore] Disk discovery failed:', err)
         );
@@ -151,20 +151,19 @@ export const useProjectStore = create<ProjectStore>()(
 );
 
 /**
- * 扫描磁盘上 _p/ 目录下的实际项目文件夹，
- * 将未在 projects 列表中注册的项目自动恢复。
+ * Scan the actual project folders under the _p/ directory on disk,
+ * Automatically restore projects not registered in the projects list.
  * 
- * 解决以下场景：
- * - 更改存储路径并迁移数据后，前端 store 未 reload，或 moyin-project-store.json
- *   中的 projects 列表不完整（旧版本、手动复制等）
- * - 导入数据后 moyin-project-store.json 缺失或不含新项目
- * - 换电脑后指向旧数据目录，projects 列表为空
+ * Solve the following scenarios:
+ * - After changing the storage path and migrating data, the frontend store is not reloaded, or the projects list in moyin-project-store.json is incomplete (old version, manual copy, etc.)
+ * - After importing data, moyin-project-store.json is missing or does not contain new projects
+ * - After switching computers, pointing to the old data directory, the projects list is empty
  */
 async function discoverProjectsFromDisk(): Promise<void> {
   if (!window.fileStorage?.listDirs) return;
 
   try {
-    // 列出 _p/ 下所有子目录名（每个子目录名就是一个 projectId）
+    // List all subdirectory names under _p/ (each subdirectory name is a projectId)
     const diskProjectIds = await window.fileStorage.listDirs('_p');
     if (!diskProjectIds || diskProjectIds.length === 0) return;
 
@@ -179,38 +178,38 @@ async function discoverProjectsFromDisk(): Promise<void> {
       missingIds.map((id) => id.substring(0, 8))
     );
 
-    // 尝试从每个遗漏项目的 director / script store 文件中提取项目名
+    // Attempt to extract project name from each missing project's director/script store files
     const recoveredProjects: Project[] = [];
     for (const pid of missingIds) {
-      let name = `恢复的项目 (${pid.substring(0, 8)})`;
+      let name = `Recovered Project (${pid.substring(0, 8)})`;
       const createdAt = Date.now();
 
-      // 尝试从 script store 获取名称
+      // Attempt to get name from script store
       try {
         const scriptRaw = await window.fileStorage.getItem(`_p/${pid}/script-store`);
         if (scriptRaw) {
           const parsed = JSON.parse(scriptRaw);
           const state = parsed?.state ?? parsed;
-          // script-store 的 projects 字段中可能有项目信息
+          // The script-store's projects field may contain project information
           if (state?.projects?.[pid]?.title) {
             name = state.projects[pid].title;
           }
         }
       } catch { /* ignore */ }
 
-      // 尝试从 director store 获取创建时间等信息
+      // Attempt to get creation time etc. from director store
       try {
         const directorRaw = await window.fileStorage.getItem(`_p/${pid}/director-store`);
         if (directorRaw) {
           const parsed = JSON.parse(directorRaw);
           const state = parsed?.state ?? parsed;
           if (state?.projects?.[pid]?.screenplay) {
-            // 有剧本内容，说明确实是有效项目
+            // If there is screenplay content, it indicates a valid project
             const screenplay = state.projects[pid].screenplay;
-            if (!name.includes('恢复的项目')) {
-              // 已经有名称了，不覆盖
+            if (!name.includes('Recovered Project')) {
+              // Already has a name, do not overwrite
             } else if (screenplay) {
-              // 用剧本前几个字做临时名称
+              // Use the first few characters of the screenplay as a temporary name
               const preview = screenplay.substring(0, 20).replace(/\n/g, ' ').trim();
               if (preview) name = preview + '...';
             }

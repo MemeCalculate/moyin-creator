@@ -55,10 +55,10 @@ export function ImageStudio() {
   const hasStrength = model?.inputs?.strength != null;
 
   const handleGenerate = useCallback(async () => {
-    if (!imagePrompt.trim()) {
-      toast.error('请输入描述文字');
-      return;
-    }
+     if (!imagePrompt.trim()) {
+       toast.error('Please enter description text');
+       return;
+     }
 
     setImageGenerating(true);
     setImageResult(null);
@@ -72,24 +72,24 @@ export function ImageStudio() {
         extraParams: Object.keys(imageExtraParams).length > 0 ? imageExtraParams : undefined,
       });
 
-      setImageResult(result.url);
+       setImageResult(result.url);
 
-      // Add to history
-      addHistoryEntry({
-        id: `img_${Date.now()}`,
-        prompt: imagePrompt,
-        model: selectedImageModel,
-        resultUrl: result.url,
-        params: { aspectRatio: imageAspectRatio, resolution: imageResolution, ...imageExtraParams },
-        createdAt: Date.now(),
-        mediaId: result.mediaId,
-        type: 'image',
-      });
+       // Add to history
+       addHistoryEntry({
+         id: `img_${Date.now()}`,
+         prompt: imagePrompt,
+         model: selectedImageModel,
+         resultUrl: result.url,
+         params: { aspectRatio: imageAspectRatio, resolution: imageResolution, ...imageExtraParams },
+         createdAt: Date.now(),
+         mediaId: result.mediaId,
+         type: 'image',
+       });
 
-      toast.success('图片生成成功！已保存到素材库');
-    } catch (err: any) {
-      toast.error(`生成失败: ${err.message}`);
-    } finally {
+       toast.success('Image generated successfully! Saved to asset library');
+     } catch (err: any) {
+       toast.error(`Generation failed: ${err.message}`);
+     } finally {
       setImageGenerating(false);
     }
   }, [imagePrompt, selectedImageModel, imageAspectRatio, imageResolution, imageExtraParams]);
@@ -106,7 +106,7 @@ export function ImageStudio() {
           <div className="p-4 space-y-5">
             {/* Model Selection */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">模型选择</Label>
+               <Label className="text-sm font-medium">Model Selection</Label>
               <ModelSelector
                 type="image"
                 value={selectedImageModel}
@@ -120,59 +120,59 @@ export function ImageStudio() {
             </div>
 
             {/* Aspect Ratio */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">宽高比</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {aspectRatios.map((ratio) => (
-                  <Button
-                    key={ratio}
-                    variant={imageAspectRatio === ratio ? 'default' : 'outline'}
-                    size="sm"
-                    className="h-7 text-xs px-2.5"
-                    onClick={() => setImageAspectRatio(ratio)}
-                  >
-                    {ratio}
-                  </Button>
-                ))}
-              </div>
-            </div>
+             <div className="space-y-2">
+               <Label className="text-sm font-medium">Aspect Ratio</Label>
+               <div className="flex flex-wrap gap-1.5">
+                 {aspectRatios.map((ratio) => (
+                   <Button
+                     key={ratio}
+                     variant={imageAspectRatio === ratio ? 'default' : 'outline'}
+                     size="sm"
+                     className="h-7 text-xs px-2.5"
+                     onClick={() => setImageAspectRatio(ratio)}
+                   >
+                     {ratio}
+                   </Button>
+                 ))}
+               </div>
+             </div>
 
             {/* Resolution (conditional) */}
-            {hasResolution && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">分辨率</Label>
-                <Select value={imageResolution} onValueChange={setImageResolution}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue placeholder="选择分辨率" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {resolutions.map((r) => (
-                      <SelectItem key={r} value={String(r)}>{String(r)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+             {hasResolution && (
+               <div className="space-y-2">
+                 <Label className="text-sm font-medium">Resolution</Label>
+                 <Select value={imageResolution} onValueChange={setImageResolution}>
+                   <SelectTrigger className="h-9">
+                     <SelectValue placeholder="Select resolution" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     {resolutions.map((r) => (
+                       <SelectItem key={r} value={String(r)}>{String(r)}</SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+             )}
 
             {/* Midjourney Params */}
             {hasMidjourneyParams && (
               <>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">速度</Label>
-                  <Select
-                    value={imageExtraParams.speed || 'fast'}
-                    onValueChange={(v) => updateExtraParam('speed', v)}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="relaxed">Relaxed</SelectItem>
-                      <SelectItem value="fast">Fast</SelectItem>
-                      <SelectItem value="turbo">Turbo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+               <div className="space-y-2">
+                 <Label className="text-sm font-medium">Speed</Label>
+                 <Select
+                   value={imageExtraParams.speed || 'fast'}
+                   onValueChange={(v) => updateExtraParam('speed', v)}
+                 >
+                   <SelectTrigger className="h-9">
+                     <SelectValue />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="relaxed">Relaxed</SelectItem>
+                     <SelectItem value="fast">Fast</SelectItem>
+                     <SelectItem value="turbo">Turbo</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <Label className="text-sm">Stylization</Label>
@@ -201,61 +201,61 @@ export function ImageStudio() {
             {/* Ideogram Params */}
             {hasIdeogramParams && (
               <>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">渲染速度</Label>
-                  <Select
-                    value={imageExtraParams.render_speed || 'Balanced'}
-                    onValueChange={(v) => updateExtraParam('render_speed', v)}
-                  >
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Turbo">Turbo</SelectItem>
-                      <SelectItem value="Balanced">Balanced</SelectItem>
-                      <SelectItem value="Quality">Quality</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">风格</Label>
-                  <Select
-                    value={imageExtraParams.style || 'Auto'}
-                    onValueChange={(v) => updateExtraParam('style', v)}
-                  >
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Auto">Auto</SelectItem>
-                      <SelectItem value="General">General</SelectItem>
-                      <SelectItem value="Realistic">Realistic</SelectItem>
-                      <SelectItem value="Design">Design</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+               <div className="space-y-2">
+                 <Label className="text-sm font-medium">Render Speed</Label>
+                 <Select
+                   value={imageExtraParams.render_speed || 'Balanced'}
+                   onValueChange={(v) => updateExtraParam('render_speed', v)}
+                 >
+                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="Turbo">Turbo</SelectItem>
+                     <SelectItem value="Balanced">Balanced</SelectItem>
+                     <SelectItem value="Quality">Quality</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-2">
+                 <Label className="text-sm font-medium">Style</Label>
+                 <Select
+                   value={imageExtraParams.style || 'Auto'}
+                   onValueChange={(v) => updateExtraParam('style', v)}
+                 >
+                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="Auto">Auto</SelectItem>
+                     <SelectItem value="General">General</SelectItem>
+                     <SelectItem value="Realistic">Realistic</SelectItem>
+                     <SelectItem value="Design">Design</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
               </>
             )}
 
-            {/* Prompt Input */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">描述文字</Label>
-              <Textarea
-                placeholder="描述你想生成的图片..."
-                value={imagePrompt}
-                onChange={(e) => setImagePrompt(e.target.value)}
-                className="min-h-[120px] resize-none"
-              />
-            </div>
+             {/* Prompt Input */}
+             <div className="space-y-2">
+               <Label className="text-sm font-medium">Description Text</Label>
+               <Textarea
+                 placeholder="Describe the image you want to generate..."
+                 value={imagePrompt}
+                 onChange={(e) => setImagePrompt(e.target.value)}
+                 className="min-h-[120px] resize-none"
+               />
+             </div>
 
-            {/* Generate Button */}
-            <Button
-              className="w-full h-11"
-              onClick={handleGenerate}
-              disabled={imageGenerating || !imagePrompt.trim()}
-            >
-              {imageGenerating ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 生成中...</>
-              ) : (
-                <><Sparkles className="mr-2 h-4 w-4" /> 生成图片</>
-              )}
-            </Button>
+             {/* Generate Button */}
+             <Button
+               className="w-full h-11"
+               onClick={handleGenerate}
+               disabled={imageGenerating || !imagePrompt.trim()}
+             >
+               {imageGenerating ? (
+                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+               ) : (
+                 <><Sparkles className="mr-2 h-4 w-4" /> Generate Image</>
+               )}
+             </Button>
           </div>
         </ScrollArea>
       </div>
@@ -265,7 +265,7 @@ export function ImageStudio() {
         {imageGenerating ? (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">图片生成中，请稍候...</p>
+             <p className="text-sm text-muted-foreground">Image generation in progress, please wait...</p>
           </div>
         ) : imageResult ? (
           <div className="max-w-full max-h-full relative group">
@@ -275,9 +275,9 @@ export function ImageStudio() {
               className="max-w-full max-h-[calc(100vh-200px)] rounded-lg shadow-lg object-contain"
             />
             <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-              <Button size="sm" variant="secondary" onClick={() => setSaveToPropsOpen(true)}>
-                <Archive className="h-4 w-4 mr-1" /> 保存到道具库
-              </Button>
+               <Button size="sm" variant="secondary" onClick={() => setSaveToPropsOpen(true)}>
+                 <Archive className="h-4 w-4 mr-1" /> Save to Props Library
+               </Button>
               <Button size="sm" variant="secondary" asChild>
                 <a href={imageResult} download target="_blank" rel="noopener">
                   <Download className="h-4 w-4 mr-1" /> 下载
@@ -286,11 +286,11 @@ export function ImageStudio() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3 text-muted-foreground">
-            <ImageIcon className="h-16 w-16 opacity-20" />
-            <p className="text-lg font-medium">图片工作室</p>
-            <p className="text-sm">选择模型，输入描述，生成你想要的图片</p>
-          </div>
+           <div className="flex flex-col items-center gap-3 text-muted-foreground">
+             <ImageIcon className="h-16 w-16 opacity-20" />
+             <p className="text-lg font-medium">Image Studio</p>
+             <p className="text-sm">Select model, enter description, generate the image you want</p>
+           </div>
         )}
       </div>
 
@@ -303,7 +303,7 @@ export function ImageStudio() {
         }} />
       </div>
 
-      {/* 保存到道具库弹窗 */}
+      {/* Save to props library dialog */}
       {imageResult && (
         <SaveToPropsDialog
           open={saveToPropsOpen}

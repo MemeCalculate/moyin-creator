@@ -4,8 +4,8 @@
 "use client";
 
 /**
- * StyleCard - 风格卡片组件
- * 默认风格和自定义风格共用
+ * StyleCard - Style Card Component
+ * Used for both default and custom styles
  */
 
 import { cn } from "@/lib/utils";
@@ -23,8 +23,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 const CATEGORY_LABELS: Record<string, string> = {
   '3d': '3D',
   '2d': '2D',
-  'real': '真人',
-  'stop_motion': '定格',
+  'real': 'Real',
+  'stop_motion': 'Stop Motion',
 };
 
 interface StyleCardProps {
@@ -78,17 +78,17 @@ export function StyleCard({
           )}>
             <div className="text-lg font-bold">{CATEGORY_LABELS[category] || category}</div>
           </div>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-            无参考图
-          </div>
-        )}
-        {/* 自定义标记 */}
-        {isCustom && (
-          <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] bg-primary/80 text-primary-foreground">
-            自定义
-          </div>
-        )}
+         ) : (
+           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+             No reference image
+           </div>
+         )}
+         {/* Custom marker */}
+         {isCustom && (
+           <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] bg-primary/80 text-primary-foreground">
+             Custom
+           </div>
+         )}
       </div>
 
       {/* 信息区域 */}

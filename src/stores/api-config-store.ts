@@ -27,64 +27,64 @@ export type { IProvider } from '@/lib/api-key-manager';
 // ==================== AI Feature Types ====================
 
 /**
- * AI 功能模块类型
- * 每个功能可以绑定一个 API 供应商
+ * AI Feature Module Types
+ * Each feature can be bound to an API provider
  */
 export type AIFeature = 
-  | 'script_analysis'       // 剧本分析
-  | 'character_generation'  // 角色图片生成
-  | 'scene_generation'      // 场景图片生成
-  | 'video_generation'      // 视频生成
-  | 'image_understanding'   // 图片理解/分析
-  | 'chat'                  // 通用对话
-  | 'freedom_image'         // 自由板块-图片生成
-  | 'freedom_video';        // 自由板块-视频生成
+  | 'script_analysis'       // Script analysis
+  | 'character_generation'  // Character image generation
+  | 'scene_generation'      // Scene image generation
+  | 'video_generation'      // Video generation
+  | 'image_understanding'   // Image understanding/analysis
+  | 'chat'                  // General chat
+  | 'freedom_image'         // Freedom panel - image generation
+  | 'freedom_video';        // Freedom panel - video generation
 
 /**
- * 功能绑定配置
- * 每个功能可绑定多个供应商/模型（多选）
- * 格式: platform:model 数组，如 ['memefast:deepseek-v3.2', 'memefast:gemini-3-pro-image-preview']
+ * Feature Binding Configuration
+ * Each feature can bind multiple providers/models (multi-select)
+ * Format: platform:model array, e.g. ['memefast:deepseek-v3.2', 'memefast:gemini-3-pro-image-preview']
  */
 export type FeatureBindings = Record<AIFeature, string[] | null>;
 
 /**
- * 功能信息定义
+ * Feature Information Definition
  */
 export const AI_FEATURES: Array<{
   key: AIFeature;
   name: string;
   description: string;
 }> = [
-  { key: 'script_analysis', name: '剧本分析', description: '将故事文本分解为结构化剧本' },
-  { key: 'character_generation', name: '角色生成', description: '生成角色参考图和变体服装' },
-  { key: 'scene_generation', name: '场景生成', description: '生成场景环境参考图' },
-  { key: 'video_generation', name: '视频生成', description: '将图片转换为视频' },
-  { key: 'image_understanding', name: '图片理解', description: '分析图片内容' },
-  { key: 'chat', name: '通用对话', description: 'AI 对话和文本生成' },
-  { key: 'freedom_image', name: '自由板块-图片', description: '自由板块独立的图片生成配置' },
-  { key: 'freedom_video', name: '自由板块-视频', description: '自由板块独立的视频生成配置' },
+  { key: 'script_analysis', name: 'Script Analysis', description: 'Breaks down story text into structured scripts' },
+  { key: 'character_generation', name: 'Character Generation', description: 'Generates character reference images and outfit variations' },
+  { key: 'scene_generation', name: 'Scene Generation', description: 'Generates scene environment reference images' },
+  { key: 'video_generation', name: 'Video Generation', description: 'Converts images to video' },
+  { key: 'image_understanding', name: 'Image Understanding', description: 'Analyzes image content' },
+  { key: 'chat', name: 'General Chat', description: 'AI dialogue and text generation' },
+  { key: 'freedom_image', name: 'Freedom Panel - Image', description: 'Independent image generation for freedom panel' },
+  { key: 'freedom_video', name: 'Freedom Panel - Video', description: 'Independent video generation for freedom panel' },
 ];
 
 
 // ==================== Types ====================
 
 /**
- * 高级生成选项
- * 控制视频生成的高级行为
+ * Advanced Generation Options
+ * Controls advanced behavior for video generation
  */
 export interface AdvancedGenerationOptions {
-  /** 启用视觉连续性：自动将上一分镜尾帧传递给下一分镜作为参考 */
+  /** Enable visual continuity: automatically pass last frame of previous shot as reference to next shot */
   enableVisualContinuity: boolean;
-  /** 启用断点续传：批量生成中断后可从上次位置继续 */
+  /** Enable resume generation: can continue from last position after batch generation is interrupted */
   enableResumeGeneration: boolean;
-  /** 启用内容审核容错：遇到敏感内容自动跳过，继续生成其他分镜 */
+  /** Enable content moderation fault tolerance: skip sensitive content and continue generating other shots */
   enableContentModeration: boolean;
-  /** 启用多模型自动切换：首分镜使用 t2v，后续使用 i2v */
+  /** Enable auto model switch: use t2v for first shot, i2v for subsequent */
   enableAutoModelSwitch: boolean;
 }
 
 
-/** 高级选项默认值 */
+/** Advanced options defaults */
 export const DEFAULT_ADVANCED_OPTIONS: AdvancedGenerationOptions = {
   enableVisualContinuity: true,
   enableResumeGeneration: true,
@@ -95,39 +95,39 @@ export const DEFAULT_ADVANCED_OPTIONS: AdvancedGenerationOptions = {
 // ==================== Image Host Types ====================
 
 /**
- * 图床平台
+ * Image host platform
  */
 export type ImageHostPlatform = 'imgbb' | 'imgurl' | 'scdn' | 'catbox' | 'cloudflare_r2' | 'custom';
 
 /**
- * 图床供应商配置（独立映射）
+ * Image host provider configuration (independent mapping)
  */
 export interface ImageHostProvider {
   id: string;
   platform: ImageHostPlatform;
   name: string;
   baseUrl: string;
-  uploadPath: string; // 可为完整 URL 或路径
-  apiKey: string; // 支持多 Key（逗号/换行），允许游客上传的平台可留空
+  uploadPath: string; // Can be full URL or path
+  apiKey: string; // Supports multiple keys (comma/newline), can be empty for platforms that allow guest uploads
   enabled: boolean;
-  apiKeyParam?: string; // Query 参数名（如 key）
-  apiKeyHeader?: string; // Header 名称（可选）
-  apiKeyFormField?: string; // 表单字段中的 Key 名称（如 userhash）
-  apiKeyOptional?: boolean; // 是否允许不填 Key（游客上传）
-  expirationParam?: string; // 过期参数名（如 expiration）
-  imageField?: string; // 表单字段名（默认 image）
-  imagePayloadType?: 'base64' | 'file'; // 图片字段传输模式
-  nameField?: string; // 表单字段名（默认 name）
-  staticFormFields?: Record<string, string>; // 固定附加表单字段
-  responseUrlField?: string; // 响应中 URL 字段路径（如 data.url）
-  responseDeleteUrlField?: string; // 响应中删除 URL 字段路径
+  apiKeyParam?: string; // Query param name (e.g. key)
+  apiKeyHeader?: string; // Header name (optional)
+  apiKeyFormField?: string; // Key name in form field (e.g. userhash)
+  apiKeyOptional?: boolean; // Whether key is optional (guest uploads)
+  expirationParam?: string; // Expiration param name (e.g. expiration)
+  imageField?: string; // Form field name (default image)
+  imagePayloadType?: 'base64' | 'file'; // Image field transmission mode
+  nameField?: string; // Form field name (default name)
+  staticFormFields?: Record<string, string>; // Static additional form fields
+  responseUrlField?: string; // URL field path in response (e.g. data.url)
+  responseDeleteUrlField?: string; // Delete URL field path in response
 }
 
-/** 图床供应商预设（仅保留当前在用范围内的平台） */
+/** Image host provider presets (only platforms currently in use) */
 export const IMAGE_HOST_PRESETS: Omit<ImageHostProvider, 'id' | 'apiKey'>[] = [
   {
     platform: 'scdn',
-    name: 'SCDN 图床',
+    name: 'SCDN Image Host',
     baseUrl: 'https://img.scdn.io',
     uploadPath: '/api/v1.php',
     enabled: true,
@@ -175,7 +175,7 @@ export const IMAGE_HOST_PRESETS: Omit<ImageHostProvider, 'id' | 'apiKey'>[] = [
   },
   {
     platform: 'custom',
-    name: '自定义图床',
+    name: 'Custom Image Host',
     baseUrl: '',
     uploadPath: '',
     enabled: false,
@@ -189,7 +189,7 @@ export const IMAGE_HOST_PRESETS: Omit<ImageHostProvider, 'id' | 'apiKey'>[] = [
   },
 ];
 
-/** 首次启动默认创建的图床（仅 SCDN 默认开启，ImgBB 默认关闭） */
+/** Default image hosts created on first launch (only SCDN enabled by default, ImgBB disabled by default) */
 export const DEFAULT_IMAGE_HOST_PROVIDERS: Omit<ImageHostProvider, 'id' | 'apiKey'>[] =
   IMAGE_HOST_PRESETS.filter((preset) => preset.platform === 'scdn' || preset.platform === 'imgbb');
 
@@ -351,7 +351,7 @@ function normalizeImageHostProviders(providers: ImageHostProvider[] | undefined 
   return (providers || []).filter(isVisibleImageHostProvider).map(normalizeImageHostProvider);
 }
 
-/** Legacy 图床配置（仅用于迁移） */
+/** Legacy image host config (for migration only) */
 export interface LegacyImageHostConfig {
   type: ImageHostPlatform;
   imgbbApiKey: string;
@@ -394,11 +394,11 @@ interface APIConfigState {
   modelEndpointTypes: Record<string, string[]>;
   
   // Model metadata from /api/pricing_new (MemeFast platform classification)
-  // model_name -> model_type: "文本" | "图像" | "音视频" | "检索"
+  // model_name -> model_type: "text" | "image" | "audiovideo" | "retrieval"
   modelTypes: Record<string, string>;
-  // model_name -> tags: ["对话","识图","工具"] etc.
+  // model_name -> tags: ["chat","vision","tool"] etc.
   modelTags: Record<string, string[]>;
-  // model_name -> enable_groups: ["官转","纯AZ","default"] (MemeFast only)
+  // model_name -> enable_groups: ["official","pure_az","default"] (MemeFast only)
   modelEnableGroups: Record<string, string[]>;
   
   // Discovered model limits (Error-driven Discovery)
@@ -480,12 +480,12 @@ export interface APIConfigStatus {
 // ==================== Provider Info ====================
 
 /**
- * 供应商信息映射
- * 1. memefast - 魔因API，全功能 AI 中转（推荐）
- * 2. runninghub - RunningHub，视角切换/多角度生成
+ * Provider Information Mapping
+ * 1. memefast - MemeFast API, full-featured AI proxy (recommended)
+ * 2. runninghub - RunningHub, angle switching/multi-angle generation
  */
 const PROVIDER_INFO: Record<ProviderId, { name: string; services: ServiceType[] }> = {
-  memefast: { name: '魔因API', services: ['chat', 'image', 'video', 'vision'] },
+  memefast: { name: 'MemeFast API', services: ['chat', 'image', 'video', 'vision'] },
   runninghub: { name: 'RunningHub', services: ['image', 'vision'] },
   openai: { name: 'OpenAI', services: [] },
   custom: { name: 'Custom', services: [] },
@@ -585,18 +585,18 @@ export const useAPIConfigStore = create<APIConfigStore>()(
         return get().providers.find(p => p.id === id);
       },
 
-      syncProviderModels: async (providerId) => {
+syncProviderModels: async (providerId) => {
         const provider = get().providers.find(p => p.id === providerId);
-        if (!provider) return { success: false, count: 0, error: '供应商不存在' };
+        if (!provider) return { success: false, count: 0, error: 'Provider does not exist' };
 
         const keys = parseApiKeys(provider.apiKey);
-        if (keys.length === 0) return { success: false, count: 0, error: '请先配置 API Key' };
+        if (keys.length === 0) return { success: false, count: 0, error: 'Please configure API Key first' };
 
         const baseUrl = provider.baseUrl?.replace(/\/+$/, '');
-        if (!baseUrl) return { success: false, count: 0, error: 'Base URL 未配置' };
+        if (!baseUrl) return { success: false, count: 0, error: 'Base URL not configured' };
 
         try {
-          // 用 Set 收集所有 key 的模型，自动去重
+          // Use Set to collect models from all keys, auto-deduplicate
           const allModelIds = new Set<string>();
           const isMemefast = provider.platform === 'memefast';
           const memefastTypes: Record<string, string> = {};
@@ -605,19 +605,19 @@ export const useAPIConfigStore = create<APIConfigStore>()(
           const memefastEnableGroups: Record<string, string[]> = {};
 
           if (isMemefast) {
-            // MemeFast: /api/pricing_new 获取全量元数据（公开接口）
+            // MemeFast: /api/pricing_new get full metadata (public API)
             const domain = baseUrl.replace(/\/v\d+$/, '');
             const pricingUrl = `${domain}/api/pricing_new`;
 
             const response = await fetch(pricingUrl);
             if (!response.ok) {
-              return { success: false, count: 0, error: `pricing_new API 返回 ${response.status}` };
+              return { success: false, count: 0, error: `pricing_new API returned ${response.status}` };
             }
 
             const json = await response.json();
             const data: Array<{ model_name: string; model_type?: string; tags?: string; supported_endpoint_types?: string[]; enable_groups?: string[] }> = json.data;
             if (!Array.isArray(data) || data.length === 0) {
-              return { success: false, count: 0, error: '响应格式异常' };
+              return { success: false, count: 0, error: 'Response format error' };
             }
 
             console.log(`[APIConfig] Fetched ${data.length} models from pricing_new`);
@@ -642,14 +642,14 @@ export const useAPIConfigStore = create<APIConfigStore>()(
               }
             }
 
-            // pricing_new 返回全量（公开列表），先收入
+            // pricing_new returns full list (public list), collect first
             for (const m of data) {
               if (typeof m.model_name === 'string' && m.model_name.length > 0) {
                 allModelIds.add(m.model_name);
               }
             }
 
-            // 再遍历每个 key 查 /v1/models 补充该 key 独有模型
+            // Then iterate each key to query /v1/models to add models unique to that key
             const modelsUrl = /\/v\d+$/.test(baseUrl)
               ? `${baseUrl}/models`
               : `${baseUrl}/v1/models`;
@@ -669,7 +669,7 @@ export const useAPIConfigStore = create<APIConfigStore>()(
                 for (const m of arr) {
                   const id = typeof m === 'string' ? m : m.id;
                   if (typeof id === 'string' && id.length > 0) allModelIds.add(id);
-                  // 补充 endpoint_types
+                  // Supplement endpoint_types
                   if (typeof m !== 'string' && m.id && Array.isArray(m.supported_endpoint_types)) {
                     memefastEndpoints[m.id] = m.supported_endpoint_types as string[];
                   }
@@ -680,7 +680,7 @@ export const useAPIConfigStore = create<APIConfigStore>()(
               }
             }
           } else {
-            // Standard OpenAI-compatible: 遍历每个 key 查 /v1/models，合并去重
+            // Standard OpenAI-compatible: iterate each key to query /v1/models, merge and dedupe
             const modelsUrl = /\/v\d+$/.test(baseUrl)
               ? `${baseUrl}/models`
               : `${baseUrl}/v1/models`;
@@ -696,7 +696,7 @@ export const useAPIConfigStore = create<APIConfigStore>()(
                 });
 
                 if (!response.ok) {
-                  lastError = `key#${ki + 1} API 返回 ${response.status}`;
+                  lastError = `key#${ki + 1} API returned ${response.status}`;
                   console.warn(`[APIConfig] ${lastError}`);
                   continue;
                 }
@@ -719,7 +719,7 @@ export const useAPIConfigStore = create<APIConfigStore>()(
                 }
                 console.log(`[APIConfig] key#${ki + 1} contributed models, total so far: ${allModelIds.size}`);
               } catch (e) {
-                lastError = `key#${ki + 1} 网络请求失败`;
+                lastError = `key#${ki + 1} network request failed`;
                 console.warn(`[APIConfig] ${lastError}:`, e);
               }
             }
@@ -734,13 +734,13 @@ export const useAPIConfigStore = create<APIConfigStore>()(
             }
 
             if (!anySuccess) {
-              return { success: false, count: 0, error: lastError || 'API 返回异常' };
+              return { success: false, count: 0, error: lastError || 'API returned error' };
             }
           }
 
           const modelIds = Array.from(allModelIds);
           if (modelIds.length === 0) {
-            return { success: false, count: 0, error: '未获取到任何模型' };
+            return { success: false, count: 0, error: 'No models fetched' };
           }
 
           if (isMemefast) {
@@ -773,27 +773,27 @@ export const useAPIConfigStore = create<APIConfigStore>()(
           return { success: true, count: modelIds.length };
         } catch (error) {
           console.error('[APIConfig] Model sync failed:', error);
-          return { success: false, count: 0, error: '网络请求失败，请检查网络' };
+          return { success: false, count: 0, error: 'Network request failed, please check network' };
         }
       },
 
       // ==================== Feature Binding Management (Multi-Select) ====================
       
-      // 设置功能的所有绑定（替换）
+      // Set all bindings for a feature (replace)
       setFeatureBindings: (feature, bindings) => {
         set((state) => ({
           featureBindings: { ...state.featureBindings, [feature]: bindings },
         }));
-        console.log(`[APIConfig] Set ${feature} -> [${bindings?.join(', ') || '无'}]`);
+        console.log(`[APIConfig] Set ${feature} -> [${bindings?.join(', ') || 'none'}]`);
       },
       
-      // 切换单个绑定（添加/移除）
+      // Toggle single binding (add/remove)
       toggleFeatureBinding: (feature, binding) => {
         const current = get().featureBindings[feature] || [];
         const exists = current.includes(binding);
         
-        // 同时检查 legacy 格式（platform:model）是否存在
-        // 例如 binding = "{id}:deepseek-v3" 但 current 里可能有 "memefast:deepseek-v3"
+        // Also check if legacy format (platform:model) exists
+        // Example: binding = "{id}:deepseek-v3" but current may have "memefast:deepseek-v3"
         let legacyMatch: string | null = null;
         const idx = binding.indexOf(':');
         if (idx > 0) {
@@ -809,14 +809,14 @@ export const useAPIConfigStore = create<APIConfigStore>()(
         }
         
         if (exists || legacyMatch) {
-          // 删除：同时移除精确匹配和 legacy 格式
+          // Remove: remove both exact match and legacy format
           const newBindings = current.filter(b => b !== binding && b !== legacyMatch);
           set((state) => ({
             featureBindings: { ...state.featureBindings, [feature]: newBindings.length > 0 ? newBindings : null },
           }));
           console.log(`[APIConfig] Toggle ${feature}: ${binding} -> removed${legacyMatch ? ` (also removed legacy: ${legacyMatch})` : ''}`);
         } else {
-          // 添加
+          // Add
           const newBindings = [...current, binding];
           set((state) => ({
             featureBindings: { ...state.featureBindings, [feature]: newBindings.length > 0 ? newBindings : null },
@@ -825,16 +825,16 @@ export const useAPIConfigStore = create<APIConfigStore>()(
         }
       },
 
-      // 获取功能的所有绑定
+      // Get all bindings for a feature
       getFeatureBindings: (feature) => {
         const bindings = get().featureBindings;
         const value = bindings?.[feature];
-        // 兼容旧数据：如果是字符串，转为数组
+        // Compatibility with old data: convert string to array
         if (typeof value === 'string') return [value];
         return value || [];
       },
 
-      // 获取功能对应的所有 provider + model
+      // Get all providers + models for a feature
       getProvidersForFeature: (feature) => {
         const bindings = get().getFeatureBindings(feature);
         const results: Array<{ provider: IProvider; model: string }> = [];
@@ -844,10 +844,10 @@ export const useAPIConfigStore = create<APIConfigStore>()(
           if (idx <= 0) continue;
           const platformOrId = binding.slice(0, idx);
           const model = binding.slice(idx + 1);
-          // 1. 优先按 provider.id 精确匹配（始终安全）
+          // 1. Priority: exact match by provider.id (always safe)
           let provider = get().providers.find(p => p.id === platformOrId);
-          // 2. Fallback: 按 platform 匹配，但仅当该 platform 下只有一个供应商时
-          //    （防止多个 custom 供应商时误选第一个）
+          // 2. Fallback: match by platform, but only when that platform has only one provider
+          //    (prevents accidentally selecting first when multiple custom providers exist)
           if (!provider) {
             const platformMatches = get().providers.filter(p => p.platform === platformOrId);
             if (platformMatches.length === 1) {
@@ -880,7 +880,7 @@ export const useAPIConfigStore = create<APIConfigStore>()(
       
       // Legacy single-select compat (deprecated, for backward compat)
       setFeatureBinding: (feature, providerId) => {
-        // 单选兼容：设置为单元素数组
+        // Single-select compat: set as single-element array
         get().setFeatureBindings(feature, providerId ? [providerId] : null);
       },
 
@@ -955,8 +955,8 @@ export const useAPIConfigStore = create<APIConfigStore>()(
 
       // ==================== Concurrency ====================
       
-      setConcurrency: (n) => {
-        const value = Math.max(1, n); // 最小为1，无上限
+setConcurrency: (n) => {
+        const value = Math.max(1, n); // Minimum 1, no upper limit
         set({ concurrency: value });
         console.log(`[APIConfig] Set concurrency to ${value}`);
       },
@@ -1080,8 +1080,8 @@ export const useAPIConfigStore = create<APIConfigStore>()(
           isAllConfigured: missing.length === 0,
           missingKeys: missing,
           friendlyMessage: missing.length === 0
-            ? '所有 API Key 已配置'
-            : `缺少以下 API Key：${missing.join('、')}`,
+            ? 'All API Keys configured'
+            : `Missing API Keys: ${missing.join(', ')}`,
         };
       },
 
@@ -1187,7 +1187,7 @@ export const useAPIConfigStore = create<APIConfigStore>()(
                   {
                     id: generateId(),
                     platform: 'custom',
-                    name: '自定义图床',
+                    name: 'Custom Image Host',
                     baseUrl: legacyConfig.custom.uploadUrl || '',
                     uploadPath: '',
                     apiKey: legacyConfig.custom.apiKey || '',
@@ -1388,7 +1388,7 @@ export const useAPIConfigStore = create<APIConfigStore>()(
 
         // v12 → v13: Clear stale API metadata caches to force fresh sync on startup
         // This fixes the issue where cached modelEndpointTypes / modelEnableGroups / modelTypes / modelTags
-        // from an old version cause incorrect API routing after an in-place upgrade (覆盖安装)
+        // from an old version cause incorrect API routing after an in-place upgrade
         if (version <= 12) {
           console.log(`[APIConfig] v12→v13: Clearing stale API metadata caches (modelEndpointTypes, modelTypes, modelTags, modelEnableGroups, discoveredModelLimits)`);
           result.modelEndpointTypes = {};

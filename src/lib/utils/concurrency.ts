@@ -2,27 +2,27 @@
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 /**
- * 错开启动的并发控制执行器
+ * Staggered startup concurrency control executor
  *
- * 行为：
- * - 每个新任务在前一个任务启动后至少等待 staggerMs 才启动
- * - 同时最多运行 maxConcurrent 个任务
- * - 当活跃任务数达到上限时，等待有任务完成后才启动下一个（仍保持 staggerMs 间隔）
+ * Behavior:
+ * - Each new task waits at least staggerMs after the previous task starts
+ * - At most maxConcurrent tasks run simultaneously
+ * - When active tasks reach the limit, wait for a task to complete before starting the next (still maintaining staggerMs interval)
  *
- * 例如 maxConcurrent=3, staggerMs=5000, 每个任务耗时20秒：
- *   t=0s:  启动任务1
- *   t=5s:  启动任务2
- *   t=10s: 启动任务3（达到并发上限）
- *   t=15s: 任务4的 stagger 到期，但并发已满，排队等待
- *   t=20s: 任务1完成 → 任务4立即启动
- *   t=25s: 任务2完成 → 任务5立即启动
+ * Example maxConcurrent=3, staggerMs=5000, each task takes 20 seconds:
+ *   t=0s:  Start task 1
+ *   t=5s:  Start task 2
+ *   t=10s: Start task 3 (reached concurrency limit)
+ *   t=15s: Task 4's stagger expires, but concurrency is full, queuing
+ *   t=20s: Task 1 completes → Task 4 starts immediately
+ *   t=25s: Task 2 completes → Task 5 starts immediately
  *
- * 例如 maxConcurrent=1, staggerMs=5000, 每个任务耗时2秒：
- *   t=0s:  启动任务1
- *   t=2s:  任务1完成
- *   t=5s:  stagger 到期 → 启动任务2（严格保持5秒间隔）
- *   t=7s:  任务2完成
- *   t=10s: 启动任务3
+ * Example maxConcurrent=1, staggerMs=5000, each task takes 2 seconds:
+ *   t=0s:  Start task 1
+ *   t=2s:  Task 1 completes
+ *   t=5s:  Stagger expires → Start task 2 (strictly 5 second interval)
+ *   t=7s:  Task 2 completes
+ *   t=10s: Start task 3
  */
 export async function runStaggered<T>(
   tasks: (() => Promise<T>)[],
@@ -33,7 +33,7 @@ export async function runStaggered<T>(
 
   const results: PromiseSettledResult<T>[] = new Array(tasks.length);
 
-  // 信号量：控制最大并发数
+  // Semaphore: controls maximum concurrency
   let activeCount = 0;
   const waiters: (() => void)[] = [];
 
@@ -42,30 +42,30 @@ export async function runStaggered<T>(
       activeCount++;
       return;
     }
-    // 并发已满，排队等待
+    // Concurrency full, wait in queue
     await new Promise<void>((resolve) => waiters.push(resolve));
   };
 
   const release = (): void => {
     activeCount--;
     if (waiters.length > 0) {
-      // 唤醒队列中的下一个等待者
+      // Wake up the next waiter in queue
       activeCount++;
       const next = waiters.shift()!;
       next();
     }
   };
 
-  // 逐个启动任务，每个间隔 staggerMs
-  // 第N个任务在 N * staggerMs 后才被允许启动（stagger 保底间隔）
-  // 同时受信号量限制（并发保底）
+  // Start tasks one by one, each spaced by staggerMs
+  // The Nth task is only allowed to start after N * staggerMs (stagger minimum interval)
+  // Also constrained by semaphore (concurrency limit)
   const taskPromises = tasks.map(async (task, idx) => {
-    // 错开启动：第N个任务至少在 N * staggerMs 后才启动
+    // Staggered startup: Nth task starts at least after N * staggerMs
     if (idx > 0) {
       await new Promise<void>((r) => setTimeout(r, idx * staggerMs));
     }
 
-    // 获取并发槽位（如果已满则等待有任务完成）
+    // Acquire concurrency slot (wait if full until a task completes)
     await acquire();
 
     try {

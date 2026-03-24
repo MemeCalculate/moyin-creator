@@ -70,8 +70,8 @@ export async function retryOperation<T>(
   
   let lastError: Error | undefined;
 
-  // maxRetries 表示"失败后最多重试几次"，首次尝试不计入重试
-  // 总共尝试 1 + maxRetries 次
+  // maxRetries represents "max number of retries after failure", first attempt doesn't count as retry
+  // Total attempts = 1 + maxRetries
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await operation();

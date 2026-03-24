@@ -38,23 +38,23 @@ export interface CharacterView {
  * while maintaining face/body consistency via base reference
  * 
  * 支持两种用途：
- * 1. 服装/状态变体："日常装"、"战斗装"、"受伤状态"
- * 2. 年龄/阶段变体："青年版"、"中年版"、"老年版"（带episodeRange）
+ * 1. Outfit/State variations: "Casual", "Battle", "Injured"
+ * 2. Age/Stage variations: "Young", "Middle-aged", "Old" (with episodeRange)
  */
 export interface CharacterVariation {
   id: string;
-  name: string;           // "日常装", "战斗装", "青年版", "中年版" etc.
+  name: string;           // "Casual", "Battle", "Young", "Middle-aged" etc.
   visualPrompt: string;   // Prompt describing this variation
-  visualPromptZh?: string; // 中文提示词
+  visualPromptZh?: string; // Chinese prompt
   referenceImage?: string; // Generated reference image for this variation
   clothingReferenceImages?: string[]; // User-uploaded clothing/outfit reference images (base64)
   generatedAt?: number;
   
-  // === 阶段变体特有字段 ===
-  isStageVariation?: boolean;      // 是否为阶段变体（年龄/时期变化）
-  episodeRange?: [number, number]; // 适用集数范围：[起始集, 结束集]
-  ageDescription?: string;         // 该阶段年龄："25岁"、"50岁"
-  stageDescription?: string;       // 阶段描述："创业初期"、"事业巅峰"
+  // === Stage Variation Specific Fields ===
+  isStageVariation?: boolean;      // Whether it is a stage variation (age/period change)
+  episodeRange?: [number, number]; // Applicable episode range: [Start, End]
+  ageDescription?: string;         // Age for this stage: "25 years old", "50 years old"
+  stageDescription?: string;       // Stage description: "Early entrepreneurship", "Peak career"
 }
 
 export interface Character {
@@ -64,15 +64,15 @@ export interface Character {
   visualTraits: string; // English visual traits for consistency
   projectId?: string;   // Associated project (optional)
   // Extended attributes (CineGen-AI inspired)
-  gender?: string;      // 性别
-  age?: string;         // 年龄/年龄段
-  personality?: string; // 性格特征
-  role?: string;        // 身份/背景
-  traits?: string;      // 核心特质
-  skills?: string;      // 技能/能力
-  keyActions?: string;  // 关键事迹
-  appearance?: string;  // 外貌特征
-  relationships?: string; // 人物关系
+  gender?: string;      // Gender
+  age?: string;         // Age/Age group
+  personality?: string; // Personality traits
+  role?: string;        // Identity/Background
+  traits?: string;      // Core traits
+  skills?: string;      // Skills/Abilities
+  keyActions?: string;  // Key deeds
+  appearance?: string;  // Appearance features
+  relationships?: string; // Character relationships
   referenceImages?: string[]; // User uploaded reference images (base64)
   styleId?: string; // Visual style preset ID
   folderId?: string | null; // Folder ID for organization
@@ -81,14 +81,14 @@ export interface Character {
   variations: CharacterVariation[];
   thumbnailUrl?: string; // Main preview image (Base Look)
   // Enhanced fields (AniKuku inspired)
-  tags?: string[];        // 角色标签 如 #武侠 #男主 #剑客
-  notes?: string;         // 角色备注 (剧情说明)
-  status?: 'draft' | 'linked'; // 状态: draft=草稿, linked=已关联剧本
-  linkedEpisodeId?: string;    // 关联的剧集ID
+  tags?: string[];        // Character tags, e.g., #Wuxia #Protagonist #Swordsman
+  notes?: string;         // Character notes (Plot description)
+  status?: 'draft' | 'linked'; // Status: draft=Draft, linked=Linked to script
+  linkedEpisodeId?: string;    // Linked episode ID
   
-  // === 6层身份锚点（角色一致性）===
-  identityAnchors?: CharacterIdentityAnchors;  // 身份锚点 - 6层特征锁定
-  negativePrompt?: CharacterNegativePrompt;    // 负面提示词
+  // === 6-Layer Identity Anchors (Character Consistency) ===
+  identityAnchors?: CharacterIdentityAnchors;  // Identity Anchors - 6-layer feature lock
+  negativePrompt?: CharacterNegativePrompt;    // Negative prompt
   
   createdAt: number;
   updatedAt: number;

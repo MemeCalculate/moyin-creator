@@ -75,13 +75,13 @@ export function WardrobeModal({
     setNewVariationName("");
     setNewVariationPrompt("");
     setShowAddForm(false);
-    toast.success(`已添加变体: ${newVariationName}`);
+    toast.success(`Variation added: ${newVariationName}`);
   };
 
   const handleDeleteVariation = (variationId: string, name: string) => {
     if (!character) return;
     deleteVariation(character.id, variationId);
-    toast.success(`已删除变体: ${name}`);
+    toast.success(`Variation deleted: ${name}`);
   };
 
   const handleGenerateImage = async (variation: CharacterVariation) => {
@@ -98,9 +98,9 @@ export function WardrobeModal({
         referenceImage: imageUrl,
         generatedAt: Date.now(),
       });
-      toast.success(`变体图片生成完成: ${variation.name}`);
+      toast.success(`Variation image generated: ${variation.name}`);
     } catch (error) {
-      toast.error(`生成失败: ${(error as Error).message}`);
+      toast.error(`Generation failed: ${(error as Error).message}`);
     } finally {
       setGeneratingId(null);
     }
@@ -118,10 +118,10 @@ export function WardrobeModal({
             <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
               <Shirt className="w-4 h-4 text-indigo-400" />
             </div>
-            {character.name} - 造型管理
+            {character.name} - Look Management
           </DialogTitle>
           <DialogDescription className="text-zinc-500">
-            为角色创建不同的服装、状态或造型变体，用于不同场景的镜头生成。
+            Create different clothing, state, or look variations for the character, used for shot generation in different scenes.
           </DialogDescription>
         </DialogHeader>
 
@@ -159,7 +159,7 @@ export function WardrobeModal({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h5 className="text-sm font-medium text-zinc-300">
-                  造型变体 ({variations.length})
+                  Look Variations ({variations.length})
                 </h5>
                 <Button
                   size="sm"
@@ -168,7 +168,7 @@ export function WardrobeModal({
                   className="h-7 text-xs border-zinc-700 hover:bg-zinc-800"
                 >
                   <Plus className="w-3 h-3 mr-1" />
-                  添加变体
+                  Add Variation
                 </Button>
               </div>
 
@@ -176,16 +176,16 @@ export function WardrobeModal({
               {showAddForm && (
                 <div className="p-4 bg-zinc-800/50 rounded-lg border border-zinc-700 space-y-3">
                   <div className="space-y-2">
-                    <Label className="text-xs text-zinc-400">变体名称</Label>
+                    <Label className="text-xs text-zinc-400">Variation Name</Label>
                     <Input
-                      placeholder="如: 日常装、战斗装、晚礼服..."
+                      placeholder="e.g., Casual, Combat, Formal..."
                       value={newVariationName}
                       onChange={(e) => setNewVariationName(e.target.value)}
                       className="bg-zinc-900 border-zinc-700"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs text-zinc-400">视觉描述 (英文)</Label>
+                    <Label className="text-xs text-zinc-400">Visual Description (English)</Label>
                     <Textarea
                       placeholder="Detailed visual description for AI image generation..."
                       value={newVariationPrompt}
@@ -203,14 +203,14 @@ export function WardrobeModal({
                         setNewVariationPrompt("");
                       }}
                     >
-                      取消
+                      Cancel
                     </Button>
                     <Button
                       size="sm"
                       onClick={handleAddVariation}
                       disabled={!newVariationName.trim()}
                     >
-                      添加
+Add
                     </Button>
                   </div>
                 </div>
@@ -235,9 +235,9 @@ export function WardrobeModal({
               {variations.length === 0 && !showAddForm && (
                 <div className="py-8 text-center">
                   <Shirt className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
-                  <p className="text-sm text-zinc-500">暂无造型变体</p>
+                  <p className="text-sm text-zinc-500">No look variations yet</p>
                   <p className="text-xs text-zinc-600 mt-1">
-                    添加不同服装或状态的变体
+                    Add variations for different clothing or states
                   </p>
                 </div>
               )}
@@ -285,7 +285,7 @@ function VariationCard({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-zinc-700">
             <ImageIcon className="w-8 h-8 mb-1" />
-            <span className="text-[10px]">未生成</span>
+            <span className="text-[10px]">Not generated</span>
           </div>
         )}
 
@@ -316,7 +316,7 @@ function VariationCard({
           className="w-full mt-2 h-7 text-xs border-zinc-700"
         >
           <Wand2 className="w-3 h-3 mr-1" />
-          生成图片
+          Generate Image
         </Button>
       )}
 
@@ -328,7 +328,7 @@ function VariationCard({
           disabled={isGenerating}
           className="w-full mt-2 h-7 text-xs text-zinc-500 hover:text-zinc-300"
         >
-          重新生成
+          Regenerate
         </Button>
       )}
     </div>

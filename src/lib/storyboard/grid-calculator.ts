@@ -195,21 +195,21 @@ function calculatePortraitGrid(sceneCount: number, canvasWidth: number, canvasHe
 }
 
 /**
- * 预定义的最优布局（确保 AI 生成和切割一致性）
- * 关键原则：使用更接近正方形的布局，让每个格子的比例更接近目标
+ * Predefined optimal layouts (ensures AI generation and splitting consistency)
+ * Key principle: Use more square-like layouts to make each cell ratio closer to target
  */
 const OPTIMAL_LAYOUTS: Record<number, { landscape: { cols: number; rows: number }; portrait: { cols: number; rows: number } }> = {
-  // 4 场景: 2x2 四宫格
+  // 4 scenes: 2x2 grid
   4: { landscape: { cols: 2, rows: 2 }, portrait: { cols: 2, rows: 2 } },
-  // 6 场景: 3x2 或 2x3
+  // 6 scenes: 3x2 or 2x3
   6: { landscape: { cols: 3, rows: 2 }, portrait: { cols: 2, rows: 3 } },
-  // 8 场景: 4x2 或 2x4
+  // 8 scenes: 4x2 or 2x4
   8: { landscape: { cols: 4, rows: 2 }, portrait: { cols: 2, rows: 4 } },
-  // 9 场景: 3x3 九宫格（最优）
+  // 9 scenes: 3x3 grid (optimal)
   9: { landscape: { cols: 3, rows: 3 }, portrait: { cols: 3, rows: 3 } },
-  // 10 场景: 5x2 或 2x5
+  // 10 scenes: 5x2 or 2x5
   10: { landscape: { cols: 5, rows: 2 }, portrait: { cols: 2, rows: 5 } },
-  // 12 场景: 4x3 或 3x4（关键！避免 6x2 或 2x6）
+  // 12 scenes: 4x3 or 3x4 (important! avoid 6x2 or 2x6)
   12: { landscape: { cols: 4, rows: 3 }, portrait: { cols: 3, rows: 4 } },
 };
 
@@ -250,13 +250,13 @@ export function calculateGrid(input: GridCalculatorInput): GridConfig {
     };
   }
   
-  // 检查是否有预定义的最优布局
+  // Check for predefined optimal layout
   const optimalLayout = OPTIMAL_LAYOUTS[sceneCount];
   if (optimalLayout) {
     const layout = aspectRatio === '16:9' ? optimalLayout.landscape : optimalLayout.portrait;
     const { cols, rows } = layout;
     
-    // 计算格子尺寸（保持目标宽高比）
+    // Calculate cell dimensions (maintaining target aspect ratio)
     let cellWidth: number, cellHeight: number;
     if (aspectRatio === '16:9') {
       cellWidth = Math.floor(canvasWidth / cols);
@@ -280,7 +280,7 @@ export function calculateGrid(input: GridCalculatorInput): GridConfig {
     };
   }
   
-  // 其他场景数：使用动态计算
+  // Other scene counts: use dynamic calculation
   if (aspectRatio === '16:9') {
     return calculateLandscapeGrid(sceneCount, canvasWidth, canvasHeight);
   } else {
@@ -304,7 +304,7 @@ export function validateSceneCount(sceneCount: number, resolution: Resolution): 
     limit,
     message: isValid 
       ? '' 
-      : `场景数量超出 ${resolution} 分辨率上限（最多 ${limit} 个）。请切换到更高分辨率或减少场景数量。`,
+      : `Scene count exceeds ${resolution} resolution limit (max ${limit}). Please switch to higher resolution or reduce scene count.`,
   };
 }
 

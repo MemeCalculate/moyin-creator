@@ -54,10 +54,10 @@
 :root {
   /* ===== Light Mode ===== */
   /* Base surfaces */
-  --background: 220 14% 96%;      /* #f3f4f6 - 主背景 */
-  --foreground: 220 9% 15%;       /* #25262b - 主文字 */
-  --panel: 0 0% 100%;             /* #ffffff - 面板背景 */
-  --panel-elevated: 220 14% 98%;  /* 悬浮面板 */
+  --background: 220 14% 96%;      /* #f3f4f6 - Main background */
+  --foreground: 220 9% 15%;       /* #25262b - Main text */
+  --panel: 0 0% 100%;             /* #ffffff - Panel background */
+  --panel-elevated: 220 14% 98%;  /* Elevated panel */
   
   /* Card */
   --card: 0 0% 100%;
@@ -67,8 +67,8 @@
   --popover: 0 0% 100%;
   --popover-foreground: 220 9% 15%;
   
-  /* Brand/Primary - 蓝色品牌色 */
-  --primary: 212 100% 48%;        /* #0091ff - 主品牌色 */
+  /* Brand/Primary - Blue brand color */
+  --primary: 212 100% 48%;        /* #0091ff - Main brand color */
   --primary-foreground: 0 0% 100%;
   
   /* Secondary */
@@ -93,22 +93,22 @@
   --ring: 212 100% 48%;
   
   /* Functional colors */
-  --success: 142 76% 36%;         /* 绿色 - 成功 */
+  --success: 142 76% 36%;         /* Green - Success */
   --success-foreground: 0 0% 100%;
-  --warning: 38 92% 50%;          /* 橙色 - 警告 */
+  --warning: 38 92% 50%;          /* Orange - Warning */
   --warning-foreground: 0 0% 100%;
-  --info: 199 89% 48%;            /* 青色 - 信息 */
+  --info: 199 89% 48%;            /* Cyan - Info */
   --info-foreground: 0 0% 100%;
   
   /* Brand gradient */
-  --brand-start: 212 100% 48%;    /* 蓝色 */
-  --brand-end: 262 83% 58%;       /* 紫色 */
+  --brand-start: 212 100% 48%;    /* Blue */
+  --brand-end: 262 83% 58%;       /* Purple */
   
   /* Timeline track colors */
-  --timeline-video: 212 100% 48%; /* 视频轨道 - 蓝色 */
-  --timeline-audio: 142 76% 36%;  /* 音频轨道 - 绿色 */
-  --timeline-text: 38 92% 50%;    /* 文字轨道 - 橙色 */
-  --timeline-effect: 262 83% 58%; /* 特效轨道 - 紫色 */
+  --timeline-video: 212 100% 48%; /* Video track - Blue */
+  --timeline-audio: 142 76% 36%;  /* Audio track - Green */
+  --timeline-text: 38 92% 50%;    /* Text track - Orange */
+  --timeline-effect: 262 83% 58%; /* Effect track - Purple */
 
   /* Radius */
   --radius: 0.5rem;
@@ -116,12 +116,12 @@
 
 :root.dark,
 .dark {
-  /* ===== Dark Mode - 剪映风格 ===== */
-  /* Base surfaces - 4层灰度体系 */
-  --background: 0 0% 7%;          /* #121212 - 最深背景 */
-  --foreground: 0 0% 93%;         /* #ededed - 主文字 */
-  --panel: 0 0% 11%;              /* #1c1c1c - 面板背景 */
-  --panel-elevated: 0 0% 14%;     /* #242424 - 悬浮面板 */
+  /* ===== Dark Mode - CapCut style ===== */
+  /* Base surfaces - 4-layer grayscale system */
+  --background: 0 0% 7%;          /* #121212 - Deepest background */
+  --foreground: 0 0% 93%;         /* #ededed - Main text */
+  --panel: 0 0% 11%;              /* #1c1c1c - Panel background */
+  --panel-elevated: 0 0% 14%;     /* #242424 - Elevated panel */
   
   /* Card */
   --card: 0 0% 13%;               /* #212121 */
@@ -131,8 +131,8 @@
   --popover: 0 0% 15%;            /* #262626 */
   --popover-foreground: 0 0% 93%;
   
-  /* Brand/Primary - 蓝色品牌色 */
-  --primary: 212 100% 50%;        /* #0099ff - 亮蓝 */
+  /* Brand/Primary - Blue brand color */
+  --primary: 212 100% 50%;        /* #0099ff - Bright blue */
   --primary-foreground: 0 0% 100%;
   
   /* Secondary */
@@ -143,7 +143,7 @@
   --muted: 0 0% 18%;              /* #2e2e2e */
   --muted-foreground: 0 0% 55%;   /* #8c8c8c */
   
-  /* Accent - 紫色强调 */
+  /* Accent - Purple emphasis */
   --accent: 262 83% 58%;          /* #8b5cf6 */
   --accent-foreground: 0 0% 100%;
   
@@ -165,14 +165,14 @@
   --info-foreground: 0 0% 100%;
   
   /* Brand gradient */
-  --brand-start: 212 100% 50%;    /* 蓝色 */
-  --brand-end: 280 100% 60%;      /* 紫色 */
+  --brand-start: 212 100% 50%;    /* Blue */
+  --brand-end: 280 100% 60%;      /* Purple */
   
   /* Timeline track colors */
-  --timeline-video: 212 100% 50%; /* 视频轨道 - 蓝色 */
-  --timeline-audio: 142 71% 45%;  /* 音频轨道 - 绿色 */
-  --timeline-text: 38 92% 50%;    /* 文字轨道 - 橙色 */
-  --timeline-effect: 280 100% 60%;/* 特效轨道 - 紫色 */
+  --timeline-video: 212 100% 50%; /* Video track - Blue */
+  --timeline-audio: 142 71% 45%;  /* Audio track - Green */
+  --timeline-text: 38 92% 50%;    /* Text track - Orange */
+  --timeline-effect: 280 100% 60%;/* Effect track - Purple */
 }
 
 @layer base {

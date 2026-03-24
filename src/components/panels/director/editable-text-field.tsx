@@ -5,7 +5,7 @@
 
 /**
  * EditableTextField Component
- * 可双击编辑的文本字段组件
+ * Text field component that can be double-clicked to edit
  */
 
 import React, { useState, useRef } from "react";
@@ -37,14 +37,14 @@ export function EditableTextField({
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
-  // 开始编辑
+  // Start editing
   const startEditing = () => {
     if (disabled) return;
     setEditValue(value);
     setIsEditing(true);
   };
 
-  // 保存编辑
+  // Save edit
   const saveEdit = () => {
     if (editValue !== value) {
       onChange(editValue);
@@ -52,13 +52,13 @@ export function EditableTextField({
     setIsEditing(false);
   };
 
-  // 取消编辑
+  // Cancel edit
   const cancelEdit = () => {
     setEditValue(value);
     setIsEditing(false);
   };
 
-  // 处理键盘事件
+  // Handle keyboard events
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -68,7 +68,7 @@ export function EditableTextField({
     }
   };
 
-  // 自动聚焦
+  // Auto focus
   React.useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
@@ -110,7 +110,7 @@ export function EditableTextField({
     <div 
       className={cn("cursor-pointer group/field", className)}
       onDoubleClick={startEditing}
-      title="双击编辑"
+      title="Double-click to edit"
     >
       <Label className="text-[10px] text-muted-foreground flex items-center gap-1">
         {label}
@@ -121,7 +121,7 @@ export function EditableTextField({
         value ? "text-foreground/80" : "text-muted-foreground/50 italic",
         multiline && "line-clamp-2"
       )}>
-        {value || placeholder || "双击编辑..."}
+        {value || placeholder || "Double-click to edit..."}
       </p>
     </div>
   );

@@ -2,14 +2,14 @@
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 /**
- * auto-grouping.ts — S级智能分组算法
+ * auto-grouping.ts — S-class intelligent grouping algorithm
  *
- * 将 director-store 中的 SplitScene[] 自动分为 ShotGroup[]。
- * 策略：
- *   1. 按顺序贪心填装，每组总时长 ≤ maxDuration（默认15s）
- *   2. 场景切换优先断开（不同 sceneName 的镜头优先不在同一组）
- *   3. 角色重叠度高的镜头优先同组（characterIds 交集）
- *   4. 每组 2~maxPerGroup 个镜头
+ * Automatically split SplitScene[] from director-store into ShotGroup[].
+ * Strategy:
+ *   1. Greedy fill in order, each group total duration ≤ maxDuration (default 15s)
+ *   2. Prioritize breaking on scene changes (shots with different sceneName prefer not to be in same group)
+ *   3. Prioritize grouping shots with high character overlap (characterIds intersection)
+ *   4. Each group has 2~maxPerGroup shots
  */
 
 import type { SplitScene } from '@/stores/director-store';
@@ -18,13 +18,13 @@ import type { ShotGroup, SClassDuration } from '@/stores/sclass-store';
 // ==================== Config ====================
 
 export interface GroupingConfig {
-  /** 单组最大时长（秒），默认 15 */
+  /** Maximum duration per group in seconds, default 15 */
   maxDuration: number;
-  /** 单组最大镜头数，默认 4 */
+  /** Maximum number of shots per group, default 4 */
   maxPerGroup: number;
-  /** 单组最小镜头数，默认 1（最后一组可能为 1） */
+  /** Minimum number of shots per group, default 1 (last group may be 1) */
   minPerGroup: number;
-  /** 默认单镜时长（当 scene.duration 未设置时），默认 5 */
+  /** Default single shot duration (when scene.duration is not set), default 5 */
   defaultSceneDuration: number;
 }
 

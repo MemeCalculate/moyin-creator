@@ -72,7 +72,7 @@ export function ProjectHeader() {
       {/* Left: Project Name + Stage + Episode Breadcrumb */}
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium text-white truncate max-w-[200px]">
-          {activeProject?.name || "未命名项目"}
+          {activeProject?.name || "Untitled Project"}
         </span>
         {activeEpisodeIndex != null && (
           <>
@@ -80,9 +80,9 @@ export function ProjectHeader() {
             <button
               className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
               onClick={backToSeries}
-              title="返回全剧视图"
+              title="Return to series view"
             >
-              第{activeEpisodeIndex}集
+              Episode {activeEpisodeIndex}
             </button>
           </>
         )}

@@ -50,9 +50,9 @@ export const SYSTEM_CATEGORIES: Array<{
   name: string;
   icon: string; // lucide icon name for UI reference
 }> = [
-  { category: 'ai-image', name: 'AI图片', icon: 'Sparkles' },
-  { category: 'ai-video', name: 'AI视频', icon: 'Film' },
-  { category: 'upload',   name: '上传文件', icon: 'CloudUpload' },
+  { category: 'ai-image', name: 'AI Images', icon: 'Sparkles' },
+  { category: 'ai-video', name: 'AI Videos', icon: 'Film' },
+  { category: 'upload',   name: 'Uploaded Files', icon: 'CloudUpload' },
 ];
 
 interface MediaStore {
@@ -595,8 +595,8 @@ export const useMediaStore = create<MediaStore>()(
       }
     }
     
-    // Migrate legacy "AI生成" folder → mark as system ai-image folder
-    const legacyAiFolder = folders.find((f) => f.name === 'AI生成' && !f.isSystem && f.parentId === null);
+    // Migrate legacy "AI Generated" folder → mark as system ai-image folder
+    const legacyAiFolder = folders.find((f) => f.name === 'AI Generated' && !f.isSystem && f.parentId === null);
     if (legacyAiFolder) {
       const hasAiImageFolder = folders.find((f) => f.isSystem && f.category === 'ai-image')
         || newFolders.find((f) => f.category === 'ai-image');
@@ -605,7 +605,7 @@ export const useMediaStore = create<MediaStore>()(
         set((state) => ({
           folders: state.folders.map((f) =>
             f.id === legacyAiFolder.id
-              ? { ...f, name: 'AI图片', isSystem: true, category: 'ai-image' as const, projectId: undefined }
+               ? { ...f, name: 'AI Images', isSystem: true, category: 'ai-image' as const, projectId: undefined }
               : f
           ),
         }));
@@ -615,7 +615,7 @@ export const useMediaStore = create<MediaStore>()(
       }
     }
     
-    // Also migrate legacy timestamp folders ("项目-MM-DD HH:MM") to remove orphans
+    // Also migrate legacy timestamp folders ("Project-MM-DD HH:MM") to remove orphans
     // Files in these folders will be moved to ai-image folder later via user action
     
     if (newFolders.length > 0) {
@@ -682,7 +682,7 @@ export const useMediaStore = create<MediaStore>()(
       },
       onRehydrateStorage: () => (state) => {
         if (!state) return;
-        // Initialize system folders (AI图片, AI视频, 上传文件)
+        // Initialize system folders (AI Images, AI Videos, Uploaded Files)
         state.initSystemFolders();
         // Migrate existing data: URLs to local files on startup
         migrateMediaDataUrls(state);

@@ -3,8 +3,8 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 
 /**
- * 品牌注册表 + 模型名 → 品牌映射
- * 用于服务映射面板的品牌分类选择
+ * Brand Registry + Model Name → Brand Mapping
+ * Used for brand category selection in service mapping panel
  */
 
 export interface BrandInfo {
@@ -13,42 +13,42 @@ export interface BrandInfo {
 }
 
 /**
- * 品牌注册表
- * key: brandId, value: 显示名 + 主色
+ * Brand registry
+ * key: brandId, value: display name + primary color
  */
 export const BRAND_REGISTRY: Record<string, BrandInfo> = {
   openai:       { displayName: 'OpenAI',              color: '#10A37F' },
   anthropic:    { displayName: 'Anthropic',            color: '#D97757' },
   google:       { displayName: 'Google',               color: '#4285F4' },
   deepseek:     { displayName: 'DeepSeek',             color: '#4D6BFE' },
-  zhipu:        { displayName: 'ChatGLM (智谱)',        color: '#3485FF' },
-  doubao:       { displayName: 'Doubao (豆包)',         color: '#A569FF' },
-  kling:        { displayName: 'Kling (可灵)',          color: '#04A6F0' },
+  zhipu:        { displayName: 'ChatGLM',              color: '#3485FF' },
+  doubao:       { displayName: 'Doubao',               color: '#A569FF' },
+  kling:        { displayName: 'Kling',                color: '#04A6F0' },
   midjourney:   { displayName: 'Midjourney',           color: '#000000' },
   flux:         { displayName: 'Flux',                 color: '#333333' },
   grok:         { displayName: 'Grok (xAI)',           color: '#000000' },
-  alibaba:      { displayName: 'Bailian (阿里云百炼)',   color: '#FF6A00' },
+  alibaba:      { displayName: 'Bailian',              color: '#FF6A00' },
   moonshot:     { displayName: 'Moonshot',             color: '#5B5BD6' },
   minimax:      { displayName: 'Minimax',              color: '#E2167E' },
   ollama:       { displayName: 'Ollama',               color: '#333333' },
   mistral:      { displayName: 'Mistral',              color: '#FA500F' },
-  hunyuan:      { displayName: '腾讯',                  color: '#0055E9' },
+  hunyuan:      { displayName: 'Tencent',               color: '#0055E9' },
   vidu:         { displayName: 'Vidu',                 color: '#333333' },
   replicate:    { displayName: 'Replicate',            color: '#333333' },
-  wenxin:       { displayName: 'Wenxin (文心)',         color: '#0A51C3' },
-  siliconcloud: { displayName: 'SiliconFlow (硅基流动)', color: '#7C3AED' },
-  spark:        { displayName: 'Spark (讯飞星火)',       color: '#3DC8F9' },
+  wenxin:       { displayName: 'Wenxin',               color: '#0A51C3' },
+  siliconcloud: { displayName: 'SiliconFlow',          color: '#7C3AED' },
+  spark:        { displayName: 'Spark',                color: '#3DC8F9' },
   fal:          { displayName: 'Fal-ai',               color: '#333333' },
   luma:         { displayName: 'Luma',                 color: '#4400AA' },
   runway:       { displayName: 'Runway',               color: '#333333' },
   ideogram:     { displayName: 'Ideogram',             color: '#333333' },
   suno:         { displayName: 'Suno',                 color: '#333333' },
-  other:        { displayName: '其他',                  color: '#6B7280' },
+  other:        { displayName: 'Other',                 color: '#6B7280' },
 };
 
 /**
- * 模型名前缀 → 品牌映射规则
- * 顺序重要：更具体的模式应放在前面
+ * Model name prefix → Brand mapping rules
+ * Order matters: more specific patterns should come first
  */
 const BRAND_PATTERNS: Array<{ pattern: RegExp; brand: string }> = [
   // OpenAI 系列
@@ -66,10 +66,10 @@ const BRAND_PATTERNS: Array<{ pattern: RegExp; brand: string }> = [
   // DeepSeek
   { pattern: /^deepseek/i,                                               brand: 'deepseek' },
 
-  // 智谱 ChatGLM
+  // ---- ChatGLM ----
   { pattern: /^(glm|cogview|cogvideo|chatglm)/i,                        brand: 'zhipu' },
 
-  // 豆包 Doubao (ByteDance)
+  // ---- Doubao (ByteDance) ----
   { pattern: /^(doubao|seed[- ]?oss)/i,                                  brand: 'doubao' },
   // seedance (豆包视频) — must be before generic seed
   { pattern: /^(doubao-)?seed(ance|dream)/i,                             brand: 'doubao' },
@@ -86,13 +86,13 @@ const BRAND_PATTERNS: Array<{ pattern: RegExp; brand: string }> = [
   // Grok (xAI)
   { pattern: /^grok/i,                                                    brand: 'grok' },
 
-  // 阿里巴巴 / Qwen / 通义 / QVQ / QWQ
+  // ---- Alibaba / Qwen / Tongyi / QVQ / QWQ ----
   { pattern: /^(qwen|wan|tongyi|alibaba|bailian|qvq|qwq)/i,           brand: 'alibaba' },
 
   // Moonshot / Kimi
   { pattern: /^(moonshot|kimi)/i,                                         brand: 'moonshot' },
 
-  // MiniMax / 海螺 / speech / audio / mimo
+  // ---- MiniMax / Hailuo / speech / audio / mimo ----
   { pattern: /^(minimax|MiniMax|hailuo|speech-|audio[0-9]|mimo)/i,       brand: 'minimax' },
 
   // Ollama / Llama / Meta
@@ -101,22 +101,22 @@ const BRAND_PATTERNS: Array<{ pattern: RegExp; brand: string }> = [
   // Mistral
   { pattern: /^(mistral|mixtral|dolphin)/i,                               brand: 'mistral' },
 
-  // 腾讯混元
+  // ---- Tencent Hunyuan ----
   { pattern: /^hunyuan/i,                                                  brand: 'hunyuan' },
 
-  // Vidu (生数科技)
+  // ---- Vidu (Shengshu Tech) ----
   { pattern: /^vidu/i,                                                     brand: 'vidu' },
 
   // Replicate (含 org/model 命名格式)
   { pattern: /^(replicate|andreasjansson|stability-ai|cjwbw|lucataco|recraft-ai|riffusion|sujaykhandekar|prunaai)/i, brand: 'replicate' },
 
-  // 百度文心 ERNIE / Embedding-V1
+  // ---- Baidu Wenxin ERNIE / Embedding-V1 ----
   { pattern: /^(ernie|wenxin|Embedding-V)/i,                              brand: 'wenxin' },
 
-  // 硅基流动 SiliconCloud
+  // ---- SiliconFlow SiliconCloud ----
   { pattern: /^(silicon|BAAI|Pro\/BAAI)/i,                                 brand: 'siliconcloud' },
 
-  // 讯飞星火
+  // ---- iFlytek Spark ----
   { pattern: /^(spark|sparkdesk)/i,                                        brand: 'spark' },
 
   // Fal-ai
@@ -137,12 +137,12 @@ const BRAND_PATTERNS: Array<{ pattern: RegExp; brand: string }> = [
   // Pika
   { pattern: /^pika/i,                                                       brand: 'other' },
 
-  // aigc-* (MemeFast 聚合)
+  // ---- aigc-* (MemeFast aggregator) ----
   { pattern: /^aigc[-_]?(image|video)/i,                                     brand: 'other' },
 ];
 
 /**
- * 根据模型名称提取品牌 ID
+ * Extract brand ID from model name
  */
 export function extractBrandFromModel(modelName: string): string {
   for (const { pattern, brand } of BRAND_PATTERNS) {
@@ -152,7 +152,7 @@ export function extractBrandFromModel(modelName: string): string {
 }
 
 /**
- * 获取品牌信息（含 fallback）
+ * Get brand info (with fallback)
  */
 export function getBrandInfo(brandId: string): BrandInfo {
   return BRAND_REGISTRY[brandId] || BRAND_REGISTRY['other'];

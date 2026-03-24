@@ -4,8 +4,8 @@
 "use client";
 
 /**
- * 角色库选择弹窗组件 (Character Selector)
- * 从角色库中选择角色关联到分镜
+ * Character Selector (Character Selector)
+ * Select characters from character library to associate with storyboard shots
  */
 
 import React, { useState, useMemo } from "react";
@@ -46,7 +46,7 @@ export function CharacterSelector({
       : !activeProjectId
         ? []
         : characters.filter((c) => c.projectId === activeProjectId);
-    // 按 id 去重（项目复制会产生同 id 角色，保留首次出现的）
+    // Deduplicate by id (project copy may produce same id characters, keep first occurrence)
     const seen = new Set<string>();
     return list.filter((c) => {
       if (seen.has(c.id)) return false;
@@ -67,7 +67,7 @@ export function CharacterSelector({
     }
   };
 
-  // 只统计在角色库中存在的角色（过滤无效ID）
+  // Only count characters that exist in character library (filter invalid IDs)
   const selectedCharacters = visibleCharacters.filter(c => selectedIds.includes(c.id));
   const validSelectedCount = selectedCharacters.length;
 

@@ -4,8 +4,8 @@
 "use client";
 
 /**
- * AssetSidebar - 资产面板左侧导航树
- * 可插拔设计，后续可扩展素材库、作品库等子模块
+ * AssetSidebar - Asset panel left navigation tree
+ * Pluggable design, can extend material library, work library and other sub-modules in the future
  */
 
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-// 导航节点类型
+// Navigation node type
 export type AssetSection = "style-default" | "style-custom" | "props-library";
 
 interface AssetSidebarProps {
@@ -28,7 +28,7 @@ interface AssetSidebarProps {
   onSectionChange: (section: AssetSection) => void;
 }
 
-// 顶层模块定义（可插拔，后续在此数组追加新模块）
+// Top-level module definition (pluggable, can append new modules to this array later)
 interface NavModule {
   id: string;
   label: string;
@@ -37,15 +37,15 @@ interface NavModule {
 }
 
 const NAV_MODULES: NavModule[] = [
-  {
-    id: "styles",
-    label: "风格库",
-    icon: Palette,
-    children: [
-      { id: "style-default", label: "默认风格", icon: Layers },
-      { id: "style-custom", label: "我的风格", icon: UserCircle },
-    ],
-  },
+   {
+     id: "styles",
+     label: "Style Library",
+     icon: Palette,
+     children: [
+       { id: "style-default", label: "Default Style", icon: Layers },
+       { id: "style-custom", label: "My Styles", icon: UserCircle },
+     ],
+   },
   {
     id: "props",
     label: "道具库",
@@ -72,13 +72,13 @@ export function AssetSidebar({ activeSection, onSectionChange }: AssetSidebarPro
 
   return (
     <div className="h-full flex flex-col bg-panel border-r border-border">
-      {/* 标题 */}
-      <div className="px-3 py-3 border-b border-border shrink-0">
-        <div className="flex items-center gap-2">
-          <FolderOpen className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold">个人资产库</span>
-        </div>
-      </div>
+       {/* Title */}
+       <div className="px-3 py-3 border-b border-border shrink-0">
+         <div className="flex items-center gap-2">
+           <FolderOpen className="w-4 h-4 text-primary" />
+           <span className="text-sm font-semibold">Personal Asset Library</span>
+         </div>
+       </div>
 
       {/* 导航树 */}
       <div className="flex-1 overflow-y-auto py-2">

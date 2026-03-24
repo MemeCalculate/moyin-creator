@@ -178,10 +178,10 @@ export function CameraControls({
 }: CameraControlsProps) {
   return (
     <div className={cn('flex gap-2', className)}>
-      <ScrollColumn items={CAMERA_OPTIONS} value={camera} onChange={onCameraChange} label="机身" />
-      <ScrollColumn items={LENS_OPTIONS} value={lens} onChange={onLensChange} label="镜头" />
-      <ScrollColumn items={FOCAL_OPTIONS} value={focalLength} onChange={onFocalLengthChange} label="焦距" />
-      <ScrollColumn items={APERTURE_OPTIONS} value={aperture} onChange={onApertureChange} label="光圈" />
+       <ScrollColumn items={CAMERA_OPTIONS} value={camera} onChange={onCameraChange} label="Body" />
+       <ScrollColumn items={LENS_OPTIONS} value={lens} onChange={onLensChange} label="Lens" />
+       <ScrollColumn items={FOCAL_OPTIONS} value={focalLength} onChange={onFocalLengthChange} label="Focal Length" />
+       <ScrollColumn items={APERTURE_OPTIONS} value={aperture} onChange={onApertureChange} label="Aperture" />
     </div>
   );
 }

@@ -242,7 +242,7 @@ export function SettingsPanel() {
   // Delete provider
   const handleDelete = (id: string) => {
     removeProvider(id);
-    toast.success("已删除供应商");
+     toast.success("Provider deleted");
   };
 
   const handleEditImageHost = (provider: ImageHostProvider) => {
@@ -252,7 +252,7 @@ export function SettingsPanel() {
 
   const handleDeleteImageHost = (id: string) => {
     removeImageHostProvider(id);
-    toast.success("已删除图床");
+     toast.success("Image host deleted");
   };
 
   const handleTestImageHost = async (provider: ImageHostProvider) => {
@@ -637,15 +637,15 @@ export function SettingsPanel() {
       {/* Header */}
       <div className="h-16 border-b border-border bg-panel px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-3">
-            <Settings className="w-5 h-5 text-primary" />
-            设置
-          </h2>
+           <h2 className="text-lg font-bold text-foreground flex items-center gap-3">
+             <Settings className="w-5 h-5 text-primary" />
+             Settings
+           </h2>
         </div>
         {activeTab === "api" && (
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground font-mono bg-muted border border-border px-2 py-1 rounded">
-              已配置: {configuredCount}/{providers.length}
+              Configured: {configuredCount}/{providers.length}
             </span>
             <Button onClick={() => setAddDialogOpen(true)} size="sm">
               <Plus className="h-4 w-4 mr-1" />

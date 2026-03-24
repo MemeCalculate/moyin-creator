@@ -4,8 +4,8 @@
 "use client";
 
 /**
- * CustomStylesGrid - 自定义风格网格
- * 展示用户创建的风格，支持新建/编辑/删除/复制
+ * CustomStylesGrid - Custom Styles Grid
+ * Display user-created styles, support create/edit/delete/duplicate
  */
 
 import { useCustomStyleStore } from "@/stores/custom-style-store";
@@ -47,10 +47,10 @@ export function CustomStylesGrid() {
     <div className="h-full flex flex-col">
       {/* 顶部栏 */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-foreground">我的风格</h2>
-          <span className="text-xs text-muted-foreground">{styles.length} 个</span>
-        </div>
+         <div className="flex items-center gap-2">
+           <h2 className="text-sm font-semibold text-foreground">My Styles</h2>
+           <span className="text-xs text-muted-foreground">{styles.length} items</span>
+         </div>
         <Button size="sm" onClick={() => setEditingStyle("new")}>
           <Plus className="w-3.5 h-3.5 mr-1.5" />
           新建风格

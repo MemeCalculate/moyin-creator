@@ -5,7 +5,7 @@
 
 /**
  * Episode Tree Component
- * 中间栏：层级结构预览（集→场景→分镜）+ 状态追踪 + CRUD管理
+ * Middle column: hierarchical structure preview (episode→scene→shot) + status tracking + CRUD management
  */
 
 import { useState, useMemo, useCallback, useEffect } from "react";
@@ -78,7 +78,7 @@ import {
 
 type FilterType = "all" | "pending" | "completed";
 
-// 计算完成状态图标
+// Calculate completion status icon
 function StatusIcon({ status }: { status?: CompletionStatus }) {
   switch (status) {
     case "completed":
@@ -93,11 +93,11 @@ function StatusIcon({ status }: { status?: CompletionStatus }) {
 interface EpisodeTreeProps {
   scriptData: ScriptData | null;
   shots: Shot[];
-  shotStatus?: "idle" | "generating" | "ready" | "error"; // 分镜生成状态
+  shotStatus?: "idle" | "generating" | "ready" | "error"; // shot generation status
   selectedItemId: string | null;
   selectedItemType: "character" | "scene" | "shot" | "episode" | null;
   onSelectItem: (id: string, type: "character" | "scene" | "shot" | "episode") => void;
-  // CRUD callbacks (Bundle 版本，同步 episodeRawScripts)
+  // CRUD callbacks (Bundle version, syncing episodeRawScripts)
   onAddEpisodeBundle?: (title: string, synopsis: string) => void;
   onUpdateEpisodeBundle?: (episodeIndex: number, updates: { title?: string; synopsis?: string }) => void;
   onDeleteEpisodeBundle?: (episodeIndex: number) => void;
@@ -108,17 +108,17 @@ interface EpisodeTreeProps {
   onUpdateCharacter?: (id: string, updates: Partial<ScriptCharacter>) => void;
   onDeleteCharacter?: (id: string) => void;
   onDeleteShot?: (id: string) => void;
-  // 分镜生成 callbacks
+  // Shot generation callbacks
   onGenerateEpisodeShots?: (episodeIndex: number) => void;
   onRegenerateAllShots?: () => void;
   episodeGenerationStatus?: Record<number, 'idle' | 'generating' | 'completed' | 'error'>;
-  // 分镜校准 callback
+  // Shot calibration callback
   onCalibrateShots?: (episodeIndex: number) => void;
   onCalibrateScenesShots?: (sceneId: string) => void;
-  // 角色校准 callback
+  // Character calibration callback
   onCalibrateCharacters?: () => void;
   characterCalibrationStatus?: 'idle' | 'calibrating' | 'completed' | 'error';
-  // AI 角色查找相关
+  // AI character finding related
   projectBackground?: ProjectBackground;
   episodeRawScripts?: EpisodeRawScript[];
   onAIFindCharacter?: (query: string) => Promise<{
@@ -128,30 +128,30 @@ interface EpisodeTreeProps {
     character?: ScriptCharacter;
   }>;
   aiFindingStatus?: 'idle' | 'searching' | 'found' | 'not_found' | 'error';
-  // AI 场景查找相关
+  // AI scene finding related
   onAIFindScene?: (query: string) => Promise<{
     found: boolean;
     message: string;
     scene?: ScriptScene;
   }>;
-  // 场景校准相关
-  onCalibrateScenes?: () => void;  // 全局校准所有场景
-  onCalibrateEpisodeScenes?: (episodeIndex: number) => void;  // 校准单集场景
+  // Scene calibration related
+  onCalibrateScenes?: () => void;  // Global calibration for all scenes
+  onCalibrateEpisodeScenes?: (episodeIndex: number) => void;  // Calibrate single episode scenes
   sceneCalibrationStatus?: 'idle' | 'calibrating' | 'completed' | 'error';
-  // 预告片相关
+  // Trailer related
   trailerConfig?: TrailerConfig | null;
   onGenerateTrailer?: (duration: TrailerDuration) => void;
   onClearTrailer?: () => void;
   trailerApiOptions?: TrailerGenerationOptions | null;
-  // 单个分镜校准 callback
+  // Single shot calibration callback
   onCalibrateSingleShot?: (shotId: string) => void;
   singleShotCalibrationStatus?: Record<string, 'idle' | 'calibrating' | 'completed' | 'error'>;
-  // 校准严格度相关
+  // Calibration strictness related
   calibrationStrictness?: CalibrationStrictness;
   onCalibrationStrictnessChange?: (strictness: CalibrationStrictness) => void;
   lastFilteredCharacters?: FilteredCharacterRecord[];
   onRestoreFilteredCharacter?: (characterName: string) => void;
-  // 校准确认弹窗
+  // Calibration confirmation dialog
   calibrationDialogOpen?: boolean;
   pendingCalibrationCharacters?: ScriptCharacter[] | null;
   pendingFilteredCharacters?: FilteredCharacterRecord[];
@@ -183,31 +183,31 @@ export function EpisodeTree({
   onCalibrateScenesShots,
   onCalibrateCharacters,
   characterCalibrationStatus,
-  // AI 角色查找相关
+  // AI character finding related
   projectBackground,
   episodeRawScripts,
   onAIFindCharacter,
   aiFindingStatus,
-  // AI 场景查找相关
+  // AI scene finding related
   onAIFindScene,
-  // 场景校准相关
+  // Scene calibration related
   onCalibrateScenes,
   onCalibrateEpisodeScenes,
   sceneCalibrationStatus,
-  // 预告片相关
+  // Trailer related
   trailerConfig,
   onGenerateTrailer,
   onClearTrailer,
   trailerApiOptions,
-  // 单个分镜校准
+  // Single shot calibration
   onCalibrateSingleShot,
   singleShotCalibrationStatus,
-  // 校准严格度相关
+  // Calibration strictness related
   calibrationStrictness,
   onCalibrationStrictnessChange,
   lastFilteredCharacters,
   onRestoreFilteredCharacter,
-  // 校准确认弹窗
+  // Calibration confirmation dialog
   calibrationDialogOpen,
   pendingCalibrationCharacters,
   pendingFilteredCharacters,
@@ -217,13 +217,13 @@ export function EpisodeTree({
   const [expandedEpisodes, setExpandedEpisodes] = useState<Set<string>>(new Set(["default"]));
   const [expandedScenes, setExpandedScenes] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<FilterType>("all");
-  // 角色分组折叠状态
+  // Character grouping collapse state
   const [extrasExpanded, setExtrasExpanded] = useState(false);
-  // Tab 状态: 剧集结构 vs 预告片
+  // Tab state: episode structure vs trailer
   const [activeTab, setActiveTab] = useState<"structure" | "trailer">("structure");
-  // 预告片时长选择
+  // Trailer duration selection
   const [selectedTrailerDuration, setSelectedTrailerDuration] = useState<TrailerDuration>(30);
-  // 预告片生成状态
+  // Trailer generation status
   const [trailerGenerating, setTrailerGenerating] = useState(false);
 
   // Dialog states
@@ -240,7 +240,7 @@ export function EpisodeTree({
   // Form states
   const [formData, setFormData] = useState<Record<string, string>>({});
   
-  // AI 角色查找状态
+  // AI character finding status
   const [aiQuery, setAiQuery] = useState("");
   const [aiSearching, setAiSearching] = useState(false);
   const [aiResult, setAiResult] = useState<{
@@ -250,7 +250,7 @@ export function EpisodeTree({
     character?: ScriptCharacter;
   } | null>(null);
   
-  // AI 场景查找状态
+  // AI scene finding status
   const [sceneAiQuery, setSceneAiQuery] = useState("");
   const [sceneAiSearching, setSceneAiSearching] = useState(false);
   const [sceneAiResult, setSceneAiResult] = useState<{
@@ -259,16 +259,16 @@ export function EpisodeTree({
     scene?: ScriptScene;
   } | null>(null);
 
-  // 被过滤角色查看弹窗
+  // Filtered character view dialog
   const [filteredCharsDialogOpen, setFilteredCharsDialogOpen] = useState(false);
   
-  // 校准确认弹窗的本地编辑状态
+  // Local edit state for calibration confirmation dialog
   const [localKeptCharacters, setLocalKeptCharacters] = useState<ScriptCharacter[]>([]);
   const [localFilteredCharacters, setLocalFilteredCharacters] = useState<FilteredCharacterRecord[]>([]);
-  // 缓存用户手动移除的角色完整数据，便于恢复时不丢失 AI 生成的字段
+  // Cache manually removed characters' full data to avoid losing AI-generated fields when restoring
   const [removedCharactersCache, setRemovedCharactersCache] = useState<Map<string, ScriptCharacter>>(new Map());
   
-  // 当确认弹窗打开时，从 props 同步
+  // When confirmation dialog opens, sync from props
   useEffect(() => {
     if (calibrationDialogOpen && pendingCalibrationCharacters) {
       setLocalKeptCharacters([...pendingCalibrationCharacters]);
@@ -277,7 +277,7 @@ export function EpisodeTree({
     }
   }, [calibrationDialogOpen, pendingCalibrationCharacters, pendingFilteredCharacters]);
   
-  // 从保留列表移除角色（缓存完整数据以便恢复）
+  // Remove character from kept list (cache full data for restore)
   const handleRemoveKeptCharacter = useCallback((charId: string) => {
     const char = localKeptCharacters.find(c => c.id === charId);
     if (!char) return;
@@ -287,13 +287,13 @@ export function EpisodeTree({
       return next;
     });
     setLocalKeptCharacters(prev => prev.filter(c => c.id !== charId));
-    setLocalFilteredCharacters(prev => [...prev, { name: char.name, reason: '用户手动移除' }]);
+    setLocalFilteredCharacters(prev => [...prev, { name: char.name, reason: 'Manually removed by user' }]);
   }, [localKeptCharacters]);
   
-  // 从过滤列表恢复角色到保留列表
+  // Restore character from filtered list to kept list
   const handleRestoreToKept = useCallback((characterName: string) => {
     setLocalFilteredCharacters(prev => prev.filter(fc => fc.name !== characterName));
-    // 优先从缓存恢复完整角色数据，避免丢失 AI 生成的字段
+    // Prioritize cached character data to avoid losing AI-generated fields
     const cachedChar = removedCharactersCache.get(characterName);
     if (cachedChar) {
       setLocalKeptCharacters(prev => [...prev, cachedChar]);
@@ -310,13 +310,13 @@ export function EpisodeTree({
       }]);
     }
   }, [removedCharactersCache]);
-  
-  // 确认校准结果
+
+  // Confirm calibration result
   const handleConfirmCalibrationLocal = useCallback(() => {
     onConfirmCalibration?.(localKeptCharacters, localFilteredCharacters);
   }, [localKeptCharacters, localFilteredCharacters, onConfirmCalibration]);
   
-  // 全部保留（恢复所有被过滤的角色并确认）
+  // Restore all (restore all filtered characters and confirm)
   const handleRestoreAllAndConfirm = useCallback(() => {
     const restored: ScriptCharacter[] = localFilteredCharacters.map((fc, i) => ({
       id: `char_restored_${Date.now()}_${i}`,
@@ -326,17 +326,17 @@ export function EpisodeTree({
     onConfirmCalibration?.([...localKeptCharacters, ...restored], []);
   }, [localKeptCharacters, localFilteredCharacters, onConfirmCalibration]);
 
-  // 如果没有episodes，创建一个默认的
+  // If no episodes, create a default one
   const episodes = useMemo(() => {
     if (!scriptData) return [];
     if (scriptData.episodes && scriptData.episodes.length > 0) {
       return scriptData.episodes;
     }
-    // 默认单集
+    // Default single episode
     return [{
       id: "default",
       index: 1,
-      title: scriptData.title || "第1集",
+      title: scriptData.title || "Episode 1",
       sceneIds: scriptData.scenes.map((s) => s.id),
     }];
   }, [scriptData]);
@@ -384,7 +384,7 @@ export function EpisodeTree({
   // CRUD handlers
   const handleAddEpisode = () => {
     setEditingItem(null);
-    setFormData({ title: `第${episodes.length + 1}集`, description: "" });
+    setFormData({ title: `Episode ${episodes.length + 1}`, description: "" });
     setEpisodeDialogOpen(true);
   };
 
@@ -401,7 +401,7 @@ export function EpisodeTree({
         onUpdateEpisodeBundle?.(ep.index, { title: formData.title, synopsis: formData.description });
       }
     } else {
-      onAddEpisodeBundle?.(formData.title || `第${episodes.length + 1}集`, formData.description || '');
+      onAddEpisodeBundle?.(formData.title || `Episode ${episodes.length + 1}`, formData.description || '');
     }
     setEpisodeDialogOpen(false);
     setFormData({});
@@ -414,13 +414,13 @@ export function EpisodeTree({
     setSceneAiQuery("");
     setSceneAiResult(null);
     setSceneAiSearching(false);
-    setFormData({ name: "", location: "", time: "白天", atmosphere: "" });
+    setFormData({ name: "", location: "", time: "Day", atmosphere: "" });
     setSceneDialogOpen(true);
   };
 
   const handleEditScene = (scene: ScriptScene) => {
     setEditingItem({ type: "scene", id: scene.id });
-    setFormData({ name: scene.name || "", location: scene.location, time: scene.time || "白天", atmosphere: scene.atmosphere || "" });
+        setFormData({ name: scene.name || "", location: scene.location, time: scene.time || "Day", atmosphere: scene.atmosphere || "" });
     setSceneDialogOpen(true);
   };
 
@@ -440,7 +440,7 @@ export function EpisodeTree({
         setFormData({
           name: result.scene.name || "",
           location: result.scene.location || "",
-          time: result.scene.time || "白天",
+          time: result.scene.time || "Day",
           atmosphere: result.scene.atmosphere || "",
         });
       }
@@ -476,9 +476,9 @@ export function EpisodeTree({
       } else {
         const newScene: ScriptScene = {
           id: `scene_${Date.now()}`,
-          name: formData.name || "新场景",
-          location: formData.location || "未知地点",
-          time: formData.time || "白天",
+          name: formData.name || "New Scene",
+          location: formData.location || "Unknown Location",
+          time: formData.time || "Day",
           atmosphere: formData.atmosphere,
         };
         onAddScene?.(newScene, targetEpisodeId || undefined);
@@ -560,7 +560,7 @@ export function EpisodeTree({
       } else {
         const newChar: ScriptCharacter = {
           id: `char_${Date.now()}`,
-          name: formData.name || "新角色",
+          name: formData.name || "New Character",
           gender: formData.gender,
           age: formData.age,
           personality: formData.personality,
@@ -632,7 +632,7 @@ export function EpisodeTree({
   if (!scriptData) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-        解析剧本后显示结构
+        Structure will be displayed after parsing script
       </div>
     );
   }

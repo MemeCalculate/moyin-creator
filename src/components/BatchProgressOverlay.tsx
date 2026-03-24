@@ -29,7 +29,7 @@ export function BatchProgressOverlay({
   current,
   total,
   message,
-  title = "批量生成中",
+  title = "Batch Generating",
 }: BatchProgressOverlayProps) {
   if (!isVisible) return null;
 
@@ -68,8 +68,8 @@ export function BatchProgressOverlay({
         )}
 
         {/* Warning */}
-        <p className="mt-6 text-[10px] text-zinc-600 text-center">
-          请勿关闭窗口或刷新页面
+<p className="mt-6 text-[10px] text-zinc-600 text-center">
+          Please do not close the window or refresh the page
         </p>
       </div>
     </div>

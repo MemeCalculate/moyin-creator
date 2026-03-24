@@ -105,18 +105,18 @@ function FolderContextMenu({
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={() => onRename(folder)}>
-          <Pencil className="h-4 w-4 mr-2" />
-          重命名
-        </ContextMenuItem>
+         <ContextMenuItem onClick={() => onRename(folder)}>
+           <Pencil className="h-4 w-4 mr-2" />
+           Rename
+         </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem
-          className="text-destructive"
-          onClick={() => onDelete(folder.id)}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          删除文件夹
-        </ContextMenuItem>
+         <ContextMenuItem
+           className="text-destructive"
+           onClick={() => onDelete(folder.id)}
+         >
+           <Trash2 className="h-4 w-4 mr-2" />
+           Delete Folder
+         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
   );
@@ -150,7 +150,7 @@ function MediaItemWithContextMenu({
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
       <ContextMenuContent>
-        {/* AI 导演功能 - 仅图片显示 */}
+         {/* AI Director feature - Images only */}
         {isImage && onSmartSplit && onGenerateScenes && (
           <>
             <ContextMenuItem onClick={() => onSmartSplit(item)}>

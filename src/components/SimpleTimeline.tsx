@@ -101,12 +101,12 @@ export function SimpleTimeline() {
             // Use the data directly from the drag event (includes full info)
             addClip({
               mediaId: data.id || `clip-${Date.now()}`,
-              name: data.name || '视频片段',
+              name: data.name || 'Video Clip',
               url: data.url,
               thumbnailUrl: data.thumbnailUrl,
               duration: data.duration || 5,
             });
-            toast.success(`已添加: ${data.name || '视频片段'}`);
+            toast.success(`Added: ${data.name || 'Video Clip'}`);
             handled = true;
           } else if (data.type === "video" && data.id) {
             // Fallback: try to get from media store if URL not provided
@@ -123,7 +123,7 @@ export function SimpleTimeline() {
                   thumbnailUrl: mediaFile.thumbnailUrl,
                   duration: mediaFile.duration || 5,
                 });
-                toast.success(`已添加: ${mediaFile.name || data.name}`);
+                toast.success(`Added: ${mediaFile.name || data.name}`);
                 handled = true;
               }
             } catch {
@@ -147,7 +147,7 @@ export function SimpleTimeline() {
               thumbnailUrl: data.thumbnailUrl,
               duration: data.duration || 5,
             });
-            toast.success(`已添加: ${data.name}`);
+            toast.success(`Added: ${data.name}`);
             handled = true;
           }
         } catch (err) {
@@ -206,7 +206,7 @@ export function SimpleTimeline() {
             <ChevronRight className="h-4 w-4" />
           </Button>
           <span className="text-xs text-muted-foreground">
-            时间线 ({clips.length} 个片段)
+            Timeline ({clips.length} clips)
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -260,7 +260,7 @@ export function SimpleTimeline() {
 
           {/* Clip count display */}
           <span className="text-xs text-muted-foreground">
-            {isPreviewPlaying && playlist.length > 0 ? `${currentIndex + 1}/${playlist.length}` : `${clips.length} 个片段`}
+            {isPreviewPlaying && playlist.length > 0 ? `${currentIndex + 1}/${playlist.length}` : `${clips.length} clips`}
           </span>
         </div>
 
@@ -271,7 +271,7 @@ export function SimpleTimeline() {
             className="h-7 w-7"
             onClick={clearTimeline}
             disabled={clips.length === 0}
-            title="清空时间线"
+            title="Clear timeline"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -287,7 +287,7 @@ export function SimpleTimeline() {
         {clips.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
             <Video className="h-5 w-5 mr-2 opacity-50" />
-            拖拽视频片段到这里
+            Drag video clips here
           </div>
         ) : (
           <div

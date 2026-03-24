@@ -24,9 +24,9 @@ interface ModelSelectorProps {
 }
 
 interface SelectorModel {
-  id: string;       // 供应商原始模型 ID（直接用于 API 调用）
-  name: string;     // 显示名
-  brandId: string;  // 品牌 ID
+  id: string;       // Vendor original model ID (directly used for API calls)
+  name: string;     // Display name
+  brandId: string;  // Brand ID
 }
 
 const KLING_VIDEO_VARIANTS = [
@@ -37,9 +37,9 @@ const KLING_VIDEO_VARIANTS = [
   'kling-multi-elements',
   'kling-avatar-image2video',
   'kling-advanced-lip-sync',
-  'kling-effects',
-  // kling-video 模型版本 (MemeFast model_version)
-  'kling-v1',
+   'kling-effects',
+   // kling-video model version (MemeFast model_version)
+   'kling-v1',
   'kling-v1-5',
   'kling-v1-6',
   'kling-v2-master',
@@ -178,8 +178,8 @@ const SEEDREAM_IMAGE_VARIANTS = [
 const KLING_IMAGE_VARIANTS = [
   'kling-image',
   'kling-omni-image',
-  // kling-image 模型版本 (MemeFast model_version)
-  'kling-image-v1',
+   // kling-image model version (MemeFast model_version)
+   'kling-image-v1',
   'kling-image-v1-5',
   'kling-image-v2',
   'kling-image-v2-new',
@@ -210,15 +210,15 @@ const VIDEO_FAMILY_VARIANTS: Record<string, string[]> = {
   // Kling
   'kling-video': KLING_VIDEO_VARIANTS,
   'kling-omni-video': KLING_VIDEO_VARIANTS,
-  'kling-video-extend': KLING_VIDEO_VARIANTS,
-  'kling-motion-control': KLING_VIDEO_VARIANTS,
-  'kling-multi-elements': KLING_VIDEO_VARIANTS,
-  'kling-avatar-image2video': KLING_VIDEO_VARIANTS,
-  'kling-advanced-lip-sync': KLING_VIDEO_VARIANTS,
-  'kling-effects': KLING_VIDEO_VARIANTS,
-  'aigc-video-kling': KLING_VIDEO_VARIANTS,
-  // kling-video 模型版本 (MemeFast model_version)
-  'kling-v1': KLING_VIDEO_VARIANTS,
+   'kling-video-extend': KLING_VIDEO_VARIANTS,
+   'kling-motion-control': KLING_VIDEO_VARIANTS,
+   'kling-multi-elements': KLING_VIDEO_VARIANTS,
+   'kling-avatar-image2video': KLING_VIDEO_VARIANTS,
+   'kling-advanced-lip-sync': KLING_VIDEO_VARIANTS,
+   'kling-effects': KLING_VIDEO_VARIANTS,
+   'aigc-video-kling': KLING_VIDEO_VARIANTS,
+   // kling-video model version (MemeFast model_version)
+   'kling-v1': KLING_VIDEO_VARIANTS,
   'kling-v1-5': KLING_VIDEO_VARIANTS,
   'kling-v1-6': KLING_VIDEO_VARIANTS,
   'kling-v2-master': KLING_VIDEO_VARIANTS,

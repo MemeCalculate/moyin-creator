@@ -3,8 +3,8 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 /**
  * Custom Style Store
- * 用户自定义风格资产管理，独立于内置预设
- * 使用 localStorage 持久化（全局资产，不按项目分割）
+ * User-defined style asset management, independent of built-in presets
+ * Persisted via localStorage (global assets, not scoped by project)
  */
 
 import { create } from 'zustand';
@@ -15,16 +15,16 @@ import { registerCustomStyleLookup, type StylePreset } from '@/lib/constants/vis
 
 export interface CustomStyle {
   id: string;
-  name: string;                 // 风格名称（必填）
-  prompt: string;               // 用户原始提示词（可能混合了风格+场景描述）
-  negativePrompt: string;       // 负面提示词
-  description: string;          // 描述
-  referenceImages: string[];    // 参考图路径 (local-image://styles/...)
-  tags: string[];               // 标签
-  folderId: string | null;      // 所属文件夹
-  // === AI 提取的结构化风格词（优先级高于 prompt） ===
-  styleTokens?: string;         // 纯视觉风格关键词（画风/光线/色彩/材质）→ 角色/场景设定图使用
-  sceneTokens?: string;         // 场景/构图/道具描述 → 导演台/分镜使用
+  name: string;                 // Style name (required)
+  prompt: string;               // User's raw prompt (may contain both style and scene descriptions)
+  negativePrompt: string;       // Negative prompt
+  description: string;          // Description
+  referenceImages: string[];    // Reference image paths (local-image://styles/...)
+  tags: string[];               // Tags
+  folderId: string | null;      // Associated folder
+  // === AI-extracted structured style tokens (higher priority than prompt) ===
+  styleTokens?: string;         // Pure visual style keywords (art style/lighting/color/material) → for character/scene setting images
+  sceneTokens?: string;         // Scene/composition/props description → for director's console/storyboard
   createdAt: number;
   updatedAt: number;
 }
@@ -40,7 +40,7 @@ interface CustomStyleState {
   styles: CustomStyle[];
   folders: CustomStyleFolder[];
   selectedStyleId: string | null;
-  editingStyleId: string | null;    // null = 不在编辑, 'new' = 新建, 其他 = 编辑已有
+  editingStyleId: string | null;    // null = Not editing, 'new' = New, others = Edit existing
 }
 
 interface CustomStyleActions {
@@ -126,7 +126,7 @@ export const useCustomStyleStore = create<CustomStyleStore>()(
         const copy: CustomStyle = {
           ...source,
           id: newId,
-          name: `${source.name} (副本)`,
+          name: `${source.name} (Copy)`,
           createdAt: now,
           updatedAt: now,
         };
@@ -162,7 +162,7 @@ export const useCustomStyleStore = create<CustomStyleStore>()(
       deleteFolder: (id) => {
         set((state) => ({
           folders: state.folders.filter((f) => f.id !== id),
-          // 移到根目录
+          // Move to root directory
           styles: state.styles.map((s) =>
             s.folderId === id ? { ...s, folderId: null, updatedAt: Date.now() } : s
           ),
@@ -192,44 +192,44 @@ export const useCustomStyleStore = create<CustomStyleStore>()(
   )
 );
 
-// ==================== 注册自定义风格查找回调 ====================
-// 让 visual-styles.ts 的工具函数（getStyleById/getStylePrompt 等）
-// 能查找到用户自定义风格（存储在 localStorage 的用户数据）
+// ==================== Register custom style lookup callback ====================
+// Allow visual-styles.ts utility functions (getStyleById/getStylePrompt, etc.)
+// to find user-defined styles (user data stored in localStorage)
 
 /**
- * 从提示词中推断风格分类（支持中英文关键词）
- * 关键词匹配：
- *   real → realistic/photorealistic/photography/写实/真人/实景/电影级/实拍/胶片
- *   3d   → 3d/render/unreal/c4d/三维/渲染/虚幻引擎
- *   stop_motion → stop motion/claymation/定格/黏土
- *   其余 → '2d'
+ * Infer style category from prompt (supports both English and Chinese keywords)
+ * Keyword matching:
+ *   real → realistic/photorealistic/photography/write-real/real-person/true-scene/cinematic/live-shot/film
+ *   3d   → 3d/render/unreal/c4d/three-dimensional/rendering/unreal-engine
+ *   stop_motion → stop motion/claymation/stop-frame/clay
+ *   others → '2d'
  */
 function inferCategoryFromPrompt(prompt: string): import('@/lib/constants/visual-styles').StyleCategory {
   const lower = prompt.toLowerCase();
-  // 英文关键词
+  // English keywords
   if (/\b(realistic|photorealistic|real\s?person|photography|real\s?life|cinematic\s?lighting.*skin)/.test(lower)) {
     return 'real';
   }
-  // 中文关键词：写实/真人/实景/电影级写实/实拍/胶片/剧照
+  // Chinese keywords: realistic/real/true scene/cinematic/live shot/film/still
   if (/(写实|真人|实景|电影级|实拍|胶片|剧照|无\s?CGI|皮肤纹理|毛孔)/.test(prompt)) {
     return 'real';
   }
-  // 英文 3D 关键词
+  // English 3D keywords
   if (/\b(3d|render|unreal\s?engine|c4d|blender|voxel|low\s?poly)/.test(lower)) {
     return '3d';
   }
-  // 中文 3D 关键词
+  // Chinese 3D keywords
   if (/(三维|3D|渲染|虚幻引擎|建模)/.test(prompt)) {
     return '3d';
   }
-  // 定格动画
+  // Stop motion
   if (/\b(stop.?motion|claymation|puppet)/.test(lower) || /(定格|黏土|木偶)/.test(prompt)) {
     return 'stop_motion';
   }
   return '2d';
 }
 
-/** 从分类推断媒介类型 */
+/** Infer media type from category */
 function inferMediaType(category: import('@/lib/constants/visual-styles').StyleCategory): import('@/lib/constants/visual-styles').MediaType {
   switch (category) {
     case 'real': return 'cinematic';
@@ -243,12 +243,12 @@ registerCustomStyleLookup((id: string): StylePreset | undefined => {
   const style = useCustomStyleStore.getState().styles.find(s => s.id === id);
   if (!style) return undefined;
 
-  // 智能推断 category/mediaType（用户编辑器目前无这两个字段）
+  // Intelligently infer category/mediaType (user editor currently doesn't have these two fields)
   const effectivePrompt = style.prompt || '';
   const category = inferCategoryFromPrompt(effectivePrompt);
   const mediaType = inferMediaType(category);
 
-  // 优先使用 AI 提取的 styleTokens（纯视觉风格），否则回退到原始 prompt
+  // Priority is given to AI-extracted styleTokens (pure visual style), otherwise falls back to basic prompt
   const prompt = style.styleTokens
     || effectivePrompt
     || `${style.name} style, professional quality`;

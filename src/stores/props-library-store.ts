@@ -3,54 +3,54 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 
 /**
- * PropsLibraryStore - 道具库状态管理
- * 支持自定义目录分类，持久化到 localStorage
+ * PropsLibraryStore - Props library state management
+ * Supports custom folder categorization, persisted to localStorage
  */
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// 道具项
+// Prop item
 export interface PropItem {
   id: string;
-  name: string;           // 道具名称（可编辑）
-  imageUrl: string;       // local-image://props/... 或远程URL
-  prompt: string;         // 生成时的提示词（供参考）
-  folderId: string | null; // 所属目录，null = 根目录
+  name: string;           // Prop name (editable)
+  imageUrl: string;       // local-image://props/... or remote URL
+  prompt: string;         // Prompt for generation (for reference)
+  folderId: string | null; // Belonging folder, null = root
   createdAt: number;
 }
 
-// 自定义目录
+// Custom folder
 export interface PropFolder {
   id: string;
-  name: string;           // 目录名称
-  parentId: string | null; // 预留嵌套扩展（当前UI仅用一级）
+  name: string;           // Folder name
+  parentId: string | null; // Reserved for nested expansion (current UI uses only one level)
   createdAt: number;
 }
 
 interface PropsLibraryState {
   items: PropItem[];
   folders: PropFolder[];
-  // 当前选中目录（null = 全部）
+  // Currently selected folder (null = all)
   selectedFolderId: string | null | 'all';
 }
 
 interface PropsLibraryActions {
-  // 道具操作
+  // Prop operations
   addProp: (prop: Omit<PropItem, 'id' | 'createdAt'>) => PropItem;
   renameProp: (id: string, name: string) => void;
   deleteProp: (id: string) => void;
   moveProp: (propId: string, folderId: string | null) => void;
 
-  // 目录操作
+  // Folder operations
   addFolder: (name: string, parentId?: string | null) => PropFolder;
   renameFolder: (id: string, name: string) => void;
-  deleteFolder: (id: string) => void; // 删除时子道具移至根目录
+  deleteFolder: (id: string) => void; // When deleting, child props move to root folder
 
-  // UI 状态
+  // UI state
   setSelectedFolderId: (folderId: string | null | 'all') => void;
 
-  // 查询
+  // Queries
   getPropsByFolder: (folderId: string | null | 'all') => PropItem[];
   getPropById: (id: string) => PropItem | undefined;
 }
@@ -64,7 +64,7 @@ export const usePropsLibraryStore = create<PropsLibraryStore>()(
       folders: [],
       selectedFolderId: 'all',
 
-      // ── 道具操作 ──────────────────────────────────────────────────────────
+      // ── Prop operations ──────────────────────────────────────────────────────────
 
       addProp: (prop) => {
         const newProp: PropItem = {
@@ -96,7 +96,7 @@ export const usePropsLibraryStore = create<PropsLibraryStore>()(
         }));
       },
 
-      // ── 目录操作 ──────────────────────────────────────────────────────────
+      // ── Folder operations ──────────────────────────────────────────────────────────
 
       addFolder: (name, parentId = null) => {
         const newFolder: PropFolder = {
@@ -120,23 +120,23 @@ export const usePropsLibraryStore = create<PropsLibraryStore>()(
       deleteFolder: (id) => {
         set((s) => ({
           folders: s.folders.filter((f) => f.id !== id),
-          // 该目录下的道具移至根目录
+          // Props under this folder move to root
           items: s.items.map((item) =>
             item.folderId === id ? { ...item, folderId: null } : item
           ),
-          // 如果当前选中了该目录，切回"全部"
+          // If current selected folder is this one, switch back to "all"
           selectedFolderId:
             s.selectedFolderId === id ? 'all' : s.selectedFolderId,
         }));
       },
 
-      // ── UI 状态 ───────────────────────────────────────────────────────────
+      // ── UI state ───────────────────────────────────────────────────────────
 
       setSelectedFolderId: (folderId) => {
         set({ selectedFolderId: folderId });
       },
 
-      // ── 查询 ─────────────────────────────────────────────────────────────
+      // ── Queries ─────────────────────────────────────────────────────────
 
       getPropsByFolder: (folderId) => {
         const { items } = get();

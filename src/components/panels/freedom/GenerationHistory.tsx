@@ -25,25 +25,25 @@ export function GenerationHistory({ type, onSelect, className }: GenerationHisto
 
   if (history.length === 0) {
     return (
-      <div className={cn('flex flex-col items-center justify-center h-full text-muted-foreground', className)}>
-        <Clock className="h-8 w-8 mb-2 opacity-40" />
-        <p className="text-sm">暂无生成记录</p>
-      </div>
+       <div className={cn('flex flex-col items-center justify-center h-full text-muted-foreground', className)}>
+         <Clock className="h-8 w-8 mb-2 opacity-40" />
+         <p className="text-sm">No generation records yet</p>
+       </div>
     );
   }
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
       <div className="flex items-center justify-between px-3 py-2 border-b">
-        <span className="text-sm font-medium">历史记录 ({history.length})</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs text-muted-foreground hover:text-destructive"
-          onClick={() => clearHistory(type)}
-        >
-          清空
-        </Button>
+         <span className="text-sm font-medium">History Records ({history.length})</span>
+         <Button
+           variant="ghost"
+           size="sm"
+           className="h-7 text-xs text-muted-foreground hover:text-destructive"
+           onClick={() => clearHistory(type)}
+         >
+           Clear
+         </Button>
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-2">

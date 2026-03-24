@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * OverviewPanel — 项目概览（SeriesMeta 展示 + 内联编辑）
+ * OverviewPanel — Project Overview (SeriesMeta Display + Inline Editing)
  *
- * 两栏布局：
- *   左栏：故事核心 + 世界观 + 制作设定
- *   右栏：角色列表 + 阵营 + 关键物品/地理
+ * Two-column layout:
+ *   Left column: Story Core + Worldbuilding + Production Settings
+ *   Right column: Character List + Factions + Key Items/Geography
  */
 
 import { useState, useCallback } from "react";
@@ -50,36 +50,36 @@ import { getStyleName } from "@/lib/constants/visual-styles";
 const OVERVIEW_WORKFLOW_SECTIONS: Array<{ id: number; title: string; steps: string[] }> = [
   {
     id: 1,
-    title: "剧本模块",
+    title: "Script Module",
     steps: [
-      "点击剧本模块",
-      "导入",
-      "粘贴完整剧本",
-      "点击导入完整剧本",
-      "选择视觉风格",
-      "二次检查",
-      "AI场景校准",
-      "点击场景，右边栏：去场景库生成场景",
-      "在场景板块左边栏生成后生成保存",
-      "AI校准分镜",
-      "AI角色校准",
-      "点击角色，右边栏：去角色库生成形象",
-      "在角色板块点击“生成设定图”",
-      "生成后保存",
+      "Click the Script Module",
+      "Import",
+      "Paste the full script",
+      "Click to import full script",
+      "Select Visual Style",
+      "Secondary Check",
+      "AI Scene Calibration",
+      "Click the scene, right sidebar: go to scene library to generate scene",
+      "After generating in the scene panel left sidebar, generate and save",
+      "AI Calibrate Shot",
+      "AI Calibrate Character",
+      "Click character, right sidebar: go to character library to generate appearance",
+      "In the character panel, click 'Generate Design'",
+      "Save after generation",
     ],
   },
   {
     id: 2,
-    title: "导演模块",
+    title: "Director Module",
     steps: [
-      "点击导演模块",
-      "点击左边树形栏",
-      "把需要的场景点击“+”后，添加到左边栏分镜编辑里",
-      "图片生成方式：选择“合并生成”，参数和图自行选",
-      "点击执行合并生成",
-      "图片生成完毕",
-      "无主角案例时：“生成成图”按钮",
-      "有主角生成成图：在所有分镜页下方“生成视频”按钮",
+      "Click the Director Module",
+      "Click the left tree panel",
+      "Click '+' on the needed scenes to add to the left sidebar shot edit",
+      "Image generation method: select 'Merge Generation', parameters and images chosen manually",
+      "Click Execute Merge Generation",
+      "Image generation complete",
+      "When there is no protagonist example: 'Generate Final Image' button",
+      "When there is a protagonist: 'Generate Video' button at the bottom of all shot pages",
     ],
   },
 ];
@@ -254,14 +254,14 @@ export function OverviewPanel() {
     return (
       <div className="h-full p-6">
         <div className="mx-auto w-full max-w-6xl rounded-xl border bg-panel">
-          <div className="border-b px-5 py-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-              <BookOpen className="h-3.5 w-3.5" />
-              新手引导
-            </div>
-            <h3 className="mt-2 text-lg font-semibold text-foreground">单机版爱阅真人剧基础工作流</h3>
-            <p className="mt-1 text-sm text-muted-foreground">按顺序执行，不要跳步。</p>
-          </div>
+           <div className="border-b px-5 py-4">
+             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+               <BookOpen className="h-3.5 w-3.5" />
+               Beginner's Guide
+             </div>
+             <h3 className="mt-2 text-lg font-semibold text-foreground">Standalone Aiyue Live-action Drama Basic Workflow</h3>
+             <p className="mt-1 text-sm text-muted-foreground">Execute in order, do not skip steps.</p>
+           </div>
           <div className="grid gap-4 p-4 md:grid-cols-2">
             {OVERVIEW_WORKFLOW_SECTIONS.map((section) => (
               <div key={section.id} className="rounded-lg border bg-background/50 p-4">
@@ -293,18 +293,18 @@ export function OverviewPanel() {
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="p-3 pb-2 bg-panel border-b flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <BookOpen className="h-4 w-4" />
-          <h2 className="font-semibold text-sm">项目概览</h2>
-          <span className="text-xs text-muted-foreground">
-            《{meta.title}》
-            {meta.genre && <Badge variant="secondary" className="ml-1 text-[10px]">{meta.genre}</Badge>}
-            {meta.era && <Badge variant="outline" className="ml-1 text-[10px]">{meta.era}</Badge>}
-          </span>
-        </div>
-        <span className="text-[10px] text-muted-foreground">
-          {episodes.length} 集 · {meta.characters.length} 角色 · {meta.factions?.length || 0} 阵营 · {meta.keyItems?.length || 0} 物品
-        </span>
+         <div className="flex items-center gap-2">
+           <BookOpen className="h-4 w-4" />
+           <h2 className="font-semibold text-sm">Project Overview</h2>
+           <span className="text-xs text-muted-foreground">
+             《{meta.title}》
+             {meta.genre && <Badge variant="secondary" className="ml-1 text-[10px]">{meta.genre}</Badge>}
+             {meta.era && <Badge variant="outline" className="ml-1 text-[10px]">{meta.era}</Badge>}
+           </span>
+         </div>
+         <span className="text-[10px] text-muted-foreground">
+           {episodes.length} episodes · {meta.characters.length} characters · {meta.factions?.length || 0} factions · {meta.keyItems?.length || 0} items
+         </span>
       </div>
 
       {/* Two-column layout */}
@@ -314,52 +314,52 @@ export function OverviewPanel() {
           <ScrollArea className="h-full">
             <div className="p-4 space-y-4 pb-32">
               {/* 故事核心 */}
-              <SectionCard icon={BookOpen} title="故事核心">
-                <FieldRow label="标题">
-                  <EditableText value={meta.title} placeholder="剧名" onSave={(v) => update({ title: v })} />
-                </FieldRow>
-                <FieldRow label="Logline">
-                  <EditableText value={meta.logline} placeholder="一句话概括故事主线..." onSave={(v) => update({ logline: v })} />
-                </FieldRow>
-                <FieldRow label="大纲">
-                  <EditableText value={meta.outline} placeholder="100-500字完整故事线..." onSave={(v) => update({ outline: v })} multiline />
-                </FieldRow>
-                <FieldRow label="核心冲突">
-                  <EditableText value={meta.centralConflict} placeholder="主线矛盾..." onSave={(v) => update({ centralConflict: v })} />
-                </FieldRow>
-                <FieldRow label="主题">
-                  <div className="flex flex-wrap gap-1">
-                    {meta.themes?.map((t, i) => (
-                      <Badge key={i} variant="secondary" className="text-[10px]">{t}</Badge>
-                    ))}
-                    {(!meta.themes || meta.themes.length === 0) && (
-                      <span className="text-xs text-muted-foreground italic">未设置主题标签</span>
-                    )}
-                  </div>
-                </FieldRow>
+               <SectionCard icon={BookOpen} title="Story Core">
+                 <FieldRow label="Title">
+                   <EditableText value={meta.title} placeholder="Show Title" onSave={(v) => update({ title: v })} />
+                 </FieldRow>
+                 <FieldRow label="Logline">
+                   <EditableText value={meta.logline} placeholder="One-line summary of the main storyline..." onSave={(v) => update({ logline: v })} />
+                 </FieldRow>
+                 <FieldRow label="Outline">
+                   <EditableText value={meta.outline} placeholder="100-500 character complete storyline..." onSave={(v) => update({ outline: v })} multiline />
+                 </FieldRow>
+                 <FieldRow label="Central Conflict">
+                   <EditableText value={meta.centralConflict} placeholder="Main conflict..." onSave={(v) => update({ centralConflict: v })} />
+                 </FieldRow>
+                 <FieldRow label="Theme">
+                   <div className="flex flex-wrap gap-1">
+                     {meta.themes?.map((t, i) => (
+                       <Badge key={i} variant="secondary" className="text-[10px]">{t}</Badge>
+                     ))}
+                     {(!meta.themes || meta.themes.length === 0) && (
+                       <span className="text-xs text-muted-foreground italic">No theme tags set</span>
+                     )}
+                   </div>
+                 </FieldRow>
               </SectionCard>
 
-              {/* 世界观 */}
-              <SectionCard icon={Globe} title="世界观">
-                <FieldRow label="时代">
-                  <EditableText value={meta.era} placeholder="古代/现代/未来..." onSave={(v) => update({ era: v })} />
-                </FieldRow>
-                <FieldRow label="类型">
-                  <EditableText value={meta.genre} placeholder="武侠/商战/爱情..." onSave={(v) => update({ genre: v })} />
-                </FieldRow>
-                <FieldRow label="时间线">
-                  <EditableText value={meta.timelineSetting} placeholder="精确时间线设定..." onSave={(v) => update({ timelineSetting: v })} />
-                </FieldRow>
-                <FieldRow label="社会体系">
-                  <EditableText value={meta.socialSystem} placeholder="社会/权力结构..." onSave={(v) => update({ socialSystem: v })} />
-                </FieldRow>
-                <FieldRow label="力量体系">
-                  <EditableText value={meta.powerSystem} placeholder="武功/魔法/科技..." onSave={(v) => update({ powerSystem: v })} />
-                </FieldRow>
-                <FieldRow label="世界观">
-                  <EditableText value={meta.worldNotes} placeholder="补充设定..." onSave={(v) => update({ worldNotes: v })} multiline />
-                </FieldRow>
-              </SectionCard>
+               {/* Worldbuilding */}
+               <SectionCard icon={Globe} title="Worldbuilding">
+                 <FieldRow label="Era">
+                   <EditableText value={meta.era} placeholder="Ancient/Modern/Future..." onSave={(v) => update({ era: v })} />
+                 </FieldRow>
+                 <FieldRow label="Genre">
+                   <EditableText value={meta.genre} placeholder="Wuxia/Business/Romance..." onSave={(v) => update({ genre: v })} />
+                 </FieldRow>
+                 <FieldRow label="Timeline">
+                   <EditableText value={meta.timelineSetting} placeholder="Precise timeline setting..." onSave={(v) => update({ timelineSetting: v })} />
+                 </FieldRow>
+                 <FieldRow label="Social System">
+                   <EditableText value={meta.socialSystem} placeholder="Social/power structure..." onSave={(v) => update({ socialSystem: v })} />
+                 </FieldRow>
+                 <FieldRow label="Power System">
+                   <EditableText value={meta.powerSystem} placeholder="Martial arts/magic/technology..." onSave={(v) => update({ powerSystem: v })} />
+                 </FieldRow>
+                 <FieldRow label="World Notes">
+                   <EditableText value={meta.worldNotes} placeholder="Additional settings..." onSave={(v) => update({ worldNotes: v })} multiline />
+                 </FieldRow>
+               </SectionCard>
 
               {/* 制作设定 */}
               <SectionCard icon={Settings2} title="制作设定">

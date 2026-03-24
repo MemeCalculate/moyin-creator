@@ -2,10 +2,10 @@
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 /**
- * Cinematography Profile Presets — 摄影风格档案预设
+ * Cinematography Profile Presets
  *
- * 在「画风选择」和「逐镜拍摄控制字段」之间，提供项目级摄影语言基准。
- * AI 校准时以此为默认倾向，prompt builder 在逐镜字段为空时回退到此处。
+ * Between "Style Selection" and "Per-Shot Control Fields", provides project-level cinematography language baseline.
+ * AI calibration uses this as default tendency, prompt builder falls back here when per-shot fields are empty.
  */
 
 import type {
@@ -24,86 +24,86 @@ import type {
   PhotographyTechnique,
 } from '@/types/script';
 
-// ==================== 类型定义 ====================
+// ==================== Type Definitions ====================
 
 export type CinematographyCategory =
-  | 'cinematic'     // 电影类
-  | 'documentary'   // 纪实类
-  | 'stylized'      // 风格化
-  | 'genre'         // 类型片
-  | 'era';          // 时代风格
+  | 'cinematic'     // Cinematic
+  | 'documentary'   // Documentary
+  | 'stylized'      // Stylized
+  | 'genre'         // Genre
+  | 'era';          // Era style
 
 export interface CinematographyProfile {
   id: string;
-  name: string;          // 中文名
-  nameEn: string;        // 英文名
+  name: string;          // Chinese name
+  nameEn: string;        // English name
   category: CinematographyCategory;
-  description: string;   // 中文描述（1-2句）
-  emoji: string;         // 标识 emoji
+  description: string;   // Chinese description (1-2 sentences)
+  emoji: string;         // Identifier emoji
 
-  // ---- 灯光默认 (Gaffer) ----
+  // ---- Lighting Default (Gaffer) ----
   defaultLighting: {
     style: LightingStyle;
     direction: LightingDirection;
     colorTemperature: ColorTemperature;
   };
 
-  // ---- 焦点默认 (Focus Puller) ----
+  // ---- Focus Default (Focus Puller) ----
   defaultFocus: {
     depthOfField: DepthOfField;
     focusTransition: FocusTransition;
   };
 
-  // ---- 器材默认 (Camera Rig) ----
+  // ---- Equipment Default (Camera Rig) ----
   defaultRig: {
     cameraRig: CameraRig;
     movementSpeed: MovementSpeed;
   };
 
-  // ---- 氛围默认 (On-set SFX) ----
+  // ---- Atmosphere Default (On-set SFX) ----
   defaultAtmosphere: {
     effects: AtmosphericEffect[];
     intensity: EffectIntensity;
   };
 
-  // ---- 速度默认 (Speed Ramping) ----
+  // ---- Speed Default (Speed Ramping) ----
   defaultSpeed: {
     playbackSpeed: PlaybackSpeed;
   };
 
-  // ---- 拍摄角度 / 焦距 / 技法默认（可选） ----
+  // ---- Angle / Focal Length / Technique Default (Optional) ----
   defaultAngle?: CameraAngle;
   defaultFocalLength?: FocalLength;
   defaultTechnique?: PhotographyTechnique;
 
-  // ---- AI 指导 ----
-  /** 给 AI 的中文摄影指导说明（2-3句话，注入 system prompt） */
+  // ---- AI Guidance ----
+  /** Chinese cinematography guidance for AI (2-3 sentences, injected into system prompt) */
   promptGuidance: string;
-  /** 参考影片列表（帮助 AI 理解目标风格） */
+  /** Reference film list (helps AI understand target style) */
   referenceFilms: string[];
 }
 
-// ==================== 分类信息 ====================
+// ==================== Category Info ====================
 
 export const CINEMATOGRAPHY_CATEGORIES: { id: CinematographyCategory; name: string; emoji: string }[] = [
-  { id: 'cinematic', name: '电影类', emoji: '🎬' },
-  { id: 'documentary', name: '纪实类', emoji: '📹' },
-  { id: 'stylized', name: '风格化', emoji: '🎨' },
-  { id: 'genre', name: '类型片', emoji: '🎭' },
-  { id: 'era', name: '时代风格', emoji: '📅' },
+  { id: 'cinematic', name: 'Cinematic', emoji: '🎬' },
+  { id: 'documentary', name: 'Documentary', emoji: '📹' },
+  { id: 'stylized', name: 'Stylized', emoji: '🎨' },
+  { id: 'genre', name: 'Genre', emoji: '🎭' },
+  { id: 'era', name: 'Era Style', emoji: '📅' },
 ];
 
-// ==================== 预设列表 ====================
+// ==================== Preset List ====================
 
-// ---------- 电影类 (cinematic) ----------
+// ---------- Cinematic ----------
 
 const CINEMATIC_PROFILES: CinematographyProfile[] = [
   {
     id: 'classic-cinematic',
-    name: '经典电影',
+    name: 'Classic Cinematic',
     nameEn: 'Classic Cinematic',
     category: 'cinematic',
-    description: '标准院线电影质感，三点布光，自然色温，匀速轨道运镜，画面端正大气',
+    description: 'Standard theatrical film quality, three-point lighting, natural color temperature, smooth dolly movement, upright and majestic framing',
     emoji: '🎞️',
     defaultLighting: { style: 'natural', direction: 'three-point', colorTemperature: 'warm' },
     defaultFocus: { depthOfField: 'medium', focusTransition: 'rack-between' },
@@ -112,15 +112,15 @@ const CINEMATIC_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '50mm',
-    promptGuidance: '遵循经典电影语法，三点布光为基础，暖色调营造温暖质感。轨道推拉保持画面稳定流畅，景深随叙事功能调整——对话用浅景深聚焦情绪，全景用深景深交代环境。',
-    referenceFilms: ['肖申克的救赎', '阿甘正传', '教父'],
+    promptGuidance: 'Follow classic film grammar, three-point lighting as foundation, warm tones create warm texture. Dolly push-pull maintains stable smooth framing, depth of field adjusts with narrative function — shallow DOF focuses on emotion in dialogues, deep DOF establishes environment in wide shots.',
+    referenceFilms: ['The Shawshank Redemption', 'Forrest Gump', 'The Godfather'],
   },
   {
     id: 'film-noir',
-    name: '黑色电影',
+    name: 'Film Noir',
     nameEn: 'Film Noir',
     category: 'cinematic',
-    description: '低调布光、强烈明暗对比、侧光为主、冷色调、雾气弥漫、手持呼吸感',
+    description: 'Low-key lighting, strong light-shadow contrast, side lighting dominant, cool tones, foggy atmosphere, handheld breathing feel',
     emoji: '🖤',
     defaultLighting: { style: 'low-key', direction: 'side', colorTemperature: 'cool' },
     defaultFocus: { depthOfField: 'shallow', focusTransition: 'rack-to-fg' },
@@ -129,15 +129,15 @@ const CINEMATIC_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'low-angle',
     defaultFocalLength: '35mm',
-    promptGuidance: '黑色电影的灵魂是光影——大面积阴影中只留一束侧光照亮人物。冷色调配合雾气营造不安感，手持微晃增加真实的紧张感。尽量让人物半脸在黑暗中，暗示角色的双面性。',
-    referenceFilms: ['银翼杀手', '唐人街', '第三人', '罪恶之城'],
+    promptGuidance: 'The soul of film noir is light and shadow — leaving only one beam of side light to illuminate the character in large areas of shadow. Cool tones with fog create unease, handheld micro-shake increases real tension. Try to keep character half-face in darkness, hinting at character duality.',
+    referenceFilms: ['Blade Runner', 'Chinatown', 'The Third Man', 'Sin City'],
   },
   {
     id: 'epic-blockbuster',
-    name: '史诗大片',
+    name: 'Epic Blockbuster',
     nameEn: 'Epic Blockbuster',
     category: 'cinematic',
-    description: '高调明亮、正面光、深景深、摇臂大幅运动、镜头光晕、宏大感',
+    description: 'High-key bright, front lighting, deep depth of field, crane major movement, lens flare, grand sense',
     emoji: '⚔️',
     defaultLighting: { style: 'high-key', direction: 'front', colorTemperature: 'neutral' },
     defaultFocus: { depthOfField: 'deep', focusTransition: 'none' },
@@ -146,15 +146,15 @@ const CINEMATIC_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '24mm',
-    promptGuidance: '史诗感来自空间纵深——用深景深和摇臂大幅升降展示宏大场面。正面高调光让画面明亮壮观，适当加入镜头光晕和尘埃粒子增加电影感。战斗场面可切换肩扛手持增加冲击力。',
-    referenceFilms: ['指环王', '角斗士', '勇敢的心', '天国王朝'],
+    promptGuidance: 'Epic sense comes from spatial depth — use deep depth of field and large crane movements to display grand scenes. High-key front lighting makes画面 bright and spectacular,适当加入镜头光晕和尘埃粒子增加电影感。战斗场面可切换肩扛手持增加冲击力。',
+    referenceFilms: ['The Lord of the Rings', 'Gladiator', 'Braveheart', 'Kingdom of Heaven'],
   },
   {
     id: 'intimate-drama',
-    name: '亲密剧情',
+    name: 'Intimate Drama',
     nameEn: 'Intimate Drama',
     category: 'cinematic',
-    description: '自然侧光、暖色温、浅景深、三脚架静态、安静内敛、聚焦人物情绪',
+    description: 'Natural side lighting, warm color temperature, shallow depth of field, tripod static, quiet and restrained, focus on character emotions',
     emoji: '🫂',
     defaultLighting: { style: 'natural', direction: 'side', colorTemperature: 'warm' },
     defaultFocus: { depthOfField: 'shallow', focusTransition: 'rack-between' },
@@ -163,15 +163,15 @@ const CINEMATIC_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '85mm',
-    promptGuidance: '亲密剧情用静态镜头和浅景深把观众拉入角色的内心世界。自然侧光创造面部的明暗层次，暖色温传递情感温度。摄影机几乎不动，让演员的微表情成为画面的全部焦点。',
-    referenceFilms: ['海边的曼彻斯特', '婚姻故事', '花样年华'],
+    promptGuidance: 'Intimate drama pulls audience into character inner world with static shots and shallow depth of field. Natural side lighting creates facial light-shadow layers, warm color temperature conveys emotional warmth. Camera barely moves, letting actor micro-expressions become the entire focus of the frame.',
+    referenceFilms: ['Manchester by the Sea', 'Marriage Story', 'In the Mood for Love'],
   },
   {
     id: 'romantic-film',
-    name: '浪漫爱情',
+    name: 'Romantic Film',
     nameEn: 'Romantic Film',
     category: 'cinematic',
-    description: '逆光黄金时段、极浅景深、斯坦尼康丝滑跟随、丁达尔光效、梦幻柔和',
+    description: 'Backlit golden hour, extremely shallow depth of field, steadicam smooth follow, Tyndall effect, dreamy soft',
     emoji: '💕',
     defaultLighting: { style: 'natural', direction: 'back', colorTemperature: 'golden-hour' },
     defaultFocus: { depthOfField: 'ultra-shallow', focusTransition: 'pull-focus' },
@@ -181,20 +181,20 @@ const CINEMATIC_PROFILES: CinematographyProfile[] = [
     defaultAngle: 'eye-level',
     defaultFocalLength: '85mm',
     defaultTechnique: 'bokeh',
-    promptGuidance: '浪漫感的核心是逆光——黄金时段的暖色逆光让人物轮廓发光。极浅景深把世界虚化成光斑，斯坦尼康轻柔跟随人物，仿佛在梦中行走。偶尔飘落的花瓣或光束为画面增添诗意。',
-    referenceFilms: ['恋恋笔记本', '爱乐之城', '傲慢与偏见', '情书'],
+    promptGuidance: 'The core of romance is backlighting — warm color backlit at golden hour makes character outline glow. Extremely shallow depth of field blurs world into light spots, steadicam gently follows character as if walking in a dream. Occasional falling petals or light beams add poetic touch to the frame.',
+    referenceFilms: ['The Notebook', 'La La Land', 'Pride and Prejudice', 'Love Letter'],
   },
 ];
 
-// ---------- 纪实类 (documentary) ----------
+// ---------- Documentary ----------
 
 const DOCUMENTARY_PROFILES: CinematographyProfile[] = [
   {
     id: 'documentary-raw',
-    name: '纪实手持',
+    name: 'Raw Documentary',
     nameEn: 'Raw Documentary',
     category: 'documentary',
-    description: '手持呼吸感、自然光、中等景深、正面光、无修饰、真实粗粝',
+    description: 'Handheld breathing feel, natural light, medium depth of field, front lighting, unpolished, real and rough',
     emoji: '📹',
     defaultLighting: { style: 'natural', direction: 'front', colorTemperature: 'neutral' },
     defaultFocus: { depthOfField: 'medium', focusTransition: 'pull-focus' },
@@ -203,15 +203,15 @@ const DOCUMENTARY_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '35mm',
-    promptGuidance: '纪实风格追求「在场感」——手持摄影的轻微晃动让观众感觉身临其境。完全使用自然光，不做任何人工修饰。跟焦跟随人物运动，允许偶尔的焦点偏移，这种不完美反而增加真实感。',
-    referenceFilms: ['人生果实', '海豚湾', '徒手攀岩'],
+    promptGuidance: 'Documentary style pursues "being present" — handheld camera slight shake makes audience feel immersed. Use entirely natural light without any artificial polish. Follow focus follows character movement, allowing occasional focus shift — this imperfection actually increases realism.',
+    referenceFilms: ['The Seasons in Kameoka', 'The Cove', 'Free Solo'],
   },
   {
     id: 'news-report',
-    name: '新闻纪实',
+    name: 'News Report',
     nameEn: 'News Report',
     category: 'documentary',
-    description: '肩扛、高调光、深景深、中性色温、信息优先、画面清晰锐利',
+    description: 'Shoulder-mounted, high-key lighting, deep depth of field, neutral color temperature, information priority, sharp clear picture',
     emoji: '📡',
     defaultLighting: { style: 'high-key', direction: 'front', colorTemperature: 'neutral' },
     defaultFocus: { depthOfField: 'deep', focusTransition: 'none' },
@@ -220,20 +220,20 @@ const DOCUMENTARY_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '24mm',
-    promptGuidance: '新闻纪实以信息传达为第一优先——深景深确保画面所有元素清晰可辨，高调光消除阴影让细节完整呈现。肩扛摄影保持灵活跟踪，但比手持更稳定。画面构图讲究信息层次，重要人物或事件始终在视觉焦点。',
-    referenceFilms: ['聚焦', '总统班底', '华盛顿邮报'],
+    promptGuidance: 'News documentary prioritizes information delivery — deep depth of field ensures all elements in frame are clearly visible, high-key lighting eliminates shadows to present details completely. Shoulder-mounted photography keeps flexible tracking but more stable than handheld. Frame composition讲究信息层次，重要人物或事件始终在视觉焦点。',
+    referenceFilms: ['Spotlight', 'All the President\'s Men', 'The Post'],
   },
 ];
 
-// ---------- 风格化 (stylized) ----------
+// ---------- Stylized ----------
 
 const STYLIZED_PROFILES: CinematographyProfile[] = [
   {
     id: 'cyberpunk-neon',
-    name: '赛博朋克',
+    name: 'Cyberpunk Neon',
     nameEn: 'Cyberpunk Neon',
     category: 'stylized',
-    description: '霓虹灯光、轮廓光、混合色温、浅景深、稳定器滑动、薄霾弥漫',
+    description: 'Neon lights, rim lighting, mixed color temperature, shallow depth of field, stabilizer slide, thin haze',
     emoji: '🌃',
     defaultLighting: { style: 'neon', direction: 'rim', colorTemperature: 'mixed' },
     defaultFocus: { depthOfField: 'shallow', focusTransition: 'rack-to-bg' },
@@ -243,15 +243,15 @@ const STYLIZED_PROFILES: CinematographyProfile[] = [
     defaultAngle: 'low-angle',
     defaultFocalLength: '35mm',
     defaultTechnique: 'reflection',
-    promptGuidance: '赛博朋克的视觉语言是「冷暖冲突」——霓虹紫红与冰蓝同框，轮廓光把人物从暗色背景中剥离。浅景深让霓虹灯化为迷幻光斑，薄霾为光线增加体积感。镜头慢速滑动穿过雨夜街道，营造未来都市的疏离感。',
-    referenceFilms: ['银翼杀手2049', '攻壳机动队', '黑客帝国', '创战纪'],
+    promptGuidance: 'The visual language of cyberpunk is "cold-warm conflict" — neon purple-red and ice blue in same frame, rim light separates character from dark background. Shallow depth of field turns neon lights into psychedelic light spots, thin haze adds volumetric quality to light. Camera slowly slides through rainy street, creating futuristic city alienation.',
+    referenceFilms: ['Blade Runner 2049', 'Ghost in the Shell', 'The Matrix', 'Tron: Legacy'],
   },
   {
     id: 'wuxia-classic',
-    name: '古典武侠',
+    name: 'Classic Wuxia',
     nameEn: 'Classic Wuxia',
     category: 'stylized',
-    description: '自然侧光、暖色温、中景深、摇臂升降、薄雾飘渺、古韵悠然',
+    description: 'Natural side lighting, warm color temperature, medium depth of field, crane升降, thin mist drifting, ancient charm leisurely',
     emoji: '🗡️',
     defaultLighting: { style: 'natural', direction: 'side', colorTemperature: 'warm' },
     defaultFocus: { depthOfField: 'medium', focusTransition: 'rack-between' },
@@ -260,15 +260,15 @@ const STYLIZED_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '50mm',
-    promptGuidance: '古典武侠追求「意境」——山间薄雾与落叶营造江湖的苍茫感。摇臂从高处缓缓降至人物，如俯瞰天下的视角。自然侧光模拟透过竹林的斑驳光影，暖色温呼应水墨丹青。打斗场面可加入慢动作，展现武术之美。',
-    referenceFilms: ['卧虎藏龙', '英雄', '刺客聂隐娘', '一代宗师'],
+    promptGuidance: 'Classic wuxia pursues "artistic conception" — mountain mist and falling leaves create the vastness of the Jianghu. Crane slowly descends from high to character, like a view overlooking the world. Natural side lighting simulates dappled light through bamboo forest, warm color temperature echoes Chinese ink painting. Fight scenes can add slow motion to showcase martial arts beauty.',
+    referenceFilms: ['Crouching Tiger, Hidden Dragon', 'Hero', 'The Assassin', 'The Grandmaster'],
   },
   {
     id: 'horror-thriller',
-    name: '恐怖惊悚',
+    name: 'Horror Thriller',
     nameEn: 'Horror Thriller',
     category: 'stylized',
-    description: '低调布光、底光不安感、冷色调、浅景深、手持颤抖、浓雾遮蔽',
+    description: 'Low-key lighting, bottom light unease, cool color temperature, shallow depth of field, handheld shake, thick fog obscuring',
     emoji: '👻',
     defaultLighting: { style: 'low-key', direction: 'bottom', colorTemperature: 'cool' },
     defaultFocus: { depthOfField: 'shallow', focusTransition: 'rack-to-bg' },
@@ -277,15 +277,15 @@ const STYLIZED_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'low-angle',
     defaultFocalLength: '24mm',
-    promptGuidance: '恐怖片的摄影原则是「隐藏比展示更可怕」——浅景深让背景模糊成未知的威胁，浓雾遮蔽视野制造不安。底光让面部出现不自然的阴影，手持极慢移动制造潜行感。关键时刻突然快速甩镜，打破之前的缓慢节奏。',
-    referenceFilms: ['闪灵', '遗传厄运', '招魂', '午夜凶铃'],
+    promptGuidance: 'The cinematography principle of horror films is "hiding is more terrifying than showing" — shallow depth of field blurs background into unknown threat, thick fog obscures vision to create unease. Bottom lighting creates unnatural shadows on face, handheld extremely slow movement creates sneaking feel. Key moment suddenly quick whip shot, breaks previous slow rhythm.',
+    referenceFilms: ['The Shining', 'Hereditary', 'The Conjuring', 'Ring'],
   },
   {
     id: 'music-video',
-    name: 'MV风格',
+    name: 'Music Video',
     nameEn: 'Music Video',
     category: 'stylized',
-    description: '霓虹逆光、混合色温、极浅景深、斯坦尼康环绕、光粒子飞舞、视觉冲击力强',
+    description: 'Neon backlight, mixed color temperature, extremely shallow depth of field, steadicam orbit, light particles flying, strong visual impact',
     emoji: '🎵',
     defaultLighting: { style: 'neon', direction: 'back', colorTemperature: 'mixed' },
     defaultFocus: { depthOfField: 'ultra-shallow', focusTransition: 'pull-focus' },
@@ -295,20 +295,20 @@ const STYLIZED_PROFILES: CinematographyProfile[] = [
     defaultAngle: 'low-angle',
     defaultFocalLength: '35mm',
     defaultTechnique: 'bokeh',
-    promptGuidance: 'MV追求极致视觉冲击——每一帧都要像海报。极浅景深把一切虚化成五彩光斑，霓虹逆光勾勒人物轮廓。快速斯坦尼康环绕拍摄，配合频繁的速度变化（慢放与快进交替）。大量使用光粒子和镜头光晕增加梦幻感。',
-    referenceFilms: ['爱乐之城MV段落', 'Beyoncé - Lemonade', 'The Weeknd - Blinding Lights'],
+    promptGuidance: 'MV pursues extreme visual impact — every frame should look like a poster. Extremely shallow depth of field blurs everything into colorful light spots, neon backlight outlines character silhouette. Fast steadicam orbit shooting, with frequent speed changes (slow motion and fast forward alternating). Heavy use of light particles and lens flare to increase dreamy feel.',
+    referenceFilms: ['La La Land MV segments', 'Beyoncé - Lemonade', 'The Weeknd - Blinding Lights'],
   },
 ];
 
-// ---------- 类型片 (genre) ----------
+// ---------- Genre ----------
 
 const GENRE_PROFILES: CinematographyProfile[] = [
   {
     id: 'family-warmth',
-    name: '家庭温情',
+    name: 'Family Warmth',
     nameEn: 'Family Warmth',
     category: 'genre',
-    description: '自然正面光、暖色温3200K、中等景深、三脚架稳定、温暖如阳光洒入客厅',
+    description: 'Natural front lighting, warm color temperature 3200K, medium depth of field, tripod stable, warm like sunlight streaming into living room',
     emoji: '🏠',
     defaultLighting: { style: 'natural', direction: 'front', colorTemperature: 'warm' },
     defaultFocus: { depthOfField: 'medium', focusTransition: 'rack-between' },
@@ -317,15 +317,15 @@ const GENRE_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '50mm',
-    promptGuidance: '家庭剧的摄影要像一个安静的观察者——三脚架稳定不干扰，暖色光如午后阳光洒入窗户。中等景深让家庭成员都在画面中清晰可见，传递「团聚」感。偶尔的丁达尔光线从窗户射入，为平凡的家庭场景增添一丝诗意。',
-    referenceFilms: ['小偷家族', '步履不停', '请回答1988', '都挺好'],
+    promptGuidance: 'Family drama cinematography should act as a quiet observer — tripod stable without interference, warm light like afternoon sunlight through window. Medium depth of field keeps all family members clearly visible in frame, conveying "reunion" feel. Occasional Tyndall light rays through window, adding a touch of poetry to ordinary family scenes.',
+    referenceFilms: ['Shoplifters', 'Still Walking', 'Reply 1988', 'All Is Well'],
   },
   {
     id: 'action-intense',
-    name: '动作激烈',
+    name: 'Intense Action',
     nameEn: 'Intense Action',
     category: 'genre',
-    description: '高调侧光、中性色温、中景深、肩扛快速跟拍、尘土飞扬',
+    description: 'High-key side lighting, neutral color temperature, medium depth of field, shoulder-mounted fast follow, dust flying',
     emoji: '💥',
     defaultLighting: { style: 'high-key', direction: 'side', colorTemperature: 'neutral' },
     defaultFocus: { depthOfField: 'medium', focusTransition: 'pull-focus' },
@@ -335,15 +335,15 @@ const GENRE_PROFILES: CinematographyProfile[] = [
     defaultAngle: 'eye-level',
     defaultFocalLength: '24mm',
     defaultTechnique: 'high-speed',
-    promptGuidance: '动作戏的摄影追求「动能传递」——肩扛快速跟拍让观众感受冲击力，侧光强化肌肉轮廓和动作线条。中景深保证主体清晰但背景有适度虚化。关键动作瞬间（出拳、爆炸）可使用慢放0.5x突出力量感，随后立刻恢复正常速度。尘土和火花增加物理碰撞的真实感。',
-    referenceFilms: ['疯狂的麦克斯', '谍影重重', '突袭', '碟中谍'],
+    promptGuidance: 'Action scene cinematography pursues "energy transfer" — shoulder-mounted fast follow lets audience feel impact, side lighting enhances muscle contours and action lines. Medium depth of field ensures subject is clear but background has appropriate blur. Key action moments (punches, explosions) can use 0.5x slow motion to emphasize power, then immediately return to normal speed. Dust and sparks increase physical collision realism.',
+    referenceFilms: ['Mad Max', 'Bourne', 'The Raid', 'Mission: Impossible'],
   },
   {
     id: 'suspense-mystery',
-    name: '悬疑推理',
+    name: 'Suspense Mystery',
     nameEn: 'Suspense Mystery',
     category: 'genre',
-    description: '低调侧光、冷色调、浅景深、轨道缓推、薄雾笼罩、隐藏与揭示',
+    description: 'Low-key side lighting, cool color temperature, shallow depth of field, dolly slow push, thin mist covering, hide and reveal',
     emoji: '🔍',
     defaultLighting: { style: 'low-key', direction: 'side', colorTemperature: 'cool' },
     defaultFocus: { depthOfField: 'shallow', focusTransition: 'rack-to-fg' },
@@ -352,20 +352,20 @@ const GENRE_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '50mm',
-    promptGuidance: '悬疑片的摄影核心是「控制信息揭示」——浅景深选择性地让观众只看到导演想让他们看到的。轨道极慢推进制造压迫感，低调侧光让画面总有一半隐藏在阴影中。转焦是重要叙事手法，从前景线索转焦到背景嫌疑人，或反向操作。薄雾为画面增加朦胧感，暗示真相的不确定性。',
-    referenceFilms: ['消失的爱人', '七宗罪', '杀人回忆', '十二怒汉'],
+    promptGuidance: 'The core of suspense film cinematography is "controlling information revelation" — shallow depth of field selectively lets audience see only what director wants them to see. Dolly extremely slow push creates oppression, low-key side lighting always keeps half of frame hidden in shadow. Rack focus is important narrative technique, shifting from foreground clue to background suspect, or reverse. Thin mist adds hazy feel to frame, hinting at uncertainty of truth.',
+    referenceFilms: ['Gone Girl', 'Se7en', 'Memories of Murder', '12 Angry Men'],
   },
 ];
 
-// ---------- 时代风格 (era) ----------
+// ---------- Era Style ----------
 
 const ERA_PROFILES: CinematographyProfile[] = [
   {
     id: 'hk-retro-90s',
-    name: '90s港片',
+    name: '90s Hong Kong',
     nameEn: '90s Hong Kong',
     category: 'era',
-    description: '霓虹侧光、混合色温、中景深、手持晃动、薄霾弥漫、王家卫式忧郁',
+    description: 'Neon side lighting, mixed color temperature, medium depth of field, handheld shake, thin haze, Wong Kar-wai style melancholy',
     emoji: '🌙',
     defaultLighting: { style: 'neon', direction: 'side', colorTemperature: 'mixed' },
     defaultFocus: { depthOfField: 'medium', focusTransition: 'rack-between' },
@@ -374,15 +374,15 @@ const ERA_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '35mm',
-    promptGuidance: '90年代港片的摄影DNA是「都市霓虹+手持游走」——混合色温的霓虹灯把城市街道染成红蓝交织的梦境。手持摄影在人群中穿梭，偶尔使用抽帧或降格制造王家卫式的虚影效果。薄霾笼罩的街头，每个路人都像有故事。侧光勾勒出人物忧郁的轮廓。',
-    referenceFilms: ['重庆森林', '堕落天使', '无间道', '英雄本色'],
+    promptGuidance: 'The photography DNA of 90s Hong Kong films is "urban neon + handheld wandering" — mixed color temperature neon lights dye city streets into red-blue intertwined dreams. Handheld camera shuttles through crowds, occasionally using frame skipping or frame reduction to create Wong Kar-wai style phantom effects. Haze-covered streets, every passerby seems to have a story. Side lighting outlines character melancholy contour.',
+    referenceFilms: ['Chungking Express', 'Fallen Angels', 'Infernal Affairs', 'A Better Tomorrow'],
   },
   {
     id: 'golden-age-hollywood',
-    name: '好莱坞黄金时代',
+    name: 'Golden Age Hollywood',
     nameEn: 'Golden Age Hollywood',
     category: 'era',
-    description: '高调三点布光、暖色温、深景深、轨道优雅运动、光芒四射、端庄华丽',
+    description: 'High-key three-point lighting, warm color temperature, deep depth of field, dolly elegant movement, rays radiating, dignified gorgeous',
     emoji: '⭐',
     defaultLighting: { style: 'high-key', direction: 'three-point', colorTemperature: 'warm' },
     defaultFocus: { depthOfField: 'deep', focusTransition: 'none' },
@@ -391,14 +391,14 @@ const ERA_PROFILES: CinematographyProfile[] = [
     defaultSpeed: { playbackSpeed: 'normal' },
     defaultAngle: 'eye-level',
     defaultFocalLength: '50mm',
-    promptGuidance: '好莱坞黄金时代的摄影追求「完美」——三点布光消除一切不美的阴影，让明星容光焕发。深景深和精心构图让每一帧都像油画，轨道缓慢优雅移动如华尔兹。暖色温赋予画面怀旧的金色光芒。一切都要端庄、华丽、无可挑剔。',
-    referenceFilms: ['卡萨布兰卡', '公民凯恩', '日落大道', '乱世佳人'],
+    promptGuidance: 'Golden Age Hollywood cinematography pursues "perfection" — three-point lighting eliminates all unbeautiful shadows, making stars radiant. Deep depth of field and careful composition make every frame like an oil painting, dolly slow elegant movement like a waltz. Warm color temperature gives frame nostalgic golden glow. Everything must be dignified, gorgeous, flawless.',
+    referenceFilms: ['Casablanca', 'Citizen Kane', 'Sunset Boulevard', 'Gone with the Wind'],
   },
 ];
 
-// ==================== 导出 ====================
+// ==================== Export ====================
 
-/** 所有摄影风格档案预设 */
+/** All cinematography profile presets */
 export const CINEMATOGRAPHY_PROFILES: readonly CinematographyProfile[] = [
   ...CINEMATIC_PROFILES,
   ...DOCUMENTARY_PROFILES,
@@ -407,31 +407,31 @@ export const CINEMATOGRAPHY_PROFILES: readonly CinematographyProfile[] = [
   ...ERA_PROFILES,
 ] as const;
 
-/** 按分类组织 */
+/** Organized by category */
 export const CINEMATOGRAPHY_PROFILE_CATEGORIES: {
   id: CinematographyCategory;
   name: string;
   emoji: string;
   profiles: readonly CinematographyProfile[];
 }[] = [
-  { id: 'cinematic', name: '电影类', emoji: '🎬', profiles: CINEMATIC_PROFILES },
-  { id: 'documentary', name: '纪实类', emoji: '📹', profiles: DOCUMENTARY_PROFILES },
-  { id: 'stylized', name: '风格化', emoji: '🎨', profiles: STYLIZED_PROFILES },
-  { id: 'genre', name: '类型片', emoji: '🎭', profiles: GENRE_PROFILES },
-  { id: 'era', name: '时代风格', emoji: '📅', profiles: ERA_PROFILES },
+  { id: 'cinematic', name: 'Cinematic', emoji: '🎬', profiles: CINEMATIC_PROFILES },
+  { id: 'documentary', name: 'Documentary', emoji: '📹', profiles: DOCUMENTARY_PROFILES },
+  { id: 'stylized', name: 'Stylized', emoji: '🎨', profiles: STYLIZED_PROFILES },
+  { id: 'genre', name: 'Genre', emoji: '🎭', profiles: GENRE_PROFILES },
+  { id: 'era', name: 'Era Style', emoji: '📅', profiles: ERA_PROFILES },
 ];
 
-/** 根据 ID 获取摄影档案 */
+/** Get cinematography profile by ID */
 export function getCinematographyProfile(profileId: string): CinematographyProfile | undefined {
   return CINEMATOGRAPHY_PROFILES.find(p => p.id === profileId);
 }
 
-/** 默认摄影档案 ID */
+/** Default cinematography profile ID */
 export const DEFAULT_CINEMATOGRAPHY_PROFILE_ID = 'classic-cinematic';
 
 /**
- * 生成 AI 校准用的摄影档案指导文本
- * 注入到 system prompt 中，作为拍摄控制字段的默认基准
+ * Generate cinematography profile guidance text for AI calibration
+ * Injected into system prompt, as default baseline for shot control fields
  */
 export function buildCinematographyGuidance(profileId: string): string {
   const profile = getCinematographyProfile(profileId);
@@ -440,26 +440,26 @@ export function buildCinematographyGuidance(profileId: string): string {
   const { defaultLighting, defaultFocus, defaultRig, defaultAtmosphere, defaultSpeed } = profile;
 
   const lines = [
-    `【🎬 摄影风格档案 — ${profile.name} (${profile.nameEn})】`,
+    `【🎬 Cinematography Profile — ${profile.name} (${profile.nameEn})】`,
     `${profile.description}`,
     '',
-    '**默认摄影基准（逐镜可根据剧情需要偏离，但须有理由）：**',
-    `灯光：${profile.defaultLighting.style} 风格 + ${profile.defaultLighting.direction} 方向 + ${profile.defaultLighting.colorTemperature} 色温`,
-    `焦点：${defaultFocus.depthOfField} 景深 + ${defaultFocus.focusTransition} 转焦`,
-    `器材：${defaultRig.cameraRig} + ${defaultRig.movementSpeed} 速度`,
+    '**Default Cinematography Baseline (per-shot can deviate based on story needs, but must have justification):**',
+    `Lighting: ${profile.defaultLighting.style} style + ${profile.defaultLighting.direction} direction + ${profile.defaultLighting.colorTemperature} color temperature`,
+    `Focus: ${defaultFocus.depthOfField} depth of field + ${defaultFocus.focusTransition} focus transition`,
+    `Equipment: ${defaultRig.cameraRig} + ${defaultRig.movementSpeed} speed`,
     defaultAtmosphere.effects.length > 0
-      ? `氛围：${defaultAtmosphere.effects.join('+')} (${defaultAtmosphere.intensity})`
-      : '氛围：无特殊氛围效果',
-    `速度：${defaultSpeed.playbackSpeed}`,
-    profile.defaultAngle ? `拍摄角度：${profile.defaultAngle}` : '',
-    profile.defaultFocalLength ? `镜头焦距：${profile.defaultFocalLength}` : '',
-    profile.defaultTechnique ? `摄影技法：${profile.defaultTechnique}` : '',
+      ? `Atmosphere: ${defaultAtmosphere.effects.join('+')} (${defaultAtmosphere.intensity})`
+      : 'Atmosphere: No special atmosphere effects',
+    `Speed: ${defaultSpeed.playbackSpeed}`,
+    profile.defaultAngle ? `Angle: ${profile.defaultAngle}` : '',
+    profile.defaultFocalLength ? `Focal Length: ${profile.defaultFocalLength}` : '',
+    profile.defaultTechnique ? `Technique: ${profile.defaultTechnique}` : '',
     '',
-    `**摄影指导：** ${profile.promptGuidance}`,
+    `**Cinematography Guidance:** ${profile.promptGuidance}`,
     '',
-    `**参考影片：** ${profile.referenceFilms.join('、')}`,
+    `**Reference Films:** ${profile.referenceFilms.join(', ')}`,
     '',
-    '⚠️ 以上是本项目的摄影语言基准。每个分镜的拍摄控制字段应以此为默认值，但如果剧情的叙事功能（如高潮、转折）需要偏离基准，可以自由调整——关键是要有叙事理由，不要随机变化。',
+    '⚠️ Above is this project\'s cinematography language baseline. Each shot\'s control fields should use this as default value, but if the narrative function of the story (like climax, turning point) requires deviating from baseline, adjustment is free — key is to have narrative justification, not random changes.',
   ].filter(Boolean);
 
   return lines.join('\n');

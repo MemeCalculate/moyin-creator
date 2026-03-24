@@ -3,8 +3,8 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 
 /**
- * PropsLibrary - 道具库主视图
- * 左侧目录树 + 右侧道具网格，支持自定义目录管理
+ * PropsLibrary - Props Library Main View
+ * Left directory tree + right props grid, supports custom directory management
  */
 
 import { useState, useRef } from 'react';
@@ -98,24 +98,24 @@ function PropCard({ item }: { item: PropItem }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-36">
-                <DropdownMenuItem onClick={() => { setNameInput(item.name); setRenaming(true); }}>
-                  <Pencil className="mr-2 h-3.5 w-3.5" />
-                  重命名
-                </DropdownMenuItem>
+               <DropdownMenuItem onClick={() => { setNameInput(item.name); setRenaming(true); }}>
+                 <Pencil className="mr-2 h-3.5 w-3.5" />
+                 Rename
+               </DropdownMenuItem>
                 {/* 移动到目录 */}
                 {folders.length > 0 && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled className="text-xs text-muted-foreground py-1">
-                      移动到目录
-                    </DropdownMenuItem>
+                     <DropdownMenuItem disabled className="text-xs text-muted-foreground py-1">
+                       Move to directory
+                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => moveProp(item.id, null)}
                       className={cn(item.folderId === null && 'text-primary')}
                     >
-                      <Layers className="mr-2 h-3.5 w-3.5" />
-                      根目录
-                    </DropdownMenuItem>
+                       <Layers className="mr-2 h-3.5 w-3.5" />
+                       Root Directory
+                     </DropdownMenuItem>
                     {folders.map((f) => (
                       <DropdownMenuItem
                         key={f.id}
@@ -129,13 +129,13 @@ function PropCard({ item }: { item: PropItem }) {
                   </>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => setShowDeleteAlert(true)}
-                >
-                  <Trash2 className="mr-2 h-3.5 w-3.5" />
-                  删除
-                </DropdownMenuItem>
+                 <DropdownMenuItem
+                   className="text-destructive focus:text-destructive"
+                   onClick={() => setShowDeleteAlert(true)}
+                 >
+                   <Trash2 className="mr-2 h-3.5 w-3.5" />
+                   Delete
+                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -171,22 +171,22 @@ function PropCard({ item }: { item: PropItem }) {
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>删除道具</AlertDialogTitle>
-            <AlertDialogDescription>
-              确认删除「{item.name}」？此操作不可撤销。
-            </AlertDialogDescription>
+           <AlertDialogTitle>Delete Prop</AlertDialogTitle>
+           <AlertDialogDescription>
+             Are you sure you want to delete "{item.name}"? This action cannot be undone.
+           </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                deleteProp(item.id);
-                toast.success(`已删除「${item.name}」`);
-              }}
-            >
-              删除
-            </AlertDialogAction>
+             <AlertDialogAction
+               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+               onClick={() => {
+                 deleteProp(item.id);
+                 toast.success(`Deleted "${item.name}"`);
+               }}
+             >
+               Delete
+             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -260,27 +260,27 @@ function FolderItem({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setNameInput(folder.name);
-                  setRenaming(true);
-                }}
-              >
-                <Pencil className="mr-2 h-3.5 w-3.5" />
-                重命名
-              </DropdownMenuItem>
+               <DropdownMenuItem
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   setNameInput(folder.name);
+                   setRenaming(true);
+                 }}
+               >
+                 <Pencil className="mr-2 h-3.5 w-3.5" />
+                 Rename
+               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDeleteAlert(true);
-                }}
-              >
-                <Trash2 className="mr-2 h-3.5 w-3.5" />
-                删除目录
-              </DropdownMenuItem>
+                 <DropdownMenuItem
+                   className="text-destructive focus:text-destructive"
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     setShowDeleteAlert(true);
+                   }}
+                 >
+                   <Trash2 className="mr-2 h-3.5 w-3.5" />
+                   Delete Directory
+                 </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -391,18 +391,18 @@ export function PropsLibrary() {
       {/* ── 左侧目录树 ── */}
       <div className="w-[160px] shrink-0 border-r border-border flex flex-col bg-panel">
         {/* 目录树标题 */}
-        <div className="px-3 py-2.5 border-b border-border flex items-center justify-between shrink-0">
-          <span className="text-xs font-semibold text-muted-foreground">目录</span>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-5 w-5"
-            onClick={() => setNewFolderOpen(true)}
-            title="新建目录"
-          >
-            <FolderPlus className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+       <div className="px-3 py-2.5 border-b border-border flex items-center justify-between shrink-0">
+         <span className="text-xs font-semibold text-muted-foreground">Directory</span>
+         <Button
+           size="icon"
+           variant="ghost"
+           className="h-5 w-5"
+           onClick={() => setNewFolderOpen(true)}
+           title="New Directory"
+         >
+           <FolderPlus className="h-3.5 w-3.5" />
+         </Button>
+       </div>
 
         {/* 目录列表 */}
         <ScrollArea className="flex-1 py-1.5 px-1.5">
@@ -439,11 +439,11 @@ export function PropsLibrary() {
           })}
 
           {/* 无目录提示 */}
-          {folders.length === 0 && (
-            <p className="text-[10px] text-muted-foreground px-3 py-2 leading-relaxed">
-              点击右上角 + 新建目录
-            </p>
-          )}
+           {folders.length === 0 && (
+             <p className="text-[10px] text-muted-foreground px-3 py-2 leading-relaxed">
+               Click + in the top-right to create a directory
+             </p>
+           )}
         </ScrollArea>
 
         {/* 底部新建按钮 */}

@@ -2,17 +2,17 @@
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 /**
- * Adaptive Batch Processor — AI 调度中心核心组件 3
+ * Adaptive Batch Processor — AI Scheduler Core Component 3
  *
- * 职责：将大量 items 自动分批发给 AI，同时满足 input 和 output token 约束。
+ * Responsibility: Automatically batch large numbers of items to AI while satisfying input and output token constraints.
  *
- * 核心特性：
- *   - 双重约束分批（input token + output token）
- *   - 60K token Hard Cap（防止超长上下文模型 TTFT 过高 / Lost in the middle）
- *   - 容错隔离（单批次失败不影响其他批次，部分成功也返回结果）
- *   - 单批次重试（指数退避，最多 2 次）
- *   - 并发集成（复用 runStaggered + 用户 concurrency 设置）
- *   - 进度回调
+ * Core Features:
+ *   - Dual-constraint batching (input token + output token)
+ *   - 60K token Hard Cap (prevents TTFT issues / Lost in the middle for long-context models)
+ *   - Fault isolation (single batch failure doesn't affect other batches, partial success returns results)
+ *   - Single batch retry (exponential backoff, max 2 times)
+ *   - Concurrency integration (reuse runStaggered + user concurrency setting)
+ *   - Progress callbacks
  */
 
 import type { AIFeature } from '@/stores/api-config-store';
@@ -23,84 +23,84 @@ import { runStaggered } from '@/lib/utils/concurrency';
 
 // ==================== Constants ====================
 
-/** 无论模型支持多大上下文，每批 input 最多 60K token */
+/** Hard cap: max 60K input tokens per batch, regardless of model context size */
 const HARD_CAP_TOKENS = 60000;
 
-/** 单批次最大重试次数 */
+/** Maximum retry attempts for a single batch */
 const MAX_BATCH_RETRIES = 2;
 
-/** 重试基础延迟（ms），指数退避 */
+/** Base retry delay in ms, with exponential backoff */
 const RETRY_BASE_DELAY = 3000;
 
 // ==================== Types ====================
 
 export interface ProcessBatchedOptions<TItem, TResult> {
-  /** 待处理的所有 items */
+  /** All items to process */
   items: TItem[];
 
-  /** AI 功能类型（用于从 feature-router 获取配置） */
+  /** AI feature type (used to get config from feature-router) */
   feature: AIFeature;
 
   /**
-   * 构建 prompt 函数 — 接收一个 batch 的 items，返回 system + user prompt
-   * 每批调用一次，prompt 中应包含全局上下文（用 safeTruncate 截断）
+   * Build prompts function - receives a batch of items, returns system + user prompt
+   * Called once per batch, prompts should include global context (truncated with safeTruncate)
    */
   buildPrompts: (batch: TItem[]) => { system: string; user: string };
 
   /**
-   * 解析 AI 返回的原始文本为结构化结果
-   * 返回 Map<itemKey, result>，key 用于跨批次合并
+   * Parse AI raw text response into structured result
+   * Returns Map<itemKey, result>, key used for cross-batch merging
    */
   parseResult: (raw: string, batch: TItem[]) => Map<string, TResult>;
 
   /**
-   * 可选：自定义合并逻辑。默认简单合并（后者覆盖前者）
+   * Optional: custom merge logic. Default is simple merge (latter overwrites former)
    */
   mergeResults?: (all: Map<string, TResult>[]) => Map<string, TResult>;
 
   /**
-   * 估算单个 item 的 input token 开销
-   * 如果不提供，使用 estimateTokens(JSON.stringify(item))
+   * Estimate input token cost for a single item
+   * If not provided, uses estimateTokens(JSON.stringify(item))
    */
   estimateItemTokens?: (item: TItem) => number;
 
   /**
-   * 估算单个 item 的 output token 开销（用于 output 约束）
-   * 如果不提供，默认 300 tokens/item
+   * Estimate output token cost for a single item (used for output constraint)
+   * If not provided, defaults to 300 tokens/item
    */
   estimateItemOutputTokens?: (item: TItem) => number;
 
   /**
-   * 可选：callFeatureAPI 的额外选项（temperature, maxTokens 等）
+   * Optional: additional options for callFeatureAPI (temperature, maxTokens, etc.)
    */
   apiOptions?: CallFeatureAPIOptions;
 
   /**
-   * 进度回调
+   * Progress callback
    */
   onProgress?: (completed: number, total: number, message: string) => void;
 }
 
 export interface ProcessBatchedResult<TResult> {
-  /** 合并后的所有结果 */
+  /** Merged all results */
   results: Map<string, TResult>;
-  /** 失败的批次数 */
+  /** Number of failed batches */
   failedBatches: number;
-  /** 总批次数 */
+  /** Total number of batches */
   totalBatches: number;
 }
 
 // ==================== Core ====================
 
 /**
- * 自适应批处理 AI 调用
+ * Adaptive batched AI calls
  *
- * 自动完成：
- *   1. 从 Registry 查出模型的 contextWindow 和 maxOutput
- *   2. 双重约束贪心分组（input + output）
- *   3. 通过 runStaggered 并发执行
- *   4. 单批次重试 + 容错隔离
- *   5. 合并结果
+ * Automatically handles:
+ *   1. Look up model's contextWindow and maxOutput from Registry
+ *   2. Dual-constraint greedy grouping (input + output)
+ *   3. Concurrent execution via runStaggered
+ *   4. Single batch retry + fault isolation
+ *   5. Merge results
  */
 export async function processBatched<TItem, TResult>(
   opts: ProcessBatchedOptions<TItem, TResult>,
@@ -117,19 +117,19 @@ export async function processBatched<TItem, TResult>(
     onProgress,
   } = opts;
 
-  // 空输入快速返回
+  // Empty input quick return
   if (items.length === 0) {
     return { results: new Map(), failedBatches: 0, totalBatches: 0 };
   }
 
-  // === 1. 获取模型限制 ===
+  // === 1. Get model limits ===
   const store = useAPIConfigStore.getState();
   const providerInfo = store.getProviderForFeature(feature);
   const modelName = providerInfo?.model?.[0] || '';
   const limits = getModelLimits(modelName);
 
   const inputBudget = Math.min(Math.floor(limits.contextWindow * 0.6), HARD_CAP_TOKENS);
-  const outputBudget = Math.floor(limits.maxOutput * 0.8); // 留 20% 给 JSON 格式开销
+  const outputBudget = Math.floor(limits.maxOutput * 0.8); // Reserve 20% for JSON format overhead
 
   console.log(
     `[BatchProcessor] ${feature}: model=${modelName}, ` +
@@ -138,13 +138,13 @@ export async function processBatched<TItem, TResult>(
     `items=${items.length}`,
   );
 
-  // === 2. 估算 system prompt 的 token 开销（用第一个 item 试算） ===
+  // === 2. Estimate system prompt token cost (using first item for test) ===
   const samplePrompts = buildPrompts([items[0]]);
   const systemPromptTokens = estimateTokens(samplePrompts.system);
 
-  // === 3. 双重约束贪心分组 ===
+  // === 3. Dual-constraint greedy grouping ===
   const defaultItemTokenEstimator = (item: TItem) => estimateTokens(JSON.stringify(item));
-  const defaultItemOutputEstimator = () => 300; // 默认每项 300 output tokens
+  const defaultItemOutputEstimator = () => 300; // Default 300 output tokens per item
 
   const getItemTokens = estimateItemTokens || defaultItemTokenEstimator;
   const getItemOutputTokens = estimateItemOutputTokens || defaultItemOutputEstimator;
@@ -159,45 +159,45 @@ export async function processBatched<TItem, TResult>(
   );
 
   console.log(
-    `[BatchProcessor] 分批结果: ${batches.length} 批次 ` +
+    `[BatchProcessor] Batching result: ${batches.length} batches ` +
     `(${batches.map(b => b.length).join(', ')} items)`,
   );
 
-  // 单批次无需并发调度
+  // Single batch doesn't need concurrent scheduling
   if (batches.length === 1) {
-    onProgress?.(0, 1, `处理中 (1/1)...`);
+    onProgress?.(0, 1, `Processing (1/1)...`);
     try {
       const result = await executeBatchWithRetry(
         batches[0], feature, buildPrompts, parseResult, apiOptions,
       );
-      onProgress?.(1, 1, '完成');
+      onProgress?.(1, 1, 'Completed');
       return { results: result, failedBatches: 0, totalBatches: 1 };
     } catch (err) {
-      console.error('[BatchProcessor] 唯一批次失败:', err);
-      onProgress?.(1, 1, '失败');
+      console.error('[BatchProcessor] Only batch failed:', err);
+      onProgress?.(1, 1, 'Failed');
       return { results: new Map(), failedBatches: 1, totalBatches: 1 };
     }
   }
 
-  // === 4. 并发执行 ===
+  // === 4. Concurrent execution ===
   const concurrency = store.concurrency || 1;
   let completedCount = 0;
 
   const batchTasks = batches.map((batch, idx) => {
     return async () => {
-      onProgress?.(completedCount, batches.length, `处理批次 ${idx + 1}/${batches.length}...`);
+      onProgress?.(completedCount, batches.length, `Processing batch ${idx + 1}/${batches.length}...`);
       const result = await executeBatchWithRetry(
         batch, feature, buildPrompts, parseResult, apiOptions,
       );
       completedCount++;
-      onProgress?.(completedCount, batches.length, `批次 ${idx + 1} 完成`);
+      onProgress?.(completedCount, batches.length, `Batch ${idx + 1} completed`);
       return result;
     };
   });
 
   const settled = await runStaggered(batchTasks, concurrency, 5000);
 
-  // === 5. 容错合并 ===
+  // === 5. Fault-tolerant merge ===
   const successResults: Map<string, TResult>[] = [];
   let failedBatches = 0;
 
@@ -206,15 +206,15 @@ export async function processBatched<TItem, TResult>(
       successResults.push(result.value);
     } else {
       failedBatches++;
-      console.error('[BatchProcessor] 批次失败:', result.reason);
+      console.error('[BatchProcessor] Batch failed:', result.reason);
     }
   }
 
   if (failedBatches > 0) {
-    console.warn(`[BatchProcessor] ${failedBatches}/${batches.length} 批次失败，返回部分结果`);
+    console.warn(`[BatchProcessor] ${failedBatches}/${batches.length} batches failed, returning partial results`);
   }
 
-  // 合并
+  // Merge
   let finalResults: Map<string, TResult>;
   if (mergeResults) {
     finalResults = mergeResults(successResults);
@@ -227,7 +227,7 @@ export async function processBatched<TItem, TResult>(
     }
   }
 
-  onProgress?.(batches.length, batches.length, `完成 (${failedBatches > 0 ? `${failedBatches} 批失败` : '全部成功'})`);
+  onProgress?.(batches.length, batches.length, `Completed (${failedBatches > 0 ? `${failedBatches} batches failed` : 'all succeeded'})`);
 
   return { results: finalResults, failedBatches, totalBatches: batches.length };
 }
@@ -235,13 +235,13 @@ export async function processBatched<TItem, TResult>(
 // ==================== Batch Splitting ====================
 
 /**
- * 双重约束贪心分组
+ * Dual-constraint greedy grouping
  *
- * 约束 1（Input）: 每批 systemPromptTokens + sum(itemTokens) ≤ inputBudget
- * 约束 2（Output）: sum(itemOutputTokens) ≤ outputBudget
+ * Constraint 1 (Input): Each batch systemPromptTokens + sum(itemTokens) ≤ inputBudget
+ * Constraint 2 (Output): sum(itemOutputTokens) ≤ outputBudget
  *
- * 贪心策略：依次添加 item，任一约束即将超出时开始新批次。
- * 单个 item 超出预算时仍独立成批（至少每批 1 个 item）。
+ * Greedy strategy: Add items one by one, start new batch when either constraint is about to be exceeded.
+ * Single item exceeding budget still gets its own batch (at least 1 item per batch).
  */
 function createBatches<TItem>(
   items: TItem[],
@@ -253,7 +253,7 @@ function createBatches<TItem>(
 ): TItem[][] {
   const batches: TItem[][] = [];
   let currentBatch: TItem[] = [];
-  let currentInputTokens = systemPromptTokens; // system prompt 每批都要带
+  let currentInputTokens = systemPromptTokens; // system prompt needs to be included in each batch
   let currentOutputTokens = 0;
 
   for (const item of items) {
@@ -264,7 +264,7 @@ function createBatches<TItem>(
     const wouldExceedOutput = currentOutputTokens + itemOutput > outputBudget;
 
     if (currentBatch.length > 0 && (wouldExceedInput || wouldExceedOutput)) {
-      // 当前批次已满，开始新批次
+      // Current batch full, start new batch
       batches.push(currentBatch);
       currentBatch = [];
       currentInputTokens = systemPromptTokens;
@@ -276,7 +276,7 @@ function createBatches<TItem>(
     currentOutputTokens += itemOutput;
   }
 
-  // 最后一个批次
+  // Last batch
   if (currentBatch.length > 0) {
     batches.push(currentBatch);
   }
@@ -287,7 +287,7 @@ function createBatches<TItem>(
 // ==================== Batch Execution ====================
 
 /**
- * 执行单个批次，带重试（指数退避，最多 MAX_BATCH_RETRIES 次）
+ * Execute single batch with retry (exponential backoff, max MAX_BATCH_RETRIES times)
  */
 async function executeBatchWithRetry<TItem, TResult>(
   batch: TItem[],
@@ -306,7 +306,7 @@ async function executeBatchWithRetry<TItem, TResult>(
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
 
-      // TOKEN_BUDGET_EXCEEDED 不重试（输入太大，重试也没用）
+      // TOKEN_BUDGET_EXCEEDED doesn't retry (input too large, retry won't help)
       if ((lastError as any).code === 'TOKEN_BUDGET_EXCEEDED') {
         throw lastError;
       }
@@ -314,8 +314,8 @@ async function executeBatchWithRetry<TItem, TResult>(
       if (attempt < MAX_BATCH_RETRIES) {
         const delay = RETRY_BASE_DELAY * Math.pow(2, attempt);
         console.warn(
-          `[BatchProcessor] 批次执行失败 (attempt ${attempt + 1}/${MAX_BATCH_RETRIES + 1}), ` +
-          `${delay}ms 后重试: ${lastError.message}`,
+          `[BatchProcessor] Batch execution failed (attempt ${attempt + 1}/${MAX_BATCH_RETRIES + 1}), ` +
+          `retrying in ${delay}ms: ${lastError.message}`,
         );
         await new Promise(r => setTimeout(r, delay));
       }

@@ -4,10 +4,10 @@
 "use client";
 
 /**
- * ExtendEditDialog — 视频延长 / 视频编辑对话框
+ * ExtendEditDialog — Video Extend / Edit Dialog
  *
- * 延长模式：选择方向 + 时长 + 补充描述 → 创建 extend 子组
- * 编辑模式：选择编辑类型 + 补充描述 → 创建 edit 子组
+ * Extend mode: select direction + duration + supplementary description → create extend subgroup
+ * Edit mode: select edit type + supplementary description → create edit subgroup
  */
 
 import { useState, useCallback } from "react";
@@ -46,9 +46,9 @@ export interface ExtendEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode: ExtendEditMode;
-  /** 来源组（已完成视频的组） */
+  /** Source group (completed video group) */
   sourceGroup: ShotGroup | null;
-  /** 确认后的回调：创建子组并生成 */
+  /** Confirm callback: create subgroup and generate */
   onConfirm: (childGroup: ShotGroup) => void;
   isGenerating?: boolean;
 }
@@ -56,10 +56,10 @@ export interface ExtendEditDialogProps {
 // ==================== Constants ====================
 
 const EDIT_TYPE_OPTIONS: { value: EditType; label: string; desc: string }[] = [
-  { value: "plot_change", label: "剧情颠覆", desc: "保留画面风格，改变故事走向" },
-  { value: "character_swap", label: "角色替换", desc: "将视频中的角色替换为参考图中的角色" },
-  { value: "attribute_modify", label: "属性修改", desc: "改变角色服饰、发色、环境光照等属性" },
-  { value: "element_add", label: "元素添加", desc: "在现有画面上叠加新的视觉元素" },
+  { value: "plot_change", label: "Plot Twist", desc: "Keep visual style, change story direction" },
+  { value: "character_swap", label: "Character Replacement", desc: "Replace video characters with characters from reference image" },
+  { value: "attribute_modify", label: "Attribute Modification", desc: "Change character clothing, hair color, ambient lighting, etc." },
+  { value: "element_add", label: "Element Addition", desc: "Overlay new visual elements on existing footage" },
 ];
 
 // ==================== Component ====================
@@ -72,14 +72,14 @@ export function ExtendEditDialog({
   onConfirm,
   isGenerating = false,
 }: ExtendEditDialogProps) {
-  // --- 延长参数 ---
+  // --- Extend parameters ---
   const [direction, setDirection] = useState<ExtendDirection>("backward");
   const [duration, setDuration] = useState(10);
 
-  // --- 编辑参数 ---
+  // --- Edit parameters ---
   const [editType, setEditType] = useState<EditType>("plot_change");
 
-  // --- 共用 ---
+  // --- Shared ---
   const [description, setDescription] = useState("");
 
   const { addShotGroup } = useSClassStore();
@@ -90,7 +90,7 @@ export function ExtendEditDialog({
     const childId = `${mode}_${Date.now()}_${sourceGroup.id.substring(0, 8)}`;
     const childGroup: ShotGroup = {
       id: childId,
-      name: `${sourceGroup.name} - ${mode === "extend" ? "延长" : "编辑"}`,
+      name: `${sourceGroup.name} - ${mode === "extend" ? "Extend" : "Edit"}`,
       sceneIds: [...sourceGroup.sceneIds],
       sortIndex: sourceGroup.sortIndex + 0.5,
       totalDuration: (mode === "extend"
@@ -127,7 +127,7 @@ export function ExtendEditDialog({
   }, [sourceGroup, mode, direction, duration, editType, description, addShotGroup, onConfirm, onOpenChange]);
 
   const isExtend = mode === "extend";
-  const title = isExtend ? "视频延长" : "视频编辑";
+  const title = isExtend ? "Video Extend" : "Video Edit";
   const Icon = isExtend ? Timer : Scissors;
 
   return (
@@ -140,13 +140,13 @@ export function ExtendEditDialog({
           </DialogTitle>
           <DialogDescription>
             {isExtend
-              ? "基于已生成视频继续延长，支持向后或向前拓展"
-              : "对已生成视频进行剧情编辑、角色替换等操作"
+              ? "Based on generated video, continue extending, supports backward or forward expansion"
+              : "Perform plot editing, character replacement, etc. on generated video"
             }
           </DialogDescription>
         </DialogHeader>
 
-        {/* 来源视频预览 */}
+        {/* Source video preview */}
         {sourceGroup?.videoUrl && (
           <div className="rounded-md overflow-hidden border">
             <video
@@ -156,33 +156,33 @@ export function ExtendEditDialog({
               muted
             />
             <div className="px-2 py-1 bg-muted/30 text-xs text-muted-foreground">
-              来源：{sourceGroup.name}
+              Source: {sourceGroup.name}
             </div>
           </div>
         )}
 
         <div className="space-y-4">
-          {/* ========== 延长模式参数 ========== */}
+          {/* ========== Extend mode parameters ========== */}
           {isExtend && (
             <>
-              {/* 延长方向 */}
+              {/* Extend direction */}
               <div className="space-y-1.5">
-                <Label className="text-xs">延长方向</Label>
+                <Label className="text-xs">Extend Direction</Label>
                 <Select value={direction} onValueChange={(v) => setDirection(v as ExtendDirection)}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="backward">向后延长（默认）</SelectItem>
-                    <SelectItem value="forward">向前延长（前置内容）</SelectItem>
+                    <SelectItem value="backward">Backward Extend (default)</SelectItem>
+                    <SelectItem value="forward">Forward Extend (prepend content)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* 延长时长 */}
+              {/* Extend duration */}
               <div className="space-y-1.5">
                 <div className="flex justify-between">
-                  <Label className="text-xs">延长时长</Label>
+                  <Label className="text-xs">Extend Duration</Label>
                   <span className="text-xs text-muted-foreground">{duration}s</span>
                 </div>
                 <Slider
@@ -200,10 +200,10 @@ export function ExtendEditDialog({
             </>
           )}
 
-          {/* ========== 编辑模式参数 ========== */}
+          {/* ========== Edit mode parameters ========== */}
           {!isExtend && (
             <div className="space-y-1.5">
-              <Label className="text-xs">编辑类型</Label>
+              <Label className="text-xs">Edit Type</Label>
               <Select value={editType} onValueChange={(v) => setEditType(v as EditType)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -222,18 +222,18 @@ export function ExtendEditDialog({
             </div>
           )}
 
-          {/* ========== 补充描述 ========== */}
+          {/* ========== Supplementary description ========== */}
           <div className="space-y-1.5">
             <Label className="text-xs">
-              补充描述
-              <span className="text-muted-foreground ml-1">（可选）</span>
+              Supplementary Description
+              <span className="text-muted-foreground ml-1">(optional)</span>
             </Label>
             <textarea
               className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
               rows={3}
               placeholder={isExtend
-                ? "描述延长部分的画面内容，如：镜头缓缓拉远，角色渐行渐远..."
-                : "描述编辑目标，如：将白天场景改为夜晚，保持人物不变..."
+                ? "Describe screen content for extended portion, e.g.: camera slowly pulls back, character gradually fades..."
+                : "Describe edit goal, e.g.: change daytime scene to night, keep characters unchanged..."
               }
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -248,7 +248,7 @@ export function ExtendEditDialog({
             onClick={() => onOpenChange(false)}
             disabled={isGenerating}
           >
-            取消
+            Cancel
           </Button>
           <Button
             size="sm"
@@ -263,12 +263,12 @@ export function ExtendEditDialog({
             {isGenerating ? (
               <>
                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                处理中
+                Processing
               </>
             ) : (
               <>
                 <Icon className="h-3 w-3 mr-1" />
-                确认{isExtend ? "延长" : "编辑"}
+                Confirm{isExtend ? " Extend" : " Edit"}
               </>
             )}
           </Button>

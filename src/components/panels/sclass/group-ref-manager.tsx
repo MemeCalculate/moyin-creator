@@ -4,15 +4,15 @@
 "use client";
 
 /**
- * GroupRefManager — S级组级 @引用管理器
+ * GroupRefManager — S-class Group-level @Reference Manager
  *
- * 功能：
- * - 自动收集：角色参考图、场景参考图、首帧图片 → 只读展示
- * - 手动上传：视频引用（运镜/动作复刻）、音频引用（节奏/BGM）
- * - 配额条：≤9 图片 + ≤3 视频 + ≤3 音频，总 ≤12
- * - 删除已上传的视频/音频引用
+ * Features:
+ * - Auto-collect: character reference images, scene reference images, first frame images → read-only display
+ * - Manual upload: video references (camera/motion replication), audio references (rhythm/BGM)
+ * - Quota bars: ≤9 images + ≤3 videos + ≤3 audios, total ≤12
+ * - Delete uploaded video/audio references
  *
- * Seedance 2.0 限制:
+ * Seedance 2.0 Limits:
  * - images: ≤9, videos: ≤3 (≤15s each), audios: ≤3 (MP3, ≤15s), total: ≤12
  */
 
@@ -262,7 +262,7 @@ export function GroupRefManager({
     <div className="px-3 py-2 border-t bg-muted/5 space-y-2">
       {/* ========== 配额总览 ========== */}
       <div className="flex items-center gap-4 flex-wrap">
-        <span className="text-xs font-medium text-muted-foreground">@引用素材</span>
+        <span className="text-xs font-medium text-muted-foreground">@Reference Materials</span>
         <QuotaBar
           label="图片"
           icon={<ImageIcon className="h-3 w-3 text-blue-500" />}
@@ -306,7 +306,7 @@ export function GroupRefManager({
       <div className="space-y-1">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Film className="h-3 w-3 text-purple-500" />
-          <span>视频引用 — 运镜/动作复刻</span>
+          <span>Video References — Camera/Motion Replication</span>
         </div>
 
         {/* 已上传的视频 */}

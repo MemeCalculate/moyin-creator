@@ -9,7 +9,7 @@ import {
   VideoSample,
 } from "mediabunny";
 
-// 包装类型，包含渲染好的 canvas 和原始 VideoSample
+// Wrapper type containing rendered canvas and original VideoSample
 interface CachedFrame {
   canvas: HTMLCanvasElement;
   sample: VideoSample;
@@ -22,7 +22,7 @@ interface VideoSinkData {
   iterator: AsyncGenerator<VideoSample, void, unknown> | null;
   currentFrame: CachedFrame | null;
   lastTime: number;
-  // 缓存的 canvas 用于重复使用
+  // Cached canvas for reuse
   canvasPool: HTMLCanvasElement[];
 }
 
@@ -30,7 +30,7 @@ export class VideoCache {
   private sinks = new Map<string, VideoSinkData>();
   private initPromises = new Map<string, Promise<void>>();
   
-  // 关闭 VideoSample 资源
+  // Close VideoSample resources
   private closeSample(sample: VideoSample | null): void {
     if (!sample) return;
     try {
@@ -40,7 +40,7 @@ export class VideoCache {
 
   private closeFrame(frame: CachedFrame | null): void {
     if (!frame) return;
-    // 关闭内部的 VideoSample
+    // Close internal VideoSample
     this.closeSample(frame.sample);
   }
 
@@ -49,7 +49,7 @@ export class VideoCache {
     frame: CachedFrame
   ): void {
     if (sinkData.currentFrame && sinkData.currentFrame !== frame) {
-      // 归还旧画布到池
+      // Return old canvas to pool
       if (sinkData.currentFrame.canvas) {
         sinkData.canvasPool.push(sinkData.currentFrame.canvas);
       }
@@ -58,9 +58,9 @@ export class VideoCache {
     sinkData.currentFrame = frame;
   }
   
-  // 从 VideoSample 渲染到 canvas
+  // Render VideoSample to canvas
   private renderSampleToCanvas(sample: VideoSample, sinkData: VideoSinkData): CachedFrame {
-    // 获取或创建 canvas
+    // Get or create canvas
     let canvas = sinkData.canvasPool.pop();
     if (!canvas) {
       canvas = document.createElement("canvas");
@@ -70,7 +70,7 @@ export class VideoCache {
     
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (ctx) {
-      // VideoSample 可以直接绘制到 canvas
+      // VideoSample can be drawn directly to canvas
       sample.draw(ctx, 0, 0);
     }
     
@@ -128,7 +128,7 @@ export class VideoCache {
 
         if (done || !sample) break;
         
-        // 渲染 sample 到 canvas 并创建 CachedFrame
+        // Render sample to canvas and create CachedFrame
         const frame = this.renderSampleToCanvas(sample, sinkData);
         this.replaceCurrentFrame(sinkData, frame);
         sinkData.lastTime = frame.timestamp;
@@ -208,7 +208,7 @@ export class VideoCache {
         throw new Error("Video codec not supported for decoding");
       }
 
-      // 使用 VideoSampleSink 以便手动管理 VideoSample 资源
+      // Use VideoSampleSink to manually manage VideoSample resources
       const sink = new VideoSampleSink(videoTrack);
 
       this.sinks.set(mediaId, {
@@ -234,7 +234,7 @@ export class VideoCache {
         this.closeFrame(sinkData.currentFrame);
         sinkData.currentFrame = null;
       }
-      // 清理 canvas 池
+      // Clean up canvas pool
       sinkData.canvasPool = [];
 
       this.sinks.delete(mediaId);

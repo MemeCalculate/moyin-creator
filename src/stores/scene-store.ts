@@ -27,38 +27,38 @@ export interface SceneFolder {
 
 export interface Scene {
   id: string;
-  name: string;           // 场景名称
-  location: string;       // 地点描述
-  time: string;           // 时间设定 (白天/夜晚/黄昏等)
-  atmosphere: string;     // 氛围描述 (紧张/温馨/神秘等)
+  name: string;           // Scene name
+  location: string;       // Location description
+  time: string;           // Time setting (day/night/dusk/etc)
+  atmosphere: string;     // Atmosphere description (tense/warm/mysterious/etc)
   projectId?: string;     // Associated project (optional)
-  visualPrompt?: string;  // 完整的视觉提示词
-  referenceImage?: string; // 生成的场景概念图 URL
+  visualPrompt?: string;  // Complete visual prompt
+  referenceImage?: string; // Generated scene concept image URL
   referenceImageBase64?: string; // Base64 for persistence
   styleId?: string;       // Visual style preset ID
   folderId?: string | null; // Folder ID for organization
   // Enhanced fields (inspired by AniKuku)
-  tags?: string[];        // 环境标签 如 #木柱 #窗棱 #古建筑
-  notes?: string;         // 地点备注 (剧情说明，与location分开)
-  status?: 'draft' | 'linked'; // 状态: draft=草稿, linked=已关联剧本
-  linkedEpisodeId?: string;    // 关联的剧集ID
+  tags?: string[];        // Environment tags e.g. #woodpillar #windowframe #ancientbuilding
+  notes?: string;         // Location notes (plot explanation, separate from location)
+  status?: 'draft' | 'linked'; // Status: draft=draft, linked=linked to script
+  linkedEpisodeId?: string;    // Linked episode ID
   createdAt: number;
   updatedAt: number;
   
-  // === 视角变体支持 ===
-  parentSceneId?: string;     // 父场景 ID（如果是视角变体）
-  viewpointId?: string;       // 视角 ID（如 'dining', 'sofa' 等）
-  viewpointName?: string;     // 视角名称（如 '餐桌区', '沙发区' 等）
-  shotIds?: string[];         // 关联的分镜 ID 列表
-  isViewpointVariant?: boolean; // 是否是视角变体
+  // === Viewpoint variant support ===
+  parentSceneId?: string;     // Parent scene ID (if viewpoint variant)
+  viewpointId?: string;       // Viewpoint ID (e.g. 'dining', 'sofa', etc)
+  viewpointName?: string;     // Viewpoint name (e.g. 'dining area', 'sofa area', etc)
+  shotIds?: string[];         // Associated shot ID list
+  isViewpointVariant?: boolean; // Whether is viewpoint variant
   
-  // === 专业场景设计字段 ===
-  architectureStyle?: string;  // 建筑风格
-  colorPalette?: string;       // 色彩基调
-  eraDetails?: string;         // 时代特征
-  lightingDesign?: string;     // 光影设计
-  keyProps?: string[];         // 关键道具
-  spatialLayout?: string;      // 空间布局
+  // === Professional scene design fields ===
+  architectureStyle?: string;  // Architecture style
+  colorPalette?: string;       // Color palette
+  eraDetails?: string;         // Era details
+  lightingDesign?: string;     // Lighting design
+  keyProps?: string[];         // Key props
+  spatialLayout?: string;      // Spatial layout
 }
 
 export type SceneGenerationStatus = 'idle' | 'generating' | 'completed' | 'error';
@@ -80,7 +80,7 @@ interface SceneState {
   generatingSceneId: string | null;
   generationPrefs: SceneGenerationPrefs;
   generationPrefsByProject: Record<string, SceneGenerationPrefs>;
-  // 联合图自动生成任务跟踪 (parentSceneId → 状态)
+  // Contact sheet auto-generation task tracking (parentSceneId → status)
   contactSheetTasks: Record<string, { status: 'generating' | 'splitting' | 'saving' | 'done' | 'error'; progress: number; message?: string }>;
 }
 
@@ -528,23 +528,23 @@ export const useSceneCount = (): number => {
 // ==================== Preset Time Options ====================
 
 export const TIME_PRESETS = [
-  { id: 'day', label: '白天', prompt: 'daytime, bright sunlight' },
-  { id: 'night', label: '夜晚', prompt: 'nighttime, moonlight, stars' },
-  { id: 'dawn', label: '黎明', prompt: 'dawn, early morning light, soft orange glow' },
-  { id: 'dusk', label: '黄昏', prompt: 'dusk, golden hour, sunset colors' },
-  { id: 'overcast', label: '阴天', prompt: 'overcast sky, soft diffused light' },
-  { id: 'storm', label: '暴风雨', prompt: 'stormy weather, dark clouds, dramatic lighting' },
+  { id: 'day', label: 'Day', prompt: 'daytime, bright sunlight' },
+  { id: 'night', label: 'Night', prompt: 'nighttime, moonlight, stars' },
+  { id: 'dawn', label: 'Dawn', prompt: 'dawn, early morning light, soft orange glow' },
+  { id: 'dusk', label: 'Dusk', prompt: 'dusk, golden hour, sunset colors' },
+  { id: 'overcast', label: 'Overcast', prompt: 'overcast sky, soft diffused light' },
+  { id: 'storm', label: 'Storm', prompt: 'stormy weather, dark clouds, dramatic lighting' },
 ] as const;
 
 // ==================== Preset Atmosphere Options ====================
 
 export const ATMOSPHERE_PRESETS = [
-  { id: 'peaceful', label: '平静', prompt: 'peaceful, serene, calm atmosphere' },
-  { id: 'tense', label: '紧张', prompt: 'tense, suspenseful, uneasy atmosphere' },
-  { id: 'romantic', label: '浪漫', prompt: 'romantic, warm, intimate atmosphere' },
-  { id: 'mysterious', label: '神秘', prompt: 'mysterious, enigmatic, foggy atmosphere' },
-  { id: 'cheerful', label: '欢快', prompt: 'cheerful, lively, vibrant atmosphere' },
-  { id: 'melancholic', label: '忧郁', prompt: 'melancholic, sad, somber atmosphere' },
-  { id: 'epic', label: '史诗', prompt: 'epic, grand, majestic atmosphere' },
-  { id: 'horror', label: '恐怖', prompt: 'horror, creepy, unsettling atmosphere' },
+  { id: 'peaceful', label: 'Peaceful', prompt: 'peaceful, serene, calm atmosphere' },
+  { id: 'tense', label: 'Tense', prompt: 'tense, suspenseful, uneasy atmosphere' },
+  { id: 'romantic', label: 'Romantic', prompt: 'romantic, warm, intimate atmosphere' },
+  { id: 'mysterious', label: 'Mysterious', prompt: 'mysterious, enigmatic, foggy atmosphere' },
+  { id: 'cheerful', label: 'Cheerful', prompt: 'cheerful, lively, vibrant atmosphere' },
+  { id: 'melancholic', label: 'Melancholic', prompt: 'melancholic, sad, somber atmosphere' },
+  { id: 'epic', label: 'Epic', prompt: 'epic, grand, majestic atmosphere' },
+  { id: 'horror', label: 'Horror', prompt: 'horror, creepy, unsettling atmosphere' },
 ] as const;

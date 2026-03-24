@@ -216,7 +216,7 @@ export function ApiKeyEditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>编辑 {providerName} Keys</DialogTitle>
+          <DialogTitle>Edit {providerName} Keys</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-3">
@@ -231,7 +231,7 @@ export function ApiKeyEditorDialog({
                       value={key.value}
                       onChange={(e) => updateKeyValue(key.id, e.target.value)}
                       disabled={!key.editing}
-                      placeholder="输入 API Key"
+                      placeholder="Enter API Key"
                       className="font-mono text-sm"
                     />
                   </div>
@@ -253,7 +253,7 @@ export function ApiKeyEditorDialog({
                                 <Save className="h-4 w-4 text-green-500" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>保存</TooltipContent>
+                            <TooltipContent>Save</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       ) : (
@@ -279,7 +279,7 @@ export function ApiKeyEditorDialog({
                                   <Shield className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>测试 Key</TooltipContent>
+                              <TooltipContent>Test Key</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
 
@@ -295,7 +295,7 @@ export function ApiKeyEditorDialog({
                                   <Pencil className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>编辑</TooltipContent>
+                              <TooltipContent>Edit</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
 
@@ -311,7 +311,7 @@ export function ApiKeyEditorDialog({
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>删除</TooltipContent>
+                              <TooltipContent>Delete</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </>
@@ -326,7 +326,7 @@ export function ApiKeyEditorDialog({
           {/* Bottom action bar */}
           <div className="flex items-center justify-between pt-3 border-t">
             <span className="text-xs text-muted-foreground">
-              💡 支持多个 Key 轮换使用
+              💡 Support multiple Keys for rotation
             </span>
             <div className="flex items-center gap-2">
               {hasMultipleKeys && (
@@ -344,7 +344,7 @@ export function ApiKeyEditorDialog({
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>删除无效 Keys</TooltipContent>
+                        <TooltipContent>Delete invalid Keys</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   )}
@@ -355,10 +355,10 @@ export function ApiKeyEditorDialog({
                         <TooltipTrigger asChild>
                           <Button variant="ghost" size="sm" onClick={testAllKeys}>
                             <Shield className="h-4 w-4 mr-1" />
-                            测试全部
+                            Test All
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>测试所有 Keys</TooltipContent>
+                        <TooltipContent>Test all Keys</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   )}
@@ -367,7 +367,7 @@ export function ApiKeyEditorDialog({
 
               <Button variant="outline" size="sm" onClick={addKey}>
                 <Plus className="h-4 w-4 mr-1" />
-                添加
+                Add
               </Button>
             </div>
           </div>
@@ -375,9 +375,9 @@ export function ApiKeyEditorDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            Cancel
           </Button>
-          <Button onClick={handleSave}>确认</Button>
+          <Button onClick={handleSave}>Confirm</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

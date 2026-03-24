@@ -22,7 +22,7 @@ function App() {
   const [startupUpdate, setStartupUpdate] = useState<AvailableUpdateInfo | null>(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
 
-  // 启动时运行存储迁移 + 数据恢复
+  // Run storage migration + data recovery on startup
   useEffect(() => {
     (async () => {
       try {
@@ -37,7 +37,7 @@ function App() {
     })();
   }, []);
 
-  // 启动时自动同步所有已配置 API Key 的供应商模型元数据
+  // Automatically sync all configured API Key provider model metadata on startup
   useEffect(() => {
     if (isMigrating) return;
     let cancelled = false;
@@ -73,7 +73,7 @@ function App() {
     };
   }, [isMigrating]);
 
-  // 同步主题到 html 元素
+  // Sync theme to html element
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove("light", "dark");
@@ -117,13 +117,13 @@ function App() {
     };
   }, [isMigrating, updateSettings.autoCheckEnabled, updateSettings.ignoredVersion]);
 
-  // 迁移中显示加载界面
+  // Show loading interface during migration
   if (isMigrating) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">正在初始化...</p>
+          <p className="text-muted-foreground">Initializing...</p>
         </div>
       </div>
     );

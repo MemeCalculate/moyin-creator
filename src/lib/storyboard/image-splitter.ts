@@ -543,33 +543,33 @@ export async function splitStoryboardImage(
   const cellWidth = Math.floor(totalWidth / expectedCols);
   const cellHeight = Math.floor(totalHeight / expectedRows);
   
-  // === 动态居中裁剪修正（学习自合并生成的切割方法）===
-  // 计算目标宽高比
+  // === Dynamic center crop correction (learned from merged generation splitting) ===
+  // Calculate target aspect ratio
   const targetAspectW = aspectRatio === '16:9' ? 16 : 9;
   const targetAspectH = aspectRatio === '16:9' ? 9 : 16;
   const targetRatio = targetAspectW / targetAspectH;
   
-  // 计算原图每个格子的实际比例
+  // Calculate actual ratio of each cell in source image
   const rawRatio = cellWidth / cellHeight;
   
-  // 计算裁剪参数（如果比例不匹配，进行居中裁剪修正）
+  // Calculate crop parameters (if ratio doesn't match, perform center crop correction)
   let cropX = 0, cropY = 0, cropW = cellWidth, cropH = cellHeight;
   let outputWidth: number, outputHeight: number;
   
   if (Math.abs(rawRatio - targetRatio) < 0.01) {
-    // 宽高比已经接近目标，直接使用
+    // Aspect ratio already close to target, use as-is
     outputWidth = cellWidth;
     outputHeight = cellHeight;
     console.log('[ImageSplitter] Ratio already matches target, no crop needed');
   } else if (rawRatio > targetRatio) {
-    // 原图格子太宽，需要裁剪宽度（居中裁剪）
+    // Cell too wide, crop width (center crop)
     cropW = Math.floor(cellHeight * targetRatio);
     cropX = Math.floor((cellWidth - cropW) / 2);
     outputWidth = cropW;
     outputHeight = cellHeight;
     console.log(`[ImageSplitter] Cell too wide (${rawRatio.toFixed(3)} > ${targetRatio.toFixed(3)}), crop width: ${cellWidth} → ${cropW}, offsetX: ${cropX}`);
   } else {
-    // 原图格子太高，需要裁剪高度（居中裁剪）
+    // Cell too tall, crop height (center crop)
     cropH = Math.floor(cellWidth / targetRatio);
     cropY = Math.floor((cellHeight - cropH) / 2);
     outputWidth = cellWidth;
@@ -577,7 +577,7 @@ export async function splitStoryboardImage(
     console.log(`[ImageSplitter] Cell too tall (${rawRatio.toFixed(3)} < ${targetRatio.toFixed(3)}), crop height: ${cellHeight} → ${cropH}, offsetY: ${cropY}`);
   }
   
-  // 双重保险：强制输出尺寸严格符合目标宽高比
+  // Double insurance: strictly enforce output dimensions to match target aspect ratio
   if (aspectRatio === '16:9') {
     outputHeight = Math.round(outputWidth * 9 / 16);
   } else {
@@ -585,7 +585,7 @@ export async function splitStoryboardImage(
     outputWidth = Math.round(outputHeight * 9 / 16);
   }
   
-  // Calculate Safety Margin (Inset) - 在裁剪后的区域内再收缩
+  // Calculate Safety Margin (Inset) - Contract within cropped region
   // Default to 0.5% (0.005) if not specified
   const finalEdgeMargin = options.edgeMarginPercent ?? 0.005;
   const marginW = Math.floor(cropW * finalEdgeMargin);
@@ -628,8 +628,8 @@ export async function splitStoryboardImage(
 
     if (!ctx) continue;
 
-    // Calculate source rectangle with CROP + INSET (居中裁剪 + 安全边距)
-    // 先应用居中裁剪偏移，再应用安全边距
+    // Calculate source rectangle with CROP + INSET (center crop + safety margin)
+    // First apply center crop offset, then apply safety margin
     const srcX = def.x + cropX + marginW;
     const srcY = def.y + cropY + marginH;
     const srcW = cropW - (marginW * 2);

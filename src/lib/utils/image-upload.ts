@@ -27,7 +27,7 @@ export async function uploadBase64Image(imageData: string): Promise<string> {
   if (imageData.startsWith('local-image://')) {
     const converted = await readImageAsBase64(imageData);
     if (!converted) {
-      throw new Error(`无法读取本地图片: ${imageData}`);
+      throw new Error(`Cannot read local image: ${imageData}`);
     }
     base64Data = converted;
   }
@@ -50,7 +50,7 @@ export async function uploadBase64Image(imageData: string): Promise<string> {
     return result.url;
   }
 
-  throw new Error(result.error || '图片上传失败');
+  throw new Error(result.error || 'Image upload failed');
 }
 
 /**
@@ -61,7 +61,7 @@ export async function uploadMultipleImages(base64Images: string[]): Promise<stri
   if (base64Images.length === 0) return [];
 
   if (!isImageHostConfigured()) {
-    throw new Error('图床未配置');
+    throw new Error('Image host not configured');
   }
 
   const results = await Promise.allSettled(

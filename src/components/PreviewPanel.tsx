@@ -42,7 +42,7 @@ export function PreviewPanel() {
       <div className="h-full min-w-0 flex flex-col items-center justify-center text-muted-foreground bg-neutral-200 dark:bg-neutral-900">
         <div className="flex flex-col items-center gap-2">
           <Video className="h-12 w-12 opacity-30" />
-          <p className="text-sm">点击图片或视频预览</p>
+          <p className="text-sm">Click image or video to preview</p>
         </div>
       </div>
     );

@@ -58,10 +58,10 @@ async function submitImageGenTask(
   baseUrl?: string
 ): Promise<{ taskId?: string; imageUrl?: string; estimatedTime?: number }> {
   if (!model) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆鍥剧墖鐢熸垚妯″瀷');
+    throw new Error('Please configure image generation model in settings');
   }
   if (!baseUrl) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆鍥剧墖鐢熸垚鏈嶅姟鏄犲皠');
+    throw new Error('Please configure image generation service endpoint in settings');
   }
   const actualModel = model;
   const actualBaseUrl = baseUrl.replace(/\/+$/, '');
@@ -115,7 +115,7 @@ async function submitImageGenTask(
         const errorText = await response.text();
         console.error('[StoryboardService] Image API error:', response.status, errorText);
 
-        let errorMessage = `鍥剧墖鐢熸垚 API 閿欒: ${response.status}`;
+        let errorMessage = `Image generation API error: ${response.status}`;
         try {
           const errorJson = JSON.parse(errorText);
           errorMessage = errorJson.error?.message || errorJson.message || errorJson.msg || errorMessage;
@@ -127,9 +127,9 @@ async function submitImageGenTask(
 
         const error = new Error(
           response.status === 401 || response.status === 403
-            ? 'API Key 无效或已过期，请检查配置'
+            ? 'API key invalid or expired, please check configuration'
             : response.status >= 500
-              ? '图片生成服务暂时不可用，请稍后再试'
+              ? 'Image generation service temporarily unavailable, please try again later'
               : errorMessage
         ) as Error & { status?: number };
         error.status = response.status;
@@ -174,11 +174,11 @@ async function submitImageGenTask(
     clearTimeout(timeoutId);
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
-        throw new Error('鍥剧墖鐢熸垚 API 璇锋眰瓒呮椂锛岃绋嶅悗鍐嶈瘯');
+        throw new Error('Image generation API request timeout, please try again later');
       }
       throw error;
     }
-    throw new Error('调用图片生成 API 时发生未知错误');
+    throw new Error('Unknown error occurred while calling image generation API');
   }
 }
 
@@ -193,10 +193,10 @@ async function submitZhipuImageTask(
   baseUrl?: string
 ): Promise<{ taskId?: string; imageUrl?: string; estimatedTime?: number }> {
   if (!model) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆鍥剧墖鐢熸垚妯″瀷');
+    throw new Error('Please configure image generation model in settings');
   }
   if (!baseUrl) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆鍥剧墖鐢熸垚鏈嶅姟鏄犲皠');
+    throw new Error('Please configure image generation service endpoint in settings');
   }
   const endpoint = buildEndpoint(baseUrl, 'images/generations');
   const response = await fetch(endpoint, {
@@ -261,7 +261,7 @@ async function pollTaskCompletion(
 
     try {
       // Add cache-busting timestamp (matching director_ai)
-      // 浣跨敤浼犲叆鐨?baseUrl 鑰屼笉鏄‖缂栫爜
+      // Use passed baseUrl instead of hardcoded
       const url = new URL(buildEndpoint(baseUrl, `tasks/${taskId}`));
       url.searchParams.set('_ts', Date.now().toString());
 
@@ -427,7 +427,7 @@ export async function generateStoryboardImage(
 
   // Validate API key
   if (!apiKey) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆 API Key');
+    throw new Error('Please configure API key in settings');
   }
 
   onProgress?.(10);
@@ -437,7 +437,11 @@ export async function generateStoryboardImage(
 
   const baseUrl = config.baseUrl?.replace(/\/+$/, '');
   if (!baseUrl) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆鍥剧墖鐢熸垚鏈嶅姟鏄犲皠');
+    throw new Error('Please configure image generation service endpoint in settings');
+  }
+  const model = config.model;
+  if (!model) {
+    throw new Error('Please configure image generation model in settings');
   }
   const model = config.model;
   if (!model) {
@@ -520,10 +524,10 @@ async function submitVideoGenTask(
   videoResolution?: '480p' | '720p' | '1080p'
 ): Promise<{ taskId?: string; videoUrl?: string; estimatedTime?: number }> {
   if (!model) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆瑙嗛鐢熸垚妯″瀷');
+    throw new Error('Please configure video generation model in settings');
   }
   if (!baseUrl) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆瑙嗛鐢熸垚鏈嶅姟鏄犲皠');
+    throw new Error('Please configure video generation service endpoint in settings');
   }
   const actualModel = model;
   const actualBaseUrl = baseUrl.replace(/\/+$/, '');
@@ -681,7 +685,7 @@ export async function generateSceneVideos(
 
   // Validate API key
   if (!apiKey && !mockMode) {
-    throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆 API Key');
+    throw new Error('Please configure API key in settings');
   }
 
   // Process scenes sequentially with rate limiting
@@ -713,7 +717,7 @@ export async function generateSceneVideos(
       if (provider !== 'zhipu') {
         const resolvedBaseUrl = baseUrl?.replace(/\/+$/, '');
         if (!resolvedBaseUrl) {
-          throw new Error('璇峰厛鍦ㄨ缃腑閰嶇疆瑙嗛鐢熸垚鏈嶅姟鏄犲皠');
+          throw new Error('Please configure video generation service endpoint in settings');
         }
         const result = await submitVideoGenTask(
           scene.imageDataUrl,

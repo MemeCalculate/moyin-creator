@@ -4,8 +4,8 @@
 "use client";
 
 /**
- * 情绪标签选择组件
- * 支持多选、有序排列，用于控制视频生成的氛围和语气
+ * Emotion Tag Selection Component
+ * Supports multi-select and ordered arrangement for controlling video generation atmosphere and tone
  */
 
 import { useState } from "react";
@@ -25,7 +25,7 @@ interface EmotionTagsProps {
   disabled?: boolean;
 }
 
-// 获取标签信息
+// Get tag info
 function getTagInfo(tagId: EmotionTag) {
   const allTags = [
     ...EMOTION_PRESETS.basic,
@@ -38,22 +38,22 @@ function getTagInfo(tagId: EmotionTag) {
 export function EmotionTags({ value, onChange, disabled }: EmotionTagsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // 添加标签
+  // Add tag
   const addTag = (tagId: EmotionTag) => {
     if (!value.includes(tagId)) {
       onChange([...value, tagId]);
     }
   };
 
-  // 移除标签
+  // Remove tag
   const removeTag = (tagId: EmotionTag) => {
     onChange(value.filter(t => t !== tagId));
   };
 
-  // 检查是否已选中
+  // Check if selected
   const isSelected = (tagId: EmotionTag) => value.includes(tagId);
 
-  // 渲染标签分类
+  // Render tag categories
   const renderTagGroup = (
     title: string, 
     tags: readonly { id: string; label: string; emoji: string }[]
@@ -93,7 +93,7 @@ export function EmotionTags({ value, onChange, disabled }: EmotionTagsProps) {
 
   return (
     <div className="space-y-2">
-      {/* 已选标签（有序显示） */}
+      {/* Selected tags (displayed in order) */}
       {value.length > 0 && (
         <div className="flex flex-wrap gap-1.5 items-center">
           {value.map((tagId, index) => {
@@ -121,7 +121,7 @@ export function EmotionTags({ value, onChange, disabled }: EmotionTagsProps) {
         </div>
       )}
 
-      {/* 添加标签按钮 */}
+      {/* Add tag button */}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -131,31 +131,31 @@ export function EmotionTags({ value, onChange, disabled }: EmotionTagsProps) {
             className="h-7 text-xs"
           >
             <Plus className="h-3 w-3 mr-1" />
-            添加情绪标签
+            Add Emotion Tag
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-72 p-3" align="start">
           <div className="space-y-3">
-            <p className="text-sm font-medium">选择情绪标签</p>
+            <p className="text-sm font-medium">Select Emotion Tag</p>
             <p className="text-xs text-muted-foreground">
-              按顺序添加标签，视频将按此顺序呈现情绪变化
+              Add tags in order, video will present emotion changes in this order
             </p>
-            {renderTagGroup("基础情绪", EMOTION_PRESETS.basic)}
-            {renderTagGroup("氛围情绪", EMOTION_PRESETS.atmosphere)}
-            {renderTagGroup("语气情绪", EMOTION_PRESETS.tone)}
+            {renderTagGroup("Basic Emotions", EMOTION_PRESETS.basic)}
+            {renderTagGroup("Atmosphere Emotions", EMOTION_PRESETS.atmosphere)}
+            {renderTagGroup("Tone Emotions", EMOTION_PRESETS.tone)}
           </div>
         </PopoverContent>
       </Popover>
 
-      {/* 提示文字 */}
+      {/* Hint text */}
       {value.length === 0 && (
         <p className="text-xs text-muted-foreground">
-          添加情绪标签控制视频氛围和说话语气
+          Add emotion tags to control video atmosphere and speaking tone
         </p>
       )}
       {value.length > 1 && (
         <p className="text-xs text-muted-foreground">
-          情绪将按 {value.map((t, i) => getTagInfo(t)?.label).filter(Boolean).join(" → ")} 顺序变化
+          Emotions will change in order: {value.map((t, i) => getTagInfo(t)?.label).filter(Boolean).join(" → ")}
         </p>
       )}
     </div>

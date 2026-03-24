@@ -4,8 +4,8 @@
 "use client";
 
 /**
- * 环境声输入组件 (Ambient Sound Input)
- * 用于输入场景的环境声描述，如"森林鸟鸣"、"城市喧嚣"等
+ * Ambient Sound Input
+ * Used to input ambient sound descriptions for scenes, e.g., "forest birds", "city bustle"
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -23,7 +23,7 @@ export function AmbientSoundInput({
   value,
   onChange,
   disabled,
-  placeholder = "如：森林鸟鸣、城市喧嚣...",
+  placeholder = "e.g., forest birds, city bustle...",
 }: AmbientSoundInputProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);

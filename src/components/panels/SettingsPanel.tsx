@@ -242,7 +242,7 @@ export function SettingsPanel() {
   // Delete provider
   const handleDelete = (id: string) => {
     removeProvider(id);
-    toast.success("已删除供应商");
+    toast.success("Đã xoá nhà cung cấp");
   };
 
   const handleEditImageHost = (provider: ImageHostProvider) => {
@@ -252,7 +252,7 @@ export function SettingsPanel() {
 
   const handleDeleteImageHost = (id: string) => {
     removeImageHostProvider(id);
-    toast.success("已删除图床");
+    toast.success("Đã xoá host ảnh");
   };
 
   const handleTestImageHost = async (provider: ImageHostProvider) => {
@@ -264,12 +264,12 @@ export function SettingsPanel() {
         providerId: provider.id,
       });
       if (result.success) {
-        toast.success(`图床 ${provider.name} 连接测试成功`);
+        toast.success(`Kiểm tra kết nối host ảnh ${provider.name} thành công`);
       } else {
-        toast.error(`测试失败: ${result.error || '未知错误'}`);
+        toast.error(`Kiểm tra thất bại: ${result.error || 'Lỗi không xác định'}`);
       }
     } catch (error) {
-      toast.error('连接测试失败，请检查网络');
+      toast.error('Kiểm tra kết nối thất bại, vui lòng kiểm tra mạng');
     } finally {
       setTestingImageHostId(null);
     }
@@ -279,7 +279,7 @@ export function SettingsPanel() {
   const testConnection = async (provider: IProvider) => {
     const keys = parseApiKeys(provider.apiKey);
     if (keys.length === 0) {
-      toast.error("请先配置 API Key");
+      toast.error("Vui lòng cấu hình API Key trước");
       return;
     }
 
@@ -297,7 +297,7 @@ export function SettingsPanel() {
 
       if (provider.platform === "runninghub") {
         if (!normalizedBaseUrl) {
-          toast.error("请先配置 Base URL");
+          toast.error("Vui lòng cấu hình Base URL trước");
           setTestingProvider(null);
           return;
         }
@@ -315,7 +315,7 @@ export function SettingsPanel() {
         // For RunningHub, 400/404 means auth is OK (task doesn't exist)
         if (response.status === 400 || response.status === 404) {
           setTestResults((prev) => ({ ...prev, [provider.id]: true }));
-          toast.success("连接测试成功");
+          toast.success("Kiểm tra kết nối thành công");
           setTestingProvider(null);
           return;
         }
@@ -337,7 +337,7 @@ export function SettingsPanel() {
       } else {
         // For providers without chat endpoint info, just mark as configured
         setTestResults((prev) => ({ ...prev, [provider.id]: true }));
-        toast.success(`${provider.name} 已配置`);
+        toast.success(`Đã cấu hình ${provider.name}`);
         setTestingProvider(null);
         return;
       }
@@ -346,16 +346,16 @@ export function SettingsPanel() {
       setTestResults((prev) => ({ ...prev, [provider.id]: success }));
 
       if (success) {
-        toast.success("连接测试成功");
+        toast.success("Kiểm tra kết nối thành công");
       } else {
         const errorData = await response.text();
         console.error("API test error:", response.status, errorData);
-        toast.error(`连接测试失败 (${response.status})`);
+        toast.error(`Kiểm tra kết nối thất bại (${response.status})`);
       }
     } catch (error) {
       console.error("Connection test error:", error);
       setTestResults((prev) => ({ ...prev, [provider.id]: false }));
-      toast.error("连接测试失败，请检查网络");
+      toast.error("Kiểm tra kết nối thất bại, vui lòng kiểm tra mạng");
     } finally {
       setTestingProvider(null);
     }
@@ -448,7 +448,7 @@ export function SettingsPanel() {
   // Unified storage handlers
   const handleSelectStoragePath = async () => {
     if (!window.storageManager) {
-      toast.error("请在桌面应用中使用此功能");
+      toast.error("Vui lòng dùng ứng dụng desktop để sử dụng tính năng này");
       return;
     }
     const dir = await window.storageManager.selectDirectory();
@@ -477,10 +477,10 @@ export function SettingsPanel() {
         console.warn('Failed to clear IndexedDB:', e);
       }
       
-      toast.success("存储位置已更新，正在刷新...");
+      toast.success("Đã cập nhật vị trí lưu trữ, đang làm mới...");
       setTimeout(() => window.location.reload(), 500);
     } else {
-      toast.error(`移动失败: ${result.error || "未知错误"}`);
+      toast.error(`Di chuyển thất bại: ${result.error || "Lỗi không xác định"}`);
     }
   };
 
@@ -490,9 +490,9 @@ export function SettingsPanel() {
     if (!dir) return;
     const result = await window.storageManager.exportData(dir);
     if (result.success) {
-      toast.success("数据已导出");
+      toast.success("Đã xuất dữ liệu");
     } else {
-      toast.error(`导出失败: ${result.error || "未知错误"}`);
+      toast.error(`Xuất thất bại: ${result.error || "Lỗi không xác định"}`);
     }
   };
 
@@ -500,7 +500,7 @@ export function SettingsPanel() {
     if (!window.storageManager) return;
     const dir = await window.storageManager.selectDirectory();
     if (!dir) return;
-    if (!confirm("导入将覆盖当前数据，是否继续？")) return;
+    if (!confirm("Nhập dữ liệu sẽ ghi đè dữ liệu hiện tại, tiếp tục?")) return;
     const result = await window.storageManager.importData(dir);
     if (result.success) {
       // 清除 localStorage 中的缓存，防止旧数据覆盖导入的数据
@@ -523,17 +523,17 @@ export function SettingsPanel() {
         console.warn('Failed to clear IndexedDB:', e);
       }
       
-      toast.success("数据已导入，正在刷新...");
+      toast.success("Đã nhập dữ liệu, đang làm mới...");
       // 延迟刷新页面以确保缓存清理完成
       setTimeout(() => window.location.reload(), 500);
     } else {
-      toast.error(`导入失败: ${result.error || "未知错误"}`);
+      toast.error(`Nhập thất bại: ${result.error || "Lỗi không xác định"}`);
     }
   };
 
   const handleLinkData = async () => {
     if (!window.storageManager) {
-      toast.error("请在桌面应用中使用此功能");
+      toast.error("Vui lòng dùng ứng dụng desktop để sử dụng tính năng này");
       return;
     }
     const dir = await window.storageManager.selectDirectory();
@@ -542,12 +542,12 @@ export function SettingsPanel() {
     // Validate the directory first
     const validation = await window.storageManager.validateDataDir(dir);
     if (!validation.valid) {
-      toast.error(validation.error || "无效的数据目录");
+      toast.error(validation.error || "Thư mục dữ liệu không hợp lệ");
       return;
     }
     
     // Confirm with user
-    const confirmMsg = `检测到 ${validation.projectCount || 0} 个项目文件，${validation.mediaCount || 0} 个素材文件。\n\n是否指向此目录？操作后建议重启应用。`;
+    const confirmMsg = `Phát hiện ${validation.projectCount || 0} tệp dự án, ${validation.mediaCount || 0} tệp tư liệu.\n\nBạn có muốn trỏ đến thư mục này? Nên khởi động lại ứng dụng sau thao tác.`;
     if (!confirm(confirmMsg)) return;
     
     const result = await window.storageManager.linkData(dir);
@@ -574,10 +574,10 @@ export function SettingsPanel() {
         console.warn('Failed to clear IndexedDB:', e);
       }
       
-      toast.success("已指向数据目录，正在刷新...");
+      toast.success("Đã trỏ đến thư mục dữ liệu, đang làm mới...");
       setTimeout(() => window.location.reload(), 500);
     } else {
-      toast.error(`操作失败: ${result.error || "未知错误"}`);
+      toast.error(`Thao tác thất bại: ${result.error || "Lỗi không xác định"}`);
     }
   };
 
@@ -587,10 +587,10 @@ export function SettingsPanel() {
     try {
       const result = await window.storageManager.clearCache();
       if (result.success) {
-        toast.success("缓存已清理");
+        toast.success("Đã dọn cache");
         refreshCacheSize();
       } else {
-        toast.error(`清理失败: ${result.error || "未知错误"}`);
+        toast.error(`Dọn dẹp thất bại: ${result.error || "Lỗi không xác định"}`);
       }
     } finally {
       setIsClearingCache(false);
@@ -599,7 +599,7 @@ export function SettingsPanel() {
 
   const handleCheckForUpdates = async () => {
     if (!window.appUpdater) {
-      toast.error("请在桌面应用中使用此功能");
+      toast.error("Vui lòng dùng ứng dụng desktop để sử dụng tính năng này");
       return;
     }
 
@@ -607,7 +607,7 @@ export function SettingsPanel() {
     try {
       const result = await window.appUpdater.checkForUpdates();
       if (!result.success) {
-        toast.error(`检查更新失败: ${result.error || "未知错误"}`);
+        toast.error(`Kiểm tra cập nhật thất bại: ${result.error || "Lỗi không xác định"}`);
         return;
       }
 
@@ -618,10 +618,10 @@ export function SettingsPanel() {
       }
 
       setAvailableUpdate(null);
-      toast.success(`当前已是最新版本 v${result.currentVersion}`);
+      toast.success(`Bạn đang dùng phiên bản mới nhất v${result.currentVersion}`);
     } catch (error) {
       console.error("[SettingsPanel] Failed to check updates:", error);
-      toast.error("检查更新失败，请稍后重试");
+      toast.error("Kiểm tra cập nhật thất bại, vui lòng thử lại sau");
     } finally {
       setIsCheckingForUpdates(false);
     }
@@ -629,7 +629,7 @@ export function SettingsPanel() {
 
   const handleClearIgnoredVersion = () => {
     setUpdateSettings({ ignoredVersion: "" });
-    toast.success("已恢复更新提醒");
+    toast.success("Đã khôi phục nhắc cập nhật");
   };
 
   return (
@@ -639,17 +639,17 @@ export function SettingsPanel() {
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-3">
             <Settings className="w-5 h-5 text-primary" />
-            设置
+            Cài đặt
           </h2>
         </div>
         {activeTab === "api" && (
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground font-mono bg-muted border border-border px-2 py-1 rounded">
-              已配置: {configuredCount}/{providers.length}
+              Đã cấu hình: {configuredCount}/{providers.length}
             </span>
             <Button onClick={() => setAddDialogOpen(true)} size="sm">
               <Plus className="h-4 w-4 mr-1" />
-              添加供应商
+              Thêm nhà cung cấp
             </Button>
           </div>
         )}
@@ -663,31 +663,31 @@ export function SettingsPanel() {
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 h-12"
             >
               <Key className="h-4 w-4 mr-2" />
-              API 管理
+              Quản lý API
             </TabsTrigger>
-            <TabsTrigger 
-              value="advanced" 
+            <TabsTrigger
+              value="advanced"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 h-12"
             >
               <Layers className="h-4 w-4 mr-2" />
-              高级选项
+              Tuỳ chọn nâng cao
             </TabsTrigger>
-            <TabsTrigger 
-              value="imagehost" 
+            <TabsTrigger
+              value="imagehost"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 h-12"
             >
               <Upload className="h-4 w-4 mr-2" />
-              图床配置
+              Cấu hình Host ảnh
               {isImageHostConfigured() && (
                 <span className="ml-1 w-2 h-2 bg-green-500 rounded-full" />
               )}
             </TabsTrigger>
-            <TabsTrigger 
-              value="storage" 
+            <TabsTrigger
+              value="storage"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 h-12"
             >
               <HardDrive className="h-4 w-4 mr-2" />
-              存储
+              Lưu trữ
             </TabsTrigger>
           </TabsList>
         </div>
@@ -700,9 +700,9 @@ export function SettingsPanel() {
           <div className="flex items-start gap-3 p-4 bg-muted/50 border border-border rounded-lg">
             <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div>
-              <h3 className="font-medium text-foreground text-sm">安全说明</h3>
+              <h3 className="font-medium text-foreground text-sm">Thông tin bảo mật</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                所有 API Key 仅存储在您的浏览器本地存储中，不会上传到任何服务器。支持多 Key 轮换，失败时自动切换。
+                Tất cả API Key chỉ lưu trữ trong trình duyệt của bạn, không gửi lên bất kỳ máy chủ nào. Hỗ trợ nhiều Key luân phiên, tự động chuyển đổi khi thất bại.
               </p>
             </div>
           </div>
@@ -719,17 +719,17 @@ export function SettingsPanel() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-foreground text-sm flex items-center gap-2">
-                魔因API
+                Moyin API
                 <span className="text-[10px] px-1.5 py-0.5 bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded">
-                  推荐
+                  Khuyên dùng
                 </span>
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                543+ AI 模型一站式接入，支持 GPT / Claude / Gemini / DeepSeek / Sora 等
+                Truy cập 543+ mô hình AI một điểm, hỗ trợ GPT / Claude / Gemini / DeepSeek / Sora v.v.
               </p>
             </div>
             <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium text-primary group-hover:underline">
-              获取 API Key
+              Lấy API Key
               <ExternalLink className="h-3.5 w-3.5" />
             </span>
           </a>
@@ -741,17 +741,17 @@ export function SettingsPanel() {
           <div className="space-y-4">
             <h3 className="font-bold text-foreground flex items-center gap-2">
               <Key className="h-4 w-4" />
-              API 供应商
+              Nhà cung cấp API
             </h3>
 
             {providers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 border border-dashed border-border rounded-xl">
                 <Info className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">
-                  尚未配置任何供应商
+                  Chưa cấu hình nhà cung cấp nào
                 </h3>
                 <p className="text-sm text-muted-foreground mb-2">
-                  推荐使用魔因API，支持 543+ 模型一站式接入
+                  Khuyến nghị dùng Moyin API, hỗ trợ 543+ mô hình một điểm
                 </p>
                 <a
                   href="https://memefast.top"
@@ -760,11 +760,11 @@ export function SettingsPanel() {
                   className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mb-4"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  前往魔因API获取 Key
+                  Đến Moyin API lấy Key
                 </a>
                 <Button onClick={() => setAddDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-1" />
-                  添加供应商
+                  Thêm nhà cung cấp
                 </Button>
               </div>
             ) : (
@@ -811,12 +811,12 @@ export function SettingsPanel() {
                                   {provider.name}
                                   {provider.platform === 'memefast' && (
                                     <span className="text-[10px] px-1.5 py-0.5 bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded font-normal">
-                                      推荐
+                                      Khuyên dùng
                                     </span>
                                   )}
                                   {configured && (
                                     <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded font-normal">
-                                      已配置
+                                      Đã cấu hình
                                     </span>
                                   )}
                                 </h4>
@@ -835,7 +835,7 @@ export function SettingsPanel() {
                                     toggleExpanded(provider.id);
                                   }}
                                 >
-                                  模型 ({provider.model.length})
+                                  Mô hình ({provider.model.length})
                                 </span>
                                 <span>|</span>
                                 <span
@@ -857,15 +857,15 @@ export function SettingsPanel() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  title="同步模型列表"
+                                  title="Đồng bộ danh sách mô hình"
                                   onClick={async () => {
                                     setSyncingProvider(provider.id);
                                     const result = await syncProviderModels(provider.id);
                                     setSyncingProvider(null);
                                     if (result.success) {
-                                      toast.success(`已同步 ${result.count} 个模型`);
+                                      toast.success(`Đã đồng bộ ${result.count} mô hình`);
                                     } else {
-                                      toast.error(result.error || '同步失败');
+                                      toast.error(result.error || 'Đồng bộ thất bại');
                                     }
                                   }}
                                   disabled={!configured || syncingProvider === provider.id}
@@ -881,7 +881,7 @@ export function SettingsPanel() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  title="测试连接"
+                                  title="Kiểm tra kết nối"
                                   onClick={() => testConnection(provider)}
                                   disabled={!configured || isTesting}
                                 >
@@ -900,7 +900,7 @@ export function SettingsPanel() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  title="编辑"
+                                  title="Sửa"
                                   onClick={() => handleEdit(provider)}
                                 >
                                   <Pencil className="h-4 w-4" />
@@ -919,19 +919,19 @@ export function SettingsPanel() {
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>
-                                        确认删除
+                                        Xác nhận xoá
                                       </AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        确定要删除 {provider.name} 吗？此操作无法撤销。
+                                        Bạn có chắc muốn xoá {provider.name}? Thao tác này không thể hoàn tác.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>取消</AlertDialogCancel>
+                                      <AlertDialogCancel>Huỷ</AlertDialogCancel>
                                       <AlertDialogAction
                                         onClick={() => handleDelete(provider.id)}
                                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       >
-                                        删除
+                                        Xoá
                                       </AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
@@ -957,7 +957,7 @@ export function SettingsPanel() {
                               className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
                             >
                               <ExternalLink className="h-3 w-3" />
-                              前往魔因API获取 Key →
+                              Đến Moyin API lấy Key →
                             </a>
                           </div>
                         )}
@@ -1002,7 +1002,7 @@ export function SettingsPanel() {
                                   {keyCount > 1 && (
                                     <span className="text-muted-foreground">
                                       {" "}
-                                      (+{keyCount - 1} 个)
+                                      (+{keyCount - 1})
                                     </span>
                                   )}
                                 </span>
@@ -1022,12 +1022,12 @@ export function SettingsPanel() {
           <div className="p-6 border border-border rounded-xl bg-card space-y-6">
             <h3 className="font-bold text-foreground flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              全局设置
+              Cài đặt chung
             </h3>
 
             {/* Concurrency */}
             <div className="space-y-3">
-              <Label className="text-xs text-muted-foreground">并发生成数</Label>
+              <Label className="text-xs text-muted-foreground">Số tác vụ đồng thời</Label>
               <div className="flex items-center gap-3">
                 <Input
                   type="number"
@@ -1040,7 +1040,7 @@ export function SettingsPanel() {
                   className="w-24"
                 />
                 <span className="text-xs text-muted-foreground">
-                  同时生成的任务数量（多 Key 时可设置更高，建议不超过 Key 数量）
+                  Số tác vụ tạo đồng thời (khi có nhiều Key có thể đặt cao hơn, khuyến nghị không vượt quá số Key)
                 </span>
               </div>
             </div>
@@ -1048,8 +1048,8 @@ export function SettingsPanel() {
 
               {/* About */}
               <div className="text-center py-8 text-muted-foreground border-t border-border">
-                <p className="text-sm font-medium">魔因漫创 Moyin Creator</p>
-                <p className="text-xs mt-1">v{appVersion} · AI 驱动的动漫视频创作工具</p>
+                <p className="text-sm font-medium">Moyin Creator</p>
+                <p className="text-xs mt-1">v{appVersion} · Công cụ tạo video hoạt hình do AI hỗ trợ</p>
               </div>
             </div>
           </ScrollArea>
@@ -1064,22 +1064,22 @@ export function SettingsPanel() {
                 <div>
                   <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <Layers className="h-5 w-5" />
-                    高级生成选项
+                    Tuỳ chọn tạo nâng cao
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    这些选项影响 AI 导演板块的视频生成行为
+                    Các tuỳ chọn này ảnh hưởng đến hành vi tạo video trong mô-đun Đạo diễn AI
                   </p>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     resetAdvancedOptions();
-                    toast.success("已恢复默认设置");
+                    toast.success("Đã khôi phục cài đặt mặc định");
                   }}
                 >
                   <RotateCcw className="h-4 w-4 mr-1" />
-                  恢复默认
+                  Mặc định
                 </Button>
               </div>
 
@@ -1093,12 +1093,12 @@ export function SettingsPanel() {
                         <Link2 className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-foreground">视觉连续性</h4>
+                        <h4 className="font-medium text-foreground">Tính liên tục thị giác</h4>
                         <p className="text-sm text-muted-foreground mt-1">
-                          自动将上一分镜的尾帧传递给下一分镜作为参考图，保持视觉风格和角色外观的一致性
+                          Tự động truyền khung cuối của phân cảnh trước làm ảnh tham chiếu cho phân cảnh sau, giữ nhất quán phong cách và ngoại hình nhân vật
                         </p>
                         <p className="text-xs text-muted-foreground/70 mt-1">
-                          推荐开启 · 适合连续叙事和长视频创作
+                          Khuyến nghị bật · Phù hợp với truyện liên tục và video dài
                         </p>
                       </div>
                     </div>
@@ -1117,12 +1117,12 @@ export function SettingsPanel() {
                         <Play className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-foreground">断点续传</h4>
+                        <h4 className="font-medium text-foreground">Tiếp tục khi gián đoạn</h4>
                         <p className="text-sm text-muted-foreground mt-1">
-                          批量生成中断后可从上次位置继续，不需要重新开始
+                          Khi tạo hàng loạt bị gián đoạn có thể tiếp tục từ vị trí cuối, không cần bắt đầu lại
                         </p>
                         <p className="text-xs text-muted-foreground/70 mt-1">
-                          推荐开启 · 防止网络中断或 API 超时导致进度丢失
+                          Khuyến nghị bật · Tránh mất tiến độ do gián đoạn mạng hoặc API hết giờ
                         </p>
                       </div>
                     </div>
@@ -1141,12 +1141,12 @@ export function SettingsPanel() {
                         <ShieldAlert className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-foreground">内容审核容错</h4>
+                        <h4 className="font-medium text-foreground">Dung sai kiểm duyệt nội dung</h4>
                         <p className="text-sm text-muted-foreground mt-1">
-                          遇到敏感内容时自动跳过该分镜，继续生成其他分镜
+                          Tự động bỏ qua phân cảnh khi gặp nội dung nhạy cảm, tiếp tục tạo phân cảnh khác
                         </p>
                         <p className="text-xs text-muted-foreground/70 mt-1">
-                          推荐开启 · 避免单个分镜失败导致整个流程中断
+                          Khuyến nghị bật · Tránh một phân cảnh lỗi gây gián đoạn toàn bộ quy trình
                         </p>
                       </div>
                     </div>
@@ -1165,12 +1165,12 @@ export function SettingsPanel() {
                         <Zap className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-foreground">多模型自动切换</h4>
+                        <h4 className="font-medium text-foreground">Tự động chuyển đổi mô hình</h4>
                         <p className="text-sm text-muted-foreground mt-1">
-                          首分镜使用文生视频 (t2v)，后续分镜使用图生视频 (i2v)
+                          Phân cảnh đầu dùng text-to-video (t2v), các phân cảnh sau dùng image-to-video (i2v)
                         </p>
                         <p className="text-xs text-muted-foreground/70 mt-1">
-                          默认关闭 · 需要配置多个模型才能使用
+                          Mặc định tắt · Cần cấu hình nhiều mô hình để sử dụng
                         </p>
                       </div>
                     </div>
@@ -1187,15 +1187,15 @@ export function SettingsPanel() {
                 <Info className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    这些选项会影响 AI 导演板块的视频生成行为。如果你不确定某个选项的作用，建议保持默认设置。
+                    Các tuỳ chọn này sẽ ảnh hưởng đến hành vi tạo video của mô-đun Đạo diễn AI. Nếu không chắc chắn, nên giữ mặc định.
                   </p>
                 </div>
               </div>
 
               {/* About */}
               <div className="text-center py-8 text-muted-foreground border-t border-border">
-                <p className="text-sm font-medium">魔因漫创 Moyin Creator</p>
-                <p className="text-xs mt-1">v{appVersion} · AI 驱动的动漫视频创作工具</p>
+                <p className="text-sm font-medium">Moyin Creator</p>
+                <p className="text-xs mt-1">v{appVersion} · Công cụ tạo video hoạt hình do AI hỗ trợ</p>
               </div>
             </div>
           </ScrollArea>
@@ -1209,25 +1209,25 @@ export function SettingsPanel() {
               <div>
                 <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  图床配置
+                  Cấu hình Host ảnh
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  图床用于存储视频生成过程中的临时图片（如尾帧提取、帧传递等）
+                  Host ảnh dùng để lưu ảnh tạm trong quá trình tạo video (ví dụ: trích khung cuối, truyền khung, v.v.)
                 </p>
               </div>
 
               {/* Image Host Providers */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">图床服务商</Label>
+                  <Label className="text-sm font-medium">Nhà cung cấp host ảnh</Label>
                   <Button size="sm" variant="outline" onClick={() => setImageHostAddOpen(true)}>
                     <Plus className="h-4 w-4 mr-1" />
-                    添加
+                    Thêm
                   </Button>
                 </div>
 
                 {visibleImageHostProviders.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">暂无图床配置</div>
+                  <div className="text-sm text-muted-foreground">Chưa cấu hình host ảnh</div>
                 ) : (
                   <div className="space-y-3">
                     {visibleImageHostProviders.map((provider) => {
@@ -1242,21 +1242,21 @@ export function SettingsPanel() {
                                 <span className="font-medium text-foreground">{provider.name}</span>
                                 {configured ? (
                                   <span className="text-xs px-2 py-0.5 bg-green-500/10 text-green-500 rounded">
-                                    已配置
+                                    Đã cấu hình
                                   </span>
                                 ) : (
                                   <span className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded">
-                                    未配置
+                                    Chưa cấu hình
                                   </span>
                                 )}
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {provider.platform} · {endpoint || '未设置地址'}
+                                {provider.platform} · {endpoint || 'Chưa đặt địa chỉ'}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {provider.apiKeyOptional && keyCount === 0
-                                  ? "游客上传（无需 Key）"
-                                  : `${keyCount} 个 Key`}
+                                  ? "Tải lên không cần Key"
+                                  : `${keyCount} Key`}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -1279,14 +1279,14 @@ export function SettingsPanel() {
                               {testingImageHostId === provider.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                "测试连接"
+                                "Kiểm tra kết nối"
                               )}
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => handleEditImageHost(provider)}>
-                              编辑
+                              Sửa
                             </Button>
                             <Button size="sm" variant="ghost" onClick={() => handleDeleteImageHost(provider.id)}>
-                              删除
+                              Xoá
                             </Button>
                           </div>
                         </div>
@@ -1301,21 +1301,21 @@ export function SettingsPanel() {
                 <Info className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    图床用于存储视频生成过程中的临时图片，主要用于「视觉连续性」功能。
-                    如果不配置图床，跨分镜的帧传递功能将受限。
-                    启用多个图床会按顺序轮流使用，失败自动切换。
+                    Host ảnh dùng để lưu ảnh tạm trong quá trình tạo video, chủ yếu cho tính năng "Tính liên tục thị giác".
+                    Nếu không cấu hình host ảnh, tính năng truyền khung giữa các phân cảnh sẽ bị hạn chế.
+                    Khi bật nhiều host, hệ thống sẽ dùng luân phiên, tự chuyển khi thất bại.
                   </p>
                   <p className="text-sm">
-                    默认已启用 SCDN 图床，不需要填写KEY；
-                    ImgBB 默认保持关闭，如需使用请手动开启并自行测试可用性。
+                    Mặc định đã bật host SCDN, không cần nhập KEY;
+                    ImgBB mặc định tắt, nếu cần dùng vui lòng tự bật và kiểm tra khả dụng.
                   </p>
                 </div>
               </div>
 
               {/* About */}
               <div className="text-center py-8 text-muted-foreground border-t border-border">
-                <p className="text-sm font-medium">魔因漫创 Moyin Creator</p>
-                <p className="text-xs mt-1">v{appVersion} · AI 驱动的动漫视频创作工具</p>
+                <p className="text-sm font-medium">Moyin Creator</p>
+                <p className="text-xs mt-1">v{appVersion} · Công cụ tạo video hoạt hình do AI hỗ trợ</p>
               </div>
             </div>
           </ScrollArea>
@@ -1329,10 +1329,10 @@ export function SettingsPanel() {
               <div>
                 <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <HardDrive className="h-5 w-5" />
-                  存储设置
+                  Cài đặt lưu trữ
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  设置资源共享策略、存储位置与缓存管理
+                  Cài đặt chiến lược chia sẻ tài nguyên, vị trí lưu trữ và quản lý cache
                 </p>
               </div>
 
@@ -1341,7 +1341,7 @@ export function SettingsPanel() {
                   <Info className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">
-                      存储设置仅在桌面版中可用。
+                      Cài đặt lưu trữ chỉ khả dụng trong bản desktop.
                     </p>
                   </div>
                 </div>
@@ -1351,13 +1351,13 @@ export function SettingsPanel() {
               <div className="p-6 border border-border rounded-xl bg-card space-y-4">
                 <h4 className="font-medium text-foreground flex items-center gap-2">
                   <Folder className="h-4 w-4" />
-                  资源共享
+                  Chia sẻ tài nguyên
                 </h4>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">角色库跨项目共享</p>
-                    <p className="text-xs text-muted-foreground">关闭后，仅当前项目可见</p>
+                    <p className="text-sm font-medium">Chia sẻ thư viện nhân vật giữa các dự án</p>
+                    <p className="text-xs text-muted-foreground">Khi tắt, chỉ dự án hiện tại thấy được</p>
                   </div>
                   <Switch
                     checked={resourceSharing.shareCharacters}
@@ -1368,8 +1368,8 @@ export function SettingsPanel() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">场景库跨项目共享</p>
-                    <p className="text-xs text-muted-foreground">关闭后，仅当前项目可见</p>
+                    <p className="text-sm font-medium">Chia sẻ thư viện bối cảnh giữa các dự án</p>
+                    <p className="text-xs text-muted-foreground">Khi tắt, chỉ dự án hiện tại thấy được</p>
                   </div>
                   <Switch
                     checked={resourceSharing.shareScenes}
@@ -1380,8 +1380,8 @@ export function SettingsPanel() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">素材库跨项目共享</p>
-                    <p className="text-xs text-muted-foreground">关闭后，仅当前项目可见</p>
+                    <p className="text-sm font-medium">Chia sẻ thư viện tư liệu giữa các dự án</p>
+                    <p className="text-xs text-muted-foreground">Khi tắt, chỉ dự án hiện tại thấy được</p>
                   </div>
                   <Switch
                     checked={resourceSharing.shareMedia}
@@ -1395,35 +1395,35 @@ export function SettingsPanel() {
               <div className="p-6 border border-border rounded-xl bg-card space-y-5">
                 <h4 className="font-medium text-foreground flex items-center gap-2">
                   <HardDrive className="h-4 w-4" />
-                  存储位置
+                  Vị trí lưu trữ
                 </h4>
 
                 <div className="space-y-3">
-                  <Label className="text-xs text-muted-foreground">数据存储位置（包含项目和素材）</Label>
+                  <Label className="text-xs text-muted-foreground">Vị trí lưu dữ liệu (bao gồm dự án và tư liệu)</Label>
                   <div className="flex items-center gap-2">
                     <Input
-                      value={storagePaths.basePath || '默认位置'}
-                      placeholder="默认位置"
+                      value={storagePaths.basePath || 'Vị trí mặc định'}
+                      placeholder="Vị trí mặc định"
                       readOnly
                       className="font-mono text-xs"
                     />
                     <Button size="sm" onClick={handleSelectStoragePath} disabled={!hasStorageManager}>
-                      选择
+                      Chọn
                     </Button>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={handleExportData} disabled={!hasStorageManager}>
                       <Download className="h-3.5 w-3.5 mr-1" />
-                      导出
+                      Xuất
                     </Button>
                     <Button variant="outline" size="sm" onClick={handleImportData} disabled={!hasStorageManager}>
-                      导入
+                      Nhập
                     </Button>
                   </div>
                 </div>
 
                 <p className="text-xs text-muted-foreground">
-                  ⚠️ 更改位置会移动现有数据到新目录（自动创建 projects/ 和 media/ 子目录）
+                  ⚠️ Đổi vị trí sẽ di chuyển dữ liệu hiện tại sang thư mục mới (tự động tạo thư mục con projects/ và media/)
                 </p>
               </div>
 
@@ -1431,25 +1431,25 @@ export function SettingsPanel() {
               <div className="p-6 border border-border rounded-xl bg-card space-y-4">
                 <h4 className="font-medium text-foreground flex items-center gap-2">
                   <RefreshCw className="h-4 w-4" />
-                  数据恢复
+                  Khôi phục dữ liệu
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  换设备或重装系统后，指向已有数据目录即可恢复所有配置和项目
+                  Sau khi đổi thiết bị hoặc cài lại hệ thống, chỉ cần trỏ đến thư mục dữ liệu cũ để khôi phục mọi cấu hình và dự án
                 </p>
 
                 <div className="space-y-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleLinkData} 
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleLinkData}
                     disabled={!hasStorageManager}
                     className="w-full"
                   >
                     <Folder className="h-3.5 w-3.5 mr-1" />
-                    指向已有数据目录
+                    Trỏ đến thư mục dữ liệu đã có
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    💡 选择包含 projects/ 和 media/ 子目录的数据目录，操作后重启应用。
+                    💡 Chọn thư mục dữ liệu có chứa thư mục con projects/ và media/, nên khởi động lại ứng dụng sau thao tác.
                   </p>
                 </div>
               </div>
@@ -1458,14 +1458,14 @@ export function SettingsPanel() {
               <div className="p-6 border border-border rounded-xl bg-card space-y-4">
                 <h4 className="font-medium text-foreground flex items-center gap-2">
                   <HardDrive className="h-4 w-4" />
-                  缓存管理
+                  Quản lý cache
                 </h4>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">缓存大小</p>
+                    <p className="text-sm font-medium">Dung lượng cache</p>
                     <p className="text-xs text-muted-foreground">
-                      {isCacheLoading ? "计算中..." : formatBytes(cacheSize)}
+                      {isCacheLoading ? "Đang tính..." : formatBytes(cacheSize)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1486,7 +1486,7 @@ export function SettingsPanel() {
                       {isClearingCache ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        "清理"
+                        "Dọn dẹp"
                       )}
                     </Button>
                   </div>
@@ -1494,8 +1494,8 @@ export function SettingsPanel() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">自动清理</p>
-                    <p className="text-xs text-muted-foreground">默认关闭</p>
+                    <p className="text-sm font-medium">Tự động dọn dẹp</p>
+                    <p className="text-xs text-muted-foreground">Mặc định tắt</p>
                   </div>
                   <Switch
                     checked={cacheSettings.autoCleanEnabled}
@@ -1505,7 +1505,7 @@ export function SettingsPanel() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Label className="text-xs text-muted-foreground">清理</Label>
+                  <Label className="text-xs text-muted-foreground">Dọn dẹp</Label>
                   <Input
                     type="number"
                     min={1}
@@ -1516,19 +1516,19 @@ export function SettingsPanel() {
                     className="w-20"
                     disabled={!cacheSettings.autoCleanEnabled}
                   />
-                  <span className="text-xs text-muted-foreground">天前的缓存文件</span>
+                  <span className="text-xs text-muted-foreground">ngày trước cho tệp cache</span>
                 </div>
               </div>
 
               <div className="p-6 border border-border rounded-xl bg-card space-y-5">
                 <h4 className="font-medium text-foreground flex items-center gap-2">
                   <Download className="h-4 w-4" />
-                  应用更新
+                  Cập nhật ứng dụng
                 </h4>
 
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium">当前版本</p>
+                    <p className="text-sm font-medium">Phiên bản hiện tại</p>
                     <p className="text-xs text-muted-foreground font-mono mt-1">v{appVersion}</p>
                   </div>
                   <Button
@@ -1542,15 +1542,15 @@ export function SettingsPanel() {
                     ) : (
                       <RefreshCw className="h-4 w-4 mr-1" />
                     )}
-                    检查更新
+                    Kiểm tra cập nhật
                   </Button>
                 </div>
 
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium">启动时自动检查更新</p>
+                    <p className="text-sm font-medium">Tự động kiểm tra cập nhật khi khởi động</p>
                     <p className="text-xs text-muted-foreground">
-                      开启后，桌面版启动时会自动检查远程版本清单并提示新版本
+                      Khi bật, bản desktop sẽ tự kiểm tra danh sách phiên bản từ xa khi khởi động và nhắc phiên bản mới
                     </p>
                   </div>
                   <Switch
@@ -1563,28 +1563,28 @@ export function SettingsPanel() {
                 {updateSettings.ignoredVersion && (
                   <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 px-3 py-2">
                     <div>
-                      <p className="text-sm font-medium">已忽略版本</p>
+                      <p className="text-sm font-medium">Phiên bản đã bỏ qua</p>
                       <p className="text-xs text-muted-foreground font-mono mt-1">
                         v{updateSettings.ignoredVersion}
                       </p>
                     </div>
                     <Button variant="ghost" size="sm" onClick={handleClearIgnoredVersion}>
-                      恢复提醒
+                      Khôi phục nhắc
                     </Button>
                   </div>
                 )}
 
                 {!hasAppUpdater && (
                   <p className="text-xs text-muted-foreground">
-                    此功能仅在桌面打包版中可用。
+                    Tính năng này chỉ khả dụng trong bản đóng gói desktop.
                   </p>
                 )}
               </div>
 
               {/* About */}
               <div className="text-center py-8 text-muted-foreground border-t border-border">
-                <p className="text-sm font-medium">魔因漫创 Moyin Creator</p>
-                <p className="text-xs mt-1">v{appVersion} · AI 驱动的动漫视频创作工具</p>
+                <p className="text-sm font-medium">Moyin Creator</p>
+                <p className="text-xs mt-1">v{appVersion} · Công cụ tạo video hoạt hình do AI hỗ trợ</p>
               </div>
             </div>
           </ScrollArea>

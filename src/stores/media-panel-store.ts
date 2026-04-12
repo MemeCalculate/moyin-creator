@@ -30,21 +30,21 @@ export interface NavItem {
 
 // Main navigation items (top section)
 export const mainNavItems: NavItem[] = [
-  { id: "overview", label: "概览", icon: LayoutDashboardIcon },
-  { id: "script", label: "剧本", icon: FileTextIcon, phase: "01" },
-  { id: "characters", label: "角色", icon: UsersIcon, phase: "02" },
-  { id: "scenes", label: "场景", icon: MapPinIcon, phase: "02" },
-  { id: "director", label: "导演", icon: ClapperboardIcon, phase: "03" },
-  { id: "sclass", label: "S级", icon: SparklesIcon, phase: "03" },
-  { id: "assets", label: "资产", icon: FolderOpenIcon },
-  { id: "media", label: "素材", icon: VideoIcon },
-  { id: "export", label: "导出", icon: FilmIcon, phase: "04" },
-  { id: "freedom", label: "自由", icon: PaletteIcon, phase: "02" },
+  { id: "overview", label: "Tổng quan", icon: LayoutDashboardIcon },
+  { id: "script", label: "Kịch bản", icon: FileTextIcon, phase: "01" },
+  { id: "characters", label: "Nhân vật", icon: UsersIcon, phase: "02" },
+  { id: "scenes", label: "Bối cảnh", icon: MapPinIcon, phase: "02" },
+  { id: "director", label: "Đạo diễn", icon: ClapperboardIcon, phase: "03" },
+  { id: "sclass", label: "Hạng S", icon: SparklesIcon, phase: "03" },
+  { id: "assets", label: "Tài sản", icon: FolderOpenIcon },
+  { id: "media", label: "Tư liệu", icon: VideoIcon },
+  { id: "export", label: "Xuất bản", icon: FilmIcon, phase: "04" },
+  { id: "freedom", label: "Tự do", icon: PaletteIcon, phase: "02" },
 ];
 
 // Bottom navigation items
 export const bottomNavItems: NavItem[] = [
-  { id: "settings", label: "设置", icon: SettingsIcon },
+  { id: "settings", label: "Cài đặt", icon: SettingsIcon },
 ];
 
 // Legacy exports for compatibility
@@ -57,25 +57,25 @@ export interface StageConfig {
   tabs: Tab[];
 }
 export const stages: StageConfig[] = [
-  { id: "script", label: "剧本", phase: "Phase 01", icon: FileTextIcon, tabs: ["script"] },
-  { id: "assets", label: "角色与场景", phase: "Phase 02", icon: UsersIcon, tabs: ["characters", "scenes"] },
-  { id: "director", label: "导演工作台", phase: "Phase 03", icon: ClapperboardIcon, tabs: ["director"] },
-  { id: "export", label: "成片与导出", phase: "Phase 04", icon: FilmIcon, tabs: ["export"] },
+  { id: "script", label: "Kịch bản", phase: "Phase 01", icon: FileTextIcon, tabs: ["script"] },
+  { id: "assets", label: "Nhân vật & Bối cảnh", phase: "Phase 02", icon: UsersIcon, tabs: ["characters", "scenes"] },
+  { id: "director", label: "Bàn làm việc Đạo diễn", phase: "Phase 03", icon: ClapperboardIcon, tabs: ["director"] },
+  { id: "export", label: "Hoàn thiện & Xuất bản", phase: "Phase 04", icon: FilmIcon, tabs: ["export"] },
 ];
 
 export const tabs: { [key in Tab]: { icon: LucideIcon; label: string; stage?: Stage } } = {
-  dashboard: { icon: FileTextIcon, label: "项目" },
-  overview: { icon: LayoutDashboardIcon, label: "概览" },
-  script: { icon: FileTextIcon, label: "剧本", stage: "script" },
-  characters: { icon: UsersIcon, label: "角色", stage: "assets" },
-  scenes: { icon: MapPinIcon, label: "场景", stage: "assets" },
-  freedom: { icon: PaletteIcon, label: "自由" },
-  director: { icon: ClapperboardIcon, label: "导演", stage: "director" },
-  sclass: { icon: SparklesIcon, label: "S级", stage: "director" },
-  assets: { icon: FolderOpenIcon, label: "资产" },
-  media: { icon: VideoIcon, label: "素材" },
-  export: { icon: FilmIcon, label: "导出", stage: "export" },
-  settings: { icon: SettingsIcon, label: "设置" },
+  dashboard: { icon: FileTextIcon, label: "Dự án" },
+  overview: { icon: LayoutDashboardIcon, label: "Tổng quan" },
+  script: { icon: FileTextIcon, label: "Kịch bản", stage: "script" },
+  characters: { icon: UsersIcon, label: "Nhân vật", stage: "assets" },
+  scenes: { icon: MapPinIcon, label: "Bối cảnh", stage: "assets" },
+  freedom: { icon: PaletteIcon, label: "Tự do" },
+  director: { icon: ClapperboardIcon, label: "Đạo diễn", stage: "director" },
+  sclass: { icon: SparklesIcon, label: "Hạng S", stage: "director" },
+  assets: { icon: FolderOpenIcon, label: "Tài sản" },
+  media: { icon: VideoIcon, label: "Tư liệu" },
+  export: { icon: FilmIcon, label: "Xuất bản", stage: "export" },
+  settings: { icon: SettingsIcon, label: "Cài đặt" },
 };
 
 // Data passed from script panel to director

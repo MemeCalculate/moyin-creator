@@ -40,10 +40,10 @@ export function TabBar() {
                   )}
                 >
                   <LayoutDashboard className="h-5 w-5 mb-0.5" />
-                  <span className="text-[9px]">项目</span>
+                  <span className="text-[9px]">Dự án</span>
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right">项目仪表盘</TooltipContent>
+              <TooltipContent side="right">Bảng điều khiển dự án</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </nav>
@@ -59,10 +59,10 @@ export function TabBar() {
                   className="w-full flex flex-col items-center py-2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <HelpCircle className="h-4 w-4" />
-                  <span className="text-[8px]">帮助</span>
+                  <span className="text-[8px]">Trợ giúp</span>
                 </a>
               </TooltipTrigger>
-              <TooltipContent side="right">使用帮助</TooltipContent>
+              <TooltipContent side="right">Hướng dẫn sử dụng</TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <TooltipProvider delayDuration={300}>
@@ -76,10 +76,10 @@ export function TabBar() {
                   )}
                 >
                   <Settings className="h-4 w-4" />
-                  <span className="text-[8px]">设置</span>
+                  <span className="text-[8px]">Cài đặt</span>
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right">系统设置</TooltipContent>
+              <TooltipContent side="right">Cài đặt hệ thống</TooltipContent>
             </Tooltip>
           </TooltipProvider>
           {/* Theme Toggle */}
@@ -91,11 +91,11 @@ export function TabBar() {
                   className="w-full flex flex-col items-center py-2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  <span className="text-[8px]">{theme === "dark" ? "浅色" : "深色"}</span>
+                  <span className="text-[8px]">{theme === "dark" ? "Sáng" : "Tối"}</span>
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                {theme === "dark" ? "切换到浅色模式" : "切换到深色模式"}
+                {theme === "dark" ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -122,7 +122,7 @@ export function TabBar() {
                 <ChevronLeft className="h-4 w-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">返回项目列表</TooltipContent>
+            <TooltipContent side="right">Quay lại danh sách dự án</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
@@ -171,10 +171,10 @@ export function TabBar() {
                 className="w-full flex flex-col items-center py-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <HelpCircle className="h-4 w-4" />
-                <span className="text-[8px]">帮助</span>
+                <span className="text-[8px]">Trợ giúp</span>
               </a>
             </TooltipTrigger>
-            <TooltipContent side="right">使用帮助</TooltipContent>
+            <TooltipContent side="right">Hướng dẫn sử dụng</TooltipContent>
           </Tooltip>
         </TooltipProvider>
         {bottomNavItems.map((item) => {

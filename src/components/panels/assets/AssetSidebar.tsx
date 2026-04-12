@@ -39,19 +39,19 @@ interface NavModule {
 const NAV_MODULES: NavModule[] = [
   {
     id: "styles",
-    label: "风格库",
+    label: "Thư viện phong cách",
     icon: Palette,
     children: [
-      { id: "style-default", label: "默认风格", icon: Layers },
-      { id: "style-custom", label: "我的风格", icon: UserCircle },
+      { id: "style-default", label: "Phong cách mặc định", icon: Layers },
+      { id: "style-custom", label: "Phong cách của tôi", icon: UserCircle },
     ],
   },
   {
     id: "props",
-    label: "道具库",
+    label: "Thư viện đạo cụ",
     icon: Box,
     children: [
-      { id: "props-library", label: "我的道具", icon: Box },
+      { id: "props-library", label: "Đạo cụ của tôi", icon: Box },
     ],
   },
 ];
@@ -76,7 +76,7 @@ export function AssetSidebar({ activeSection, onSectionChange }: AssetSidebarPro
       <div className="px-3 py-3 border-b border-border shrink-0">
         <div className="flex items-center gap-2">
           <FolderOpen className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold">个人资产库</span>
+          <span className="text-sm font-semibold">Tài sản cá nhân</span>
         </div>
       </div>
 

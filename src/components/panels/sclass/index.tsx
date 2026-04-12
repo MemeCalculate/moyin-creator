@@ -54,12 +54,12 @@ export function SClassView() {
     <div className="flex flex-col items-center justify-center h-full gap-4 p-6 text-center">
       <Sparkles className="h-12 w-12 text-muted-foreground/30" />
       <div>
-        <h3 className="font-medium text-sm mb-1">S级 · Seedance 2.0 多模态创作</h3>
+        <h3 className="font-medium text-sm mb-1">Hạng S · Sáng tạo đa phương thức Seedance 2.0</h3>
         <p className="text-xs text-muted-foreground max-w-[280px]">
-          请在右侧「剧本结构」栏中，点击 <span className="text-green-500 font-medium">+</span> 添加分镜到本面板，系统将自动分组进行多镜头合并叙事视频生成。
+          Tại cột "Cấu trúc kịch bản" bên phải, nhấn <span className="text-green-500 font-medium">+</span> để thêm phân cảnh vào panel này. Hệ thống sẽ tự động nhóm và tạo video kể chuyện ghép nhiều cảnh.
         </p>
         <p className="text-xs text-muted-foreground/60 mt-2 max-w-[280px]">
-          如右侧未显示剧本结构，请先在「剧本」面板中导入并解析剧本。
+          Nếu cột bên phải chưa hiển thị cấu trúc kịch bản, vui lòng nhập và phân tích kịch bản trong panel "Kịch bản" trước.
         </p>
       </div>
       <div className="flex gap-2">
@@ -68,7 +68,7 @@ export function SClassView() {
           size="sm"
           onClick={() => setActiveTab('script')}
         >
-          前往剧本面板
+          Đến panel Kịch bản
         </Button>
       </div>
     </div>
@@ -81,13 +81,13 @@ export function SClassView() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <h2 className="font-semibold text-sm">S级</h2>
+            <h2 className="font-semibold text-sm">Hạng S</h2>
             <span className="text-xs text-muted-foreground">Seedance 2.0</span>
           </div>
           <div className="flex items-center gap-2">
             {hasSplitScenes && (
               <span className="text-xs text-muted-foreground">
-                {splitScenes.length} 个分镜
+                {splitScenes.length} phân cảnh
               </span>
             )}
             <Button

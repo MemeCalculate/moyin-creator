@@ -52,7 +52,7 @@ export function ExportView() {
   const splitScenes = directorProject?.splitScenes || [];
   const scriptData = scriptProject?.scriptData;
   const targetDuration = scriptProject?.targetDuration || "60s";
-  const projectName = (scriptData?.title || activeProject?.name || '未命名项目').replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_');
+  const projectName = (scriptData?.title || activeProject?.name || 'Dự án chưa đặt tên').replace(/[^a-zA-Z0-9\u4e00-\u9fa5\u00C0-\u024F\u1E00-\u1EFF_-]/g, '_');
 
   // === 进度计算：合并 Script shots 和 Director splitScenes 的状态 ===
   const hasSplitScenes = splitScenes.length > 0;
@@ -86,7 +86,7 @@ export function ExportView() {
   const handleExportToFolder = useCallback(async () => {
     if (isExporting) return;
     setIsExporting(true);
-    setExportProgress({ current: 0, total: 0, message: '准备导出...' });
+    setExportProgress({ current: 0, total: 0, message: 'Chuẩn bị xuất...' });
 
     try {
       if (hasSplitScenes) {
@@ -100,7 +100,7 @@ export function ExportView() {
           },
           (p) => setExportProgress(p)
         );
-        if (success) toast.success('导出完成！');
+        if (success) toast.success('Xuất hoàn tất!');
       } else if (scriptData) {
         const success = await exportProjectToFolder(
           {
@@ -114,12 +114,12 @@ export function ExportView() {
           },
           (p) => setExportProgress(p)
         );
-        if (success) toast.success('导出完成！');
+        if (success) toast.success('Xuất hoàn tất!');
       } else {
-        toast.error('没有可导出的数据');
+        toast.error('Không có dữ liệu để xuất');
       }
     } catch (error) {
-      toast.error(`导出失败: ${(error as Error).message}`);
+      toast.error(`Xuất thất bại: ${(error as Error).message}`);
     } finally {
       setIsExporting(false);
       setExportProgress(null);
@@ -129,7 +129,7 @@ export function ExportView() {
   const handleDownloadFiles = useCallback(async () => {
     if (isExporting) return;
     setIsExporting(true);
-    setExportProgress({ current: 0, total: 0, message: '准备下载...' });
+    setExportProgress({ current: 0, total: 0, message: 'Chuẩn bị tải xuống...' });
 
     try {
       if (hasSplitScenes) {
@@ -157,9 +157,9 @@ export function ExportView() {
           (p) => setExportProgress(p)
         );
       }
-      toast.success('下载完成！');
+      toast.success('Tải xuống hoàn tất!');
     } catch (error) {
-      toast.error(`下载失败: ${(error as Error).message}`);
+      toast.error(`Tải xuống thất bại: ${(error as Error).message}`);
     } finally {
       setIsExporting(false);
       setExportProgress(null);
@@ -173,7 +173,7 @@ export function ExportView() {
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-3">
             <Film className="w-5 h-5 text-primary" />
-            成片与导出
+            Hoàn thiện & Xuất bản
             <span className="text-xs text-muted-foreground font-mono font-normal uppercase tracking-wider bg-muted px-2 py-1 rounded">
               Rendering & Export
             </span>
@@ -199,7 +199,7 @@ export function ExportView() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                      {scriptData?.title || activeProject?.name || "未命名项目"}
+                      {scriptData?.title || activeProject?.name || "Dự án chưa đặt tên"}
                     </h3>
                     <span className="px-2 py-0.5 bg-muted border border-border text-muted-foreground text-[10px] rounded uppercase font-mono tracking-wider">
                       Master Sequence
@@ -280,7 +280,7 @@ export function ExportView() {
                           {/* Hover Tooltip */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20 whitespace-nowrap">
                             <div className="bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded border border-border shadow-xl">
-                              Scene {idx + 1}{hasVideo ? ' ✓视频' : hasImage ? ' ✓图片' : ''}
+                              Scene {idx + 1}{hasVideo ? ' ✓Video' : hasImage ? ' ✓Ảnh' : ''}
                             </div>
                           </div>
                         </div>
@@ -316,8 +316,8 @@ export function ExportView() {
                 {/* 图片/视频状态摘要 */}
                 {hasSplitScenes && (
                   <div className="flex items-center gap-4 mt-2 text-[10px] text-muted-foreground">
-                    <span>图片: {imageReadyItems}/{totalItems}</span>
-                    <span>视频: {completedItems}/{totalItems}</span>
+                    <span>Ảnh: {imageReadyItems}/{totalItems}</span>
+                    <span>Video: {completedItems}/{totalItems}</span>
                   </div>
                 )}
               </div>
@@ -351,9 +351,9 @@ export function ExportView() {
                   )}
                 >
                   {isExporting ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />导出中...</>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Đang xuất...</>
                   ) : (
-                    <><FolderOpen className="w-4 h-4 mr-2" />选择文件夹导出</>
+                    <><FolderOpen className="w-4 h-4 mr-2" />Chọn thư mục xuất</>
                   )}
                 </Button>
 
@@ -364,14 +364,14 @@ export function ExportView() {
                   className="h-12 font-bold text-xs uppercase tracking-widest"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  逐个下载素材
+                  Tải từng tư liệu
                 </Button>
               </div>
 
               {/* Export stats hint */}
               {hasSplitScenes && directorStats && (
                 <div className="mt-4 text-xs text-muted-foreground">
-                  可导出: {directorStats.imagesReady} 张首帧 · {directorStats.videosReady} 个视频{directorStats.endFramesReady > 0 ? ` · ${directorStats.endFramesReady} 张尾帧` : ''}
+                  Có thể xuất: {directorStats.imagesReady} khung đầu · {directorStats.videosReady} video{directorStats.endFramesReady > 0 ? ` · ${directorStats.endFramesReady} khung cuối` : ''}
                 </div>
               )}
             </div>
@@ -387,9 +387,9 @@ export function ExportView() {
               >
                 <Layers className="w-5 h-5 text-muted-foreground group-hover:text-primary mb-4 transition-colors" />
                 <div>
-                  <h4 className="text-sm font-bold text-foreground mb-1">素材下载</h4>
+                  <h4 className="text-sm font-bold text-foreground mb-1">Tải tư liệu</h4>
                   <p className="text-[10px] text-muted-foreground">
-                    下载所有已生成的图片和视频素材
+                    Tải xuống tất cả ảnh và video đã tạo
                   </p>
                 </div>
               </div>

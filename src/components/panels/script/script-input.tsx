@@ -42,43 +42,43 @@ import type { PromptLanguage } from "@/types/script";
 import { useScriptStore } from "@/stores/script-store";
 
 const PROMPT_LANGUAGE_OPTIONS = [
-  { value: "zh", label: "仅中文" },
-  { value: "en", label: "仅英文" },
-  { value: "zh+en", label: "中英文" },
+  { value: "zh", label: "Chỉ tiếng Trung" },
+  { value: "en", label: "Chỉ tiếng Anh" },
+  { value: "zh+en", label: "Trung + Anh" },
 ];
 
 const DURATION_OPTIONS = [
-  { value: "auto", label: "自动" },
-  { value: "10s", label: "10秒" },
-  { value: "15s", label: "15秒" },
-  { value: "20s", label: "20秒" },
-  { value: "30s", label: "30秒" },
-  { value: "60s", label: "1分钟" },
-  { value: "90s", label: "1分30秒" },
-  { value: "120s", label: "2分钟" },
-  { value: "180s", label: "3分钟" },
+  { value: "auto", label: "Tự động" },
+  { value: "10s", label: "10 giây" },
+  { value: "15s", label: "15 giây" },
+  { value: "20s", label: "20 giây" },
+  { value: "30s", label: "30 giây" },
+  { value: "60s", label: "1 phút" },
+  { value: "90s", label: "1 phút 30 giây" },
+  { value: "120s", label: "2 phút" },
+  { value: "180s", label: "3 phút" },
 ];
 
 const SCENE_COUNT_OPTIONS = [
-  { value: "1", label: "1个场景" },
-  { value: "2", label: "2个场景" },
-  { value: "3", label: "3个场景" },
-  { value: "4", label: "4个场景" },
-  { value: "5", label: "5个场景" },
-  { value: "6", label: "6个场景" },
-  { value: "8", label: "8个场景" },
-  { value: "10", label: "10个场景" },
+  { value: "1", label: "1 bối cảnh" },
+  { value: "2", label: "2 bối cảnh" },
+  { value: "3", label: "3 bối cảnh" },
+  { value: "4", label: "4 bối cảnh" },
+  { value: "5", label: "5 bối cảnh" },
+  { value: "6", label: "6 bối cảnh" },
+  { value: "8", label: "8 bối cảnh" },
+  { value: "10", label: "10 bối cảnh" },
 ];
 
 const SHOT_COUNT_OPTIONS = [
-  { value: "3", label: "3个分镜" },
-  { value: "4", label: "4个分镜" },
-  { value: "5", label: "5个分镜" },
-  { value: "6", label: "6个分镜" },
-  { value: "8", label: "8个分镜" },
-  { value: "10", label: "10个分镜" },
-  { value: "12", label: "12个分镜" },
-  { value: "custom", label: "自定义..." },
+  { value: "3", label: "3 phân cảnh" },
+  { value: "4", label: "4 phân cảnh" },
+  { value: "5", label: "5 phân cảnh" },
+  { value: "6", label: "6 phân cảnh" },
+  { value: "8", label: "8 phân cảnh" },
+  { value: "10", label: "10 phân cảnh" },
+  { value: "12", label: "12 phân cảnh" },
+  { value: "custom", label: "Tuỳ chỉnh..." },
 ];
 
 interface ScriptInputProps {
@@ -236,11 +236,11 @@ export function ScriptInput({
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="import" className="text-xs">
             <FileText className="h-3 w-3 mr-1" />
-            导入
+            Nhập
           </TabsTrigger>
           <TabsTrigger value="create" className="text-xs">
             <Sparkles className="h-3 w-3 mr-1" />
-            创作
+            Sáng tác
           </TabsTrigger>
         </TabsList>
 
@@ -248,10 +248,10 @@ export function ScriptInput({
         <TabsContent value="import" className="flex-1 mt-3 overflow-y-auto">
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">
-              粘贴完整剧本（包含大纲、人物小传、各集内容）
+              Dán kịch bản đầy đủ (bao gồm dàn ý, tiểu sử nhân vật, nội dung từng tập)
             </Label>
             <Textarea
-              placeholder="支持的格式：\n• 第X集（集标记）\n• **1-1日 内 地点**（场景头）\n• 人物：角色A、角色B\n• 角色名：（动作）台词\n• △动作描写\n• 【字幕】【闪回】等"
+              placeholder="Định dạng hỗ trợ:\n• 第X集 (đánh dấu tập)\n• **1-1 Ngày Nội Địa điểm** (đầu cảnh)\n• 人物: Nhân vật A, Nhân vật B\n• Tên nhân vật: (hành động) thoại\n• △Mô tả hành động\n• 【字幕】【闪回】v.v."
               value={rawScript}
               onChange={(e) => onRawScriptChange(e.target.value)}
               className="min-h-[200px] max-h-[40vh] resize-none text-sm overflow-y-auto"
@@ -260,16 +260,16 @@ export function ScriptInput({
             {/* 导入状态提示 */}
             {importStatus === "ready" && (
               <div className="space-y-1">
-                <p className="text-xs text-green-600">✓ 导入成功！可在右侧点击集名生成分镜</p>
+                <p className="text-xs text-green-600">✓ Nhập thành công! Có thể nhấn tên tập bên phải để tạo phân cảnh</p>
                 {(missingTitleCount ?? 0) > 0 && (
                   <p className="text-xs text-amber-600">
-                    ⚠ {missingTitleCount} 集缺少标题，可使用AI校准生成
+                    ⚠ {missingTitleCount} tập thiếu tiêu đề, có thể dùng AI hiệu chỉnh để tạo
                   </p>
                 )}
               </div>
             )}
             {importStatus === "error" && importError && (
-              <p className="text-xs text-destructive">导入失败：{importError}</p>
+              <p className="text-xs text-destructive">Nhập thất bại: {importError}</p>
             )}
             
             {/* 持久进度状态显示 - 在执行过程中始终可见 */}
@@ -284,7 +284,7 @@ export function ScriptInput({
                 <div className="flex items-center gap-3 text-primary">
                   <Loader2 className="h-6 w-6 animate-spin" />
                   <span className="text-lg font-bold">
-                    {secondPassTypes && secondPassTypes.size > 0 ? '🔄 二次校准中...' : '正在处理中...'}
+                    {secondPassTypes && secondPassTypes.size > 0 ? '🔄 Đang hiệu chỉnh lần 2...' : 'Đang xử lý...'}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -301,8 +301,8 @@ export function ScriptInput({
                           ) : (
                             <span className="w-5 h-5 rounded-full border-2 border-current" />
                           )}
-                          <span className="text-base">AI 校准分镜</span>
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">二次</span>
+                          <span className="text-base">AI hiệu chỉnh phân cảnh</span>
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Lần 2</span>
                         </div>
                       )}
                       
@@ -316,8 +316,8 @@ export function ScriptInput({
                           ) : (
                             <span className="w-5 h-5 rounded-full border-2 border-current" />
                           )}
-                          <span className="text-base">AI 角色校准</span>
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">二次</span>
+                          <span className="text-base">AI hiệu chỉnh nhân vật</span>
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Lần 2</span>
                         </div>
                       )}
                       
@@ -331,8 +331,8 @@ export function ScriptInput({
                           ) : (
                             <span className="w-5 h-5 rounded-full border-2 border-current" />
                           )}
-                          <span className="text-base">AI 场景校准</span>
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">二次</span>
+                          <span className="text-base">AI hiệu chỉnh bối cảnh</span>
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Lần 2</span>
                         </div>
                       )}
                     </>
@@ -348,7 +348,7 @@ export function ScriptInput({
                         ) : (
                           <span className="w-5 h-5 rounded-full border-2 border-current" />
                         )}
-                        <span className="text-base">导入剧本</span>
+                        <span className="text-base">Nhập kịch bản</span>
                       </div>
                       
                       {/* 标题校准 */}
@@ -360,7 +360,7 @@ export function ScriptInput({
                         ) : (
                           <span className="w-5 h-5 rounded-full border-2 border-current" />
                         )}
-                        <span className="text-base">AI 标题校准</span>
+                        <span className="text-base">AI hiệu chỉnh tiêu đề</span>
                       </div>
                       
                       {/* 大纲生成 */}
@@ -372,7 +372,7 @@ export function ScriptInput({
                         ) : (
                           <span className="w-5 h-5 rounded-full border-2 border-current" />
                         )}
-                        <span className="text-base">AI 大纲生成</span>
+                        <span className="text-base">AI tạo dàn ý</span>
                       </div>
                       
                       {/* 分镜校准 */}
@@ -384,7 +384,7 @@ export function ScriptInput({
                         ) : (
                           <span className="w-5 h-5 rounded-full border-2 border-current" />
                         )}
-                        <span className="text-base">AI 分镜校准</span>
+                        <span className="text-base">AI hiệu chỉnh phân cảnh</span>
                       </div>
                       
                       {/* 角色校准 */}
@@ -396,7 +396,7 @@ export function ScriptInput({
                         ) : (
                           <span className="w-5 h-5 rounded-full border-2 border-current" />
                         )}
-                        <span className="text-base">AI 角色校准</span>
+                        <span className="text-base">AI hiệu chỉnh nhân vật</span>
                       </div>
                       
                       {/* 场景校准 */}
@@ -408,7 +408,7 @@ export function ScriptInput({
                         ) : (
                           <span className="w-5 h-5 rounded-full border-2 border-current" />
                         )}
-                        <span className="text-base">AI 场景校准</span>
+                        <span className="text-base">AI hiệu chỉnh bối cảnh</span>
                       </div>
                     </>
                   )}
@@ -423,10 +423,10 @@ export function ScriptInput({
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">
-                输入故事创意，AI帮你生成剧本
+                Nhập ý tưởng câu chuyện, AI sẽ giúp bạn tạo kịch bản
               </Label>
               <Textarea
-                placeholder="例如：一个内向程序员在咖啡店邂逅开朗女孩的温暖故事..."
+                placeholder="Ví dụ: Câu chuyện ấm áp về một lập trình viên hướng nội gặp gỡ một cô gái vui vẻ ở quán cà phê..."
                 value={idea}
                 onChange={(e) => setIdea(e.target.value)}
                 className="min-h-[100px] resize-none text-sm"
@@ -442,12 +442,12 @@ export function ScriptInput({
               {isGenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  生成中...
+                  Đang tạo...
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  AI生成剧本
+                  AI tạo kịch bản
                 </>
               )}
             </Button>
@@ -456,7 +456,7 @@ export function ScriptInput({
             {rawScript && (
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">
-                  生成的剧本（可编辑）
+                  Kịch bản đã tạo (có thể chỉnh sửa)
                 </Label>
                 <Textarea
                   value={rawScript}
@@ -470,19 +470,19 @@ export function ScriptInput({
             {/* 创作模式工作流引导 */}
             {parseStatus === "ready" && (
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
-                <div className="text-xs font-medium text-primary">✨ 剧本已生成，下一步</div>
+                <div className="text-xs font-medium text-primary">✨ Đã tạo kịch bản, bước tiếp theo</div>
                 <div className="space-y-1.5 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <span className="w-4 h-4 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">1</span>
-                    <span>在中栏选择场景 → 右栏点「去场景库生成背景」</span>
+                    <span>Chọn bối cảnh ở cột giữa → cột phải nhấn "Đến thư viện bối cảnh để tạo nền"</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="w-4 h-4 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">2</span>
-                    <span>选择角色 → 右栏点「去角色库生成形象」</span>
+                    <span>Chọn nhân vật → cột phải nhấn "Đến thư viện nhân vật để tạo hình"</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="w-4 h-4 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">3</span>
-                    <span>选择分镜 → 右栏点「去AI导演生成视频」</span>
+                    <span>Chọn phân cảnh → cột phải nhấn "Đến Đạo diễn AI để tạo video"</span>
                   </div>
                 </div>
               </div>
@@ -497,7 +497,7 @@ export function ScriptInput({
         {mode === "import" && (
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label className="text-xs">剧本语言</Label>
+              <Label className="text-xs">Ngôn ngữ kịch bản</Label>
               <Select
                 value={language}
                 onValueChange={onLanguageChange}
@@ -507,15 +507,15 @@ export function ScriptInput({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="中文">中文</SelectItem>
-                  <SelectItem value="English">English</SelectItem>
-                  <SelectItem value="日本語">日本語</SelectItem>
+                  <SelectItem value="中文">Tiếng Trung</SelectItem>
+                  <SelectItem value="English">Tiếng Anh</SelectItem>
+                  <SelectItem value="日本語">Tiếng Nhật</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">提示词语言</Label>
+              <Label className="text-xs">Ngôn ngữ prompt</Label>
               <Select
                 value={promptLanguage || "zh"}
                 onValueChange={(v) => onPromptLanguageChange?.(v as PromptLanguage)}
@@ -533,23 +533,23 @@ export function ScriptInput({
                 </SelectContent>
               </Select>
               <p className="text-[10px] text-muted-foreground">
-                控制AI校准生成中/英文提示词，默认仅中文可减少生成压力
+                Kiểm soát AI tạo prompt Trung/Anh, mặc định chỉ tiếng Trung để giảm tải
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">场景数量（可选）</Label>
+                <Label className="text-xs">Số bối cảnh (tuỳ chọn)</Label>
                 <Select
                   value={sceneCount || ""}
                   onValueChange={(v) => onSceneCountChange?.(v)}
                   disabled={parseStatus === "parsing"}
                 >
                   <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="自动" />
+                    <SelectValue placeholder="Tự động" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">自动</SelectItem>
+                    <SelectItem value="auto">Tự động</SelectItem>
                     {SCENE_COUNT_OPTIONS.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
@@ -560,14 +560,14 @@ export function ScriptInput({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">分镜数量（可选）</Label>
+                <Label className="text-xs">Số phân cảnh (tuỳ chọn)</Label>
                 {showCustomShotInput ? (
                   <div className="flex gap-1">
                     <Input
                       type="number"
                       min="1"
                       max="100"
-                      placeholder="输入数量"
+                      placeholder="Nhập số lượng"
                       value={customShotValue}
                       onChange={(e) => setCustomShotValue(e.target.value)}
                       onBlur={() => {
@@ -593,7 +593,7 @@ export function ScriptInput({
                         onShotCountChange?.("auto");
                       }}
                     >
-                      取消
+                      Huỷ
                     </Button>
                   </div>
                 ) : (
@@ -609,10 +609,10 @@ export function ScriptInput({
                     disabled={parseStatus === "parsing"}
                   >
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="自动" />
+                      <SelectValue placeholder="Tự động" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="auto">自动</SelectItem>
+                      <SelectItem value="auto">Tự động</SelectItem>
                       {SHOT_COUNT_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}
@@ -628,7 +628,7 @@ export function ScriptInput({
             <div className="space-y-1">
               <Label className="text-xs flex items-center gap-1">
                 <Palette className="h-3 w-3" />
-                视觉风格
+                Phong cách hình ảnh
               </Label>
               <StylePicker
                 value={styleId}
@@ -636,7 +636,7 @@ export function ScriptInput({
                 disabled={parseStatus === "parsing"}
               />
               <p className="text-[10px] text-muted-foreground">
-                此风格将用于AI校准分镜时生成视觉描述
+                Phong cách này sẽ dùng để tạo mô tả hình ảnh khi AI hiệu chỉnh phân cảnh
               </p>
             </div>
           </div>
@@ -646,7 +646,7 @@ export function ScriptInput({
         {mode === "create" && (
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label className="text-xs">提示词语言</Label>
+              <Label className="text-xs">Ngôn ngữ prompt</Label>
               <Select
                 value={promptLanguage || "zh"}
                 onValueChange={(v) => onPromptLanguageChange?.(v as PromptLanguage)}
@@ -664,12 +664,12 @@ export function ScriptInput({
                 </SelectContent>
               </Select>
               <p className="text-[10px] text-muted-foreground">
-                控制AI生成中/英文提示词，默认仅中文可减少生成压力
+                Kiểm soát AI tạo prompt Trung/Anh, mặc định chỉ tiếng Trung để giảm tải
               </p>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">语言</Label>
+                <Label className="text-xs">Ngôn ngữ</Label>
                 <Select
                   value={language}
                   onValueChange={onLanguageChange}
@@ -687,7 +687,7 @@ export function ScriptInput({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">时长</Label>
+                <Label className="text-xs">Thời lượng</Label>
                 <Select
                   value={targetDuration}
                   onValueChange={onDurationChange}
@@ -707,7 +707,7 @@ export function ScriptInput({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">风格</Label>
+                <Label className="text-xs">Phong cách</Label>
                 <StylePicker
                   value={styleId}
                   onChange={(id) => onStyleChange(id)}
@@ -718,17 +718,17 @@ export function ScriptInput({
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">场景数量（可选）</Label>
+                <Label className="text-xs">Số bối cảnh (tuỳ chọn)</Label>
                 <Select
                   value={sceneCount || ""}
                   onValueChange={(v) => onSceneCountChange?.(v)}
                   disabled={parseStatus === "parsing"}
                 >
                   <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="自动" />
+                    <SelectValue placeholder="Tự động" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">自动</SelectItem>
+                    <SelectItem value="auto">Tự động</SelectItem>
                     {SCENE_COUNT_OPTIONS.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
@@ -739,14 +739,14 @@ export function ScriptInput({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">分镜数量（可选）</Label>
+                <Label className="text-xs">Số phân cảnh (tuỳ chọn)</Label>
                 {showCustomShotInput ? (
                   <div className="flex gap-1">
                     <Input
                       type="number"
                       min="1"
                       max="100"
-                      placeholder="输入数量"
+                      placeholder="Nhập số lượng"
                       value={customShotValue}
                       onChange={(e) => setCustomShotValue(e.target.value)}
                       onBlur={() => {
@@ -772,7 +772,7 @@ export function ScriptInput({
                         onShotCountChange?.("auto");
                       }}
                     >
-                      取消
+                      Huỷ
                     </Button>
                   </div>
                 ) : (
@@ -788,10 +788,10 @@ export function ScriptInput({
                     disabled={parseStatus === "parsing"}
                   >
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="自动" />
+                      <SelectValue placeholder="Tự động" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="auto">自动</SelectItem>
+                      <SelectItem value="auto">Tự động</SelectItem>
                       {SHOT_COUNT_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}
@@ -810,8 +810,8 @@ export function ScriptInput({
           <div className="flex items-start gap-2 p-2 rounded-md bg-yellow-500/10 border border-yellow-500/20">
             <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
             <div className="text-xs text-yellow-600 dark:text-yellow-400">
-              <p className="font-medium">API 未配置</p>
-              <p className="opacity-80">请在设置中配置API密钥</p>
+              <p className="font-medium">API chưa cấu hình</p>
+              <p className="opacity-80">Vui lòng cấu hình API key trong Cài đặt</p>
             </div>
           </div>
         )}
@@ -829,12 +829,12 @@ export function ScriptInput({
               {isImporting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  导入中...
+                  Đang nhập...
                 </>
               ) : (
                 <>
                   <FileText className="h-4 w-4 mr-2" />
-                  导入完整剧本
+                  Nhập kịch bản đầy đủ
                 </>
               )}
             </Button>
@@ -851,12 +851,12 @@ export function ScriptInput({
               {isCalibrating || calibrationStatus === 'calibrating' ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  AI校准中...
+                  Đang hiệu chỉnh...
                 </>
               ) : (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  AI校准（生成{missingTitleCount}集标题）
+                  AI hiệu chỉnh (tạo {missingTitleCount} tiêu đề tập)
                 </>
               )}
             </Button>
@@ -873,14 +873,14 @@ export function ScriptInput({
               {isGeneratingSynopsis || synopsisStatus === 'generating' ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  生成大纲中...
+                  Đang tạo dàn ý...
                 </>
               ) : (
                 <>
                   <BookOpen className="h-4 w-4 mr-2" />
-                  {(missingSynopsisCount ?? 0) > 0 
-                    ? `生成大纲（${missingSynopsisCount}集缺失）`
-                    : '重新生成大纲'
+                  {(missingSynopsisCount ?? 0) > 0
+                    ? `Tạo dàn ý (${missingSynopsisCount} tập thiếu)`
+                    : 'Tạo lại dàn ý'
                   }
                 </>
               )}
@@ -898,12 +898,12 @@ export function ScriptInput({
               {parseStatus === "parsing" ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  解析中...
+                  Đang phân tích...
                 </>
               ) : (
                 <>
                   <Wand2 className="h-4 w-4 mr-2" />
-                  AI解析剧本
+                  AI phân tích kịch bản
                 </>
               )}
             </Button>

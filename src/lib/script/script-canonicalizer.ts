@@ -91,6 +91,23 @@ function cleanSceneLocation(location: string): string {
     .trim();
 }
 
+function extractSceneHeaderCharacters(text: string): { text: string; characters: string[] } {
+  const match = text.match(/^(.*?)(?:\s+(?:人物|角色)[：:]\s*([^\n]+))$/);
+  if (!match) {
+    return { text, characters: [] };
+  }
+
+  const names = match[2]
+    .split(/[、,，/]/)
+    .map((item) => item.trim())
+    .filter((item) => isLikelyCharacterName(item));
+
+  return {
+    text: match[1].trim(),
+    characters: [...new Set(names)],
+  };
+}
+
 function stripDecoratorLabel(value: string): string {
   return value
     .replace(/[：:]$/, '')
@@ -333,10 +350,14 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
     if (standardMatch) {
       const episodeIndex = Number.parseInt(standardMatch[1], 10);
       const sceneIndex = Number.parseInt(standardMatch[2], 10);
-      const splitResult = splitTrailingDialogue(standardMatch[5]);
+      const headerCharacters = extractSceneHeaderCharacters(standardMatch[5]);
+      const splitResult = splitTrailingDialogue(headerCharacters.text);
       currentEpisode = episodeIndex;
       sceneCounters.set(episodeIndex, Math.max(sceneCounters.get(episodeIndex) || 0, sceneIndex));
       normalizedLines.push(`${episodeIndex}-${sceneIndex} ${standardMatch[3]} ${standardMatch[4]} ${splitResult.location}`);
+      if (headerCharacters.characters.length > 0) {
+        normalizedLines.push(`人物：${headerCharacters.characters.join('、')}`);
+      }
       if (splitResult.trailingLines.length > 0) {
         traces.push({
           id: `trace_scene_tail_${index + 1}`,
@@ -354,7 +375,8 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
     if (reversedMatch) {
       const episodeIndex = Number.parseInt(reversedMatch[1], 10);
       const sceneIndex = Number.parseInt(reversedMatch[2], 10);
-      const splitResult = splitTrailingDialogue(reversedMatch[5]);
+      const headerCharacters = extractSceneHeaderCharacters(reversedMatch[5]);
+      const splitResult = splitTrailingDialogue(headerCharacters.text);
       const replacement = `${episodeIndex}-${sceneIndex} ${reversedMatch[4]} ${reversedMatch[3]} ${splitResult.location}`;
       currentEpisode = episodeIndex;
       sceneCounters.set(episodeIndex, Math.max(sceneCounters.get(episodeIndex) || 0, sceneIndex));
@@ -366,6 +388,9 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
         reason: 'Reordered numbered scene header to the parser-friendly `scene time interior location` format.',
       });
       normalizedLines.push(replacement);
+      if (headerCharacters.characters.length > 0) {
+        normalizedLines.push(`人物：${headerCharacters.characters.join('、')}`);
+      }
       if (splitResult.trailingLines.length > 0) {
         traces.push({
           id: `trace_scene_tail_${index + 1}`,
@@ -381,7 +406,8 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
 
     const looseSceneLabelMatch = trimmed.match(LOOSE_SCENE_LABEL_RE);
     if (looseSceneLabelMatch) {
-      const parsedPayload = parseLooseScenePayload(looseSceneLabelMatch[2]);
+      const headerCharacters = extractSceneHeaderCharacters(looseSceneLabelMatch[2]);
+      const parsedPayload = parseLooseScenePayload(headerCharacters.text);
       if (parsedPayload) {
         const nextSceneIndex = (sceneCounters.get(currentEpisode) || 0) + 1;
         sceneCounters.set(currentEpisode, nextSceneIndex);
@@ -398,6 +424,9 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
           reason: 'Normalized loose scene label into a numbered scene header.',
         });
         normalizedLines.push(replacement);
+        if (headerCharacters.characters.length > 0) {
+          normalizedLines.push(`人物：${headerCharacters.characters.join('、')}`);
+        }
         if (splitResult.trailingLines.length > 0) {
           traces.push({
             id: `trace_scene_tail_${index + 1}`,

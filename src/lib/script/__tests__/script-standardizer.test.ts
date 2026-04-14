@@ -105,6 +105,23 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === '人物')).toBe(false);
   });
 
+  it('extracts mixed scene-header character tags into a standalone character line', () => {
+    const raw = [
+      '《样例》',
+      '大纲：这是一个测试故事。',
+      '第一集：相遇',
+      '第一场 外 日 学校门口 人物：马一花、陈茉莉',
+      '△两人对视。',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('1-1 日 外 学校门口\n人物：马一花、陈茉莉');
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === '马一花')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === '陈茉莉')).toBe(true);
+  });
+
   it('inserts synthetic episode markers from scene numbering and splits dense dialogue paragraphs', () => {
     const raw = [
       '《样例》',

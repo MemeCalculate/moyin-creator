@@ -16,13 +16,13 @@ function computeStats(canonicalText: string): CanonicalStats {
 }
 
 export function standardizeScriptForImport(rawText: string): StandardizeScriptResult {
-  const blocks = segmentScriptText(rawText);
-  const canonicalized = canonicalizeScriptText(blocks, rawText);
+  const canonicalized = canonicalizeScriptText(rawText);
+  const blocks = segmentScriptText(canonicalized.canonicalText);
   const stats = computeStats(canonicalized.canonicalText);
   const document: CanonicalScriptDocument = {
     rawText,
     canonicalText: canonicalized.canonicalText,
-    blocks: canonicalized.blocks,
+    blocks,
     aliasMap: canonicalized.aliasMap,
     traces: canonicalized.traces,
     diagnostics: [],
@@ -39,17 +39,33 @@ export function standardizeScriptForImport(rawText: string): StandardizeScriptRe
     };
   }
 
-  const { background, episodes } = parseFullScript(document.canonicalText);
-  const scriptData = convertToScriptData(background, episodes);
+  try {
+    const { background, episodes } = parseFullScript(document.canonicalText);
+    const scriptData = convertToScriptData(background, episodes);
 
-  return {
-    success: true,
-    hasFatalIssues: false,
-    document,
-    parseResult: {
-      background,
-      episodes,
-      scriptData,
-    },
-  };
+    return {
+      success: true,
+      hasFatalIssues: false,
+      document,
+      parseResult: {
+        background,
+        episodes,
+        scriptData,
+      },
+    };
+  } catch (error) {
+    document.diagnostics.push({
+      id: 'diag_fatal_parser_exception',
+      severity: 'fatal',
+      code: 'fatal_parser_exception',
+      message: error instanceof Error ? error.message : 'Script parser failed after canonicalization.',
+      suggestedFix: 'Review the standardized preview and verify each episode and scene marker is on its own line.',
+    });
+
+    return {
+      success: false,
+      hasFatalIssues: true,
+      document,
+    };
+  }
 }

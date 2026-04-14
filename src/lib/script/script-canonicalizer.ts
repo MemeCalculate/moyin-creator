@@ -1,4 +1,119 @@
-import type { CanonicalBlock, NormalizationTrace } from '@/types/script';
+import type { NormalizationTrace } from '@/types/script';
+import { preprocessLineBreaks } from './script-normalizer';
+
+const TIME_OF_DAY_TOKENS = ['日', '夜', '晨', '暮', '黄昏', '黎明', '清晨', '傍晚'] as const;
+const INTERIOR_TOKENS = ['内/外', '内', '外'] as const;
+
+const EPISODE_MARKER_RE =
+  /^\*{0,2}(?:第([零一二三四五六七八九十百千\d]+)集|Episode\s+(\d+))(?:[：:]\s*([^\n*]*))?\*{0,2}$/i;
+const STANDARD_SCENE_RE = new RegExp(
+  `^\\*{0,2}(\\d+)-(\\d+)\\s*(${TIME_OF_DAY_TOKENS.join('|')})\\s*(${INTERIOR_TOKENS.join('|')})\\s+(.+?)\\*{0,2}$`,
+);
+const REVERSED_SCENE_RE = new RegExp(
+  `^\\*{0,2}(\\d+)-(\\d+)\\s*(${INTERIOR_TOKENS.join('|')})\\s*(${TIME_OF_DAY_TOKENS.join('|')})\\s+(.+?)\\*{0,2}$`,
+);
+const NUMBERED_SCENE_PREFIX_RE = /^\*{0,2}(\d+)-(\d+)\b/;
+const LOOSE_SCENE_LABEL_RE = /^\s*(第[零一二三四五六七八九十百千\d]+场|场景[零一二三四五六七八九十百千\d]+)\s*[：:\s]+\s*(.+)$/;
+const CHINESE_SURNAMES =
+  '赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯昝管卢莫经房裘缪干解应宗丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢裴陆荣翁荀羊于惠甄曲家封芮羿储靳汲邴糜松井段富巫乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘厉戎祖武符刘景詹束龙叶幸司韶郜黎蓟薄印宿白怀蒲邰从鄂索咸籍赖卓蔺屠蒙池乔阴胥苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍却璩桑桂濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习艾鱼容向古易慎戈廖庾终暨居衡步都耿满弘匡国文寇广禄阙东欧殳沃利蔚越夔隆师巩厍聂晁勾敖融冷辛阚简饶曾关蒯相查后荆红游竺权逯盖益桓公';
+const SPECIAL_SPEAKER_LABELS = new Set(['旁白', '内心', '画外音', 'VO', 'OS']);
+
+function clipText(value: string, maxLength = 220): string {
+  const compact = value.replace(/\s+/g, ' ').trim();
+  return compact.length <= maxLength ? compact : `${compact.slice(0, maxLength)}...`;
+}
+
+function chineseNumberToInt(input: string): number {
+  if (/^\d+$/.test(input)) {
+    return Number.parseInt(input, 10);
+  }
+
+  const digits: Record<string, number> = {
+    零: 0,
+    一: 1,
+    二: 2,
+    三: 3,
+    四: 4,
+    五: 5,
+    六: 6,
+    七: 7,
+    八: 8,
+    九: 9,
+  };
+  const units: Record<string, number> = {
+    十: 10,
+    百: 100,
+    千: 1000,
+  };
+
+  let total = 0;
+  let current = 0;
+
+  for (const char of input) {
+    if (char in digits) {
+      current = digits[char];
+      continue;
+    }
+
+    if (char in units) {
+      const unit = units[char];
+      total += (current || 1) * unit;
+      current = 0;
+    }
+  }
+
+  return total + current || 1;
+}
+
+function cleanSceneLocation(location: string): string {
+  return location
+    .replace(/\s*(?:人物|角色|地点|时间)[：:].*/g, '')
+    .replace(/[，,]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function splitTrailingDialogue(text: string): { location: string; trailingLines: string[] } {
+  const trimmed = text.trim();
+  const colonIndex = Math.max(trimmed.indexOf('：'), trimmed.indexOf(':'));
+  if (colonIndex <= 0) {
+    return {
+      location: cleanSceneLocation(trimmed),
+      trailingLines: [],
+    };
+  }
+
+  const prefix = trimmed.slice(0, colonIndex);
+  const suffix = trimmed.slice(colonIndex);
+  for (const length of [4, 3, 2, 1]) {
+    if (prefix.length <= length) {
+      continue;
+    }
+
+    const candidate = prefix.slice(-length).trim();
+    const location = cleanSceneLocation(prefix.slice(0, -length));
+    if (!candidate || !location) {
+      continue;
+    }
+
+    const isChineseName = /^[\u4e00-\u9fa5]{2,4}$/.test(candidate) && CHINESE_SURNAMES.includes(candidate[0]);
+    const isAsciiSpeaker = /^[A-Za-z][A-Za-z0-9]{0,7}$/.test(candidate);
+    const normalizedCandidate = candidate.toUpperCase();
+    const isSpecialLabel = SPECIAL_SPEAKER_LABELS.has(candidate) || SPECIAL_SPEAKER_LABELS.has(normalizedCandidate);
+
+    if (isChineseName || isAsciiSpeaker || isSpecialLabel) {
+      return {
+        location,
+        trailingLines: [`${candidate}${suffix}`],
+      };
+    }
+  }
+
+  return {
+    location: cleanSceneLocation(trimmed),
+    trailingLines: [],
+  };
+}
 
 function splitCompactBios(text: string): { text: string; traces: NormalizationTrace[] } {
   const traces: NormalizationTrace[] = [];
@@ -10,11 +125,11 @@ function splitCompactBios(text: string): { text: string; traces: NormalizationTr
   }
 
   const afterHeader = text.slice(bioStart + bioHeader.length);
-  const nextSectionMatch = afterHeader.match(/\n(?=第[一二三四五六七八九十百千万零\d]+集[：:])/);
+  const nextSectionMatch = afterHeader.match(/\n(?=第[零一二三四五六七八九十百千\d]+集[：:]?)/);
   const bioSectionEnd = nextSectionMatch ? bioStart + bioHeader.length + nextSectionMatch.index! : text.length;
   const bioSection = text.slice(bioStart + bioHeader.length, bioSectionEnd).trim();
-  const entryRegex = /([\u4e00-\u9fa5A-Za-z0-9·]{2,12}（\d{1,3}）[：:][^。\n]+。?)/g;
-  const entries = [...bioSection.matchAll(entryRegex)].map((match) => match[1].trim());
+  const entryRegex = /([\u4e00-\u9fa5A-Za-z0-9路]{2,12}(?:（\d{1,3}）)?[：:][^。；;\n]+[。；;]?)/g;
+  const entries = [...bioSection.matchAll(entryRegex)].map((match) => match[1].trim()).filter(Boolean);
 
   if (entries.length < 2) {
     return { text, traces };
@@ -24,8 +139,8 @@ function splitCompactBios(text: string): { text: string; traces: NormalizationTr
   traces.push({
     id: 'trace_bio_split_1',
     operation: 'split_character_bios',
-    before: `${bioHeader}${bioSection}`,
-    after: replacement,
+    before: clipText(`${bioHeader}${bioSection}`),
+    after: clipText(replacement),
     reason: 'Split compact same-line character bios into one entry per line.',
   });
 
@@ -35,37 +150,227 @@ function splitCompactBios(text: string): { text: string; traces: NormalizationTr
   };
 }
 
-function normalizeLooseSceneHeaders(text: string): { text: string; traces: NormalizationTrace[] } {
-  const traces: NormalizationTrace[] = [];
-  let sceneIndex = 1;
+function parseLooseScenePayload(payload: string): { timeOfDay: string; interior?: string; location: string } | null {
+  const tokens = payload
+    .replace(/[：:]/g, ' ')
+    .split(/[，,\s]+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
 
-  const normalized = text.replace(
-    /^(第[一二三四五六七八九十百千万零\d]+场|场景[一二三四五六七八九十百千万零\d]+)\s+(内|外)\s+(日|夜|晨|暮|黄昏|黎明|清晨|傍晚)\s+(.+)$/gm,
-    (fullMatch, _label, interior, timeOfDay, location) => {
-      const replacement = `1-${sceneIndex} ${timeOfDay} ${interior} ${location.trim()}`;
-      traces.push({
-        id: `trace_scene_${sceneIndex}`,
-        operation: 'normalize_scene_header',
-        before: fullMatch,
-        after: replacement,
-        reason: 'Normalize loose scene header into parser-friendly format.',
-      });
-      sceneIndex += 1;
-      return replacement;
-    },
-  );
+  let timeOfDay: string | undefined;
+  let interior: string | undefined;
+  const locationTokens: string[] = [];
 
-  return { text: normalized, traces };
+  tokens.forEach((token) => {
+    if (!timeOfDay && TIME_OF_DAY_TOKENS.includes(token as (typeof TIME_OF_DAY_TOKENS)[number])) {
+      timeOfDay = token;
+      return;
+    }
+
+    if (!interior && INTERIOR_TOKENS.includes(token as (typeof INTERIOR_TOKENS)[number])) {
+      interior = token;
+      return;
+    }
+
+    locationTokens.push(token);
+  });
+
+  const location = cleanSceneLocation(locationTokens.join(' '));
+  if (!timeOfDay || !location) {
+    return null;
+  }
+
+  return { timeOfDay, interior, location };
 }
 
-export function canonicalizeScriptText(blocks: CanonicalBlock[], rawText: string) {
-  const bioStep = splitCompactBios(rawText);
-  const sceneStep = normalizeLooseSceneHeaders(bioStep.text);
+function canonicalizeSceneLines(text: string): { text: string; traces: NormalizationTrace[] } {
+  const lines = text.split(/\r?\n/);
+  const normalizedLines: string[] = [];
+  const traces: NormalizationTrace[] = [];
+  const sceneCounters = new Map<number, number>();
+  let currentEpisode = 1;
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      normalizedLines.push(line);
+      return;
+    }
+
+    const episodeMarkerMatch = trimmed.match(EPISODE_MARKER_RE);
+    if (episodeMarkerMatch) {
+      currentEpisode = chineseNumberToInt(episodeMarkerMatch[1] || episodeMarkerMatch[2] || '1');
+      sceneCounters.set(currentEpisode, sceneCounters.get(currentEpisode) || 0);
+      normalizedLines.push(trimmed);
+      return;
+    }
+
+    const standardMatch = trimmed.match(STANDARD_SCENE_RE);
+    if (standardMatch) {
+      const episodeIndex = Number.parseInt(standardMatch[1], 10);
+      const sceneIndex = Number.parseInt(standardMatch[2], 10);
+      const splitResult = splitTrailingDialogue(standardMatch[5]);
+      currentEpisode = episodeIndex;
+      sceneCounters.set(episodeIndex, Math.max(sceneCounters.get(episodeIndex) || 0, sceneIndex));
+      normalizedLines.push(`${episodeIndex}-${sceneIndex} ${standardMatch[3]} ${standardMatch[4]} ${splitResult.location}`);
+      if (splitResult.trailingLines.length > 0) {
+        traces.push({
+          id: `trace_scene_tail_${index + 1}`,
+          operation: 'split_paragraph',
+          before: trimmed,
+          after: `${episodeIndex}-${sceneIndex} ${standardMatch[3]} ${standardMatch[4]} ${splitResult.location}\n${splitResult.trailingLines.join('\n')}`,
+          reason: 'Split dialogue that was attached to the end of a scene header line.',
+        });
+        normalizedLines.push(...splitResult.trailingLines);
+      }
+      return;
+    }
+
+    const reversedMatch = trimmed.match(REVERSED_SCENE_RE);
+    if (reversedMatch) {
+      const episodeIndex = Number.parseInt(reversedMatch[1], 10);
+      const sceneIndex = Number.parseInt(reversedMatch[2], 10);
+      const splitResult = splitTrailingDialogue(reversedMatch[5]);
+      const replacement = `${episodeIndex}-${sceneIndex} ${reversedMatch[4]} ${reversedMatch[3]} ${splitResult.location}`;
+      currentEpisode = episodeIndex;
+      sceneCounters.set(episodeIndex, Math.max(sceneCounters.get(episodeIndex) || 0, sceneIndex));
+      traces.push({
+        id: `trace_scene_reordered_${index + 1}`,
+        operation: 'normalize_scene_header',
+        before: trimmed,
+        after: replacement,
+        reason: 'Reordered numbered scene header to the parser-friendly `scene time interior location` format.',
+      });
+      normalizedLines.push(replacement);
+      if (splitResult.trailingLines.length > 0) {
+        traces.push({
+          id: `trace_scene_tail_${index + 1}`,
+          operation: 'split_paragraph',
+          before: trimmed,
+          after: `${replacement}\n${splitResult.trailingLines.join('\n')}`,
+          reason: 'Split dialogue that was attached to the end of a scene header line.',
+        });
+        normalizedLines.push(...splitResult.trailingLines);
+      }
+      return;
+    }
+
+    const looseSceneLabelMatch = trimmed.match(LOOSE_SCENE_LABEL_RE);
+    if (looseSceneLabelMatch) {
+      const parsedPayload = parseLooseScenePayload(looseSceneLabelMatch[2]);
+      if (parsedPayload) {
+        const nextSceneIndex = (sceneCounters.get(currentEpisode) || 0) + 1;
+        sceneCounters.set(currentEpisode, nextSceneIndex);
+        const splitResult = splitTrailingDialogue(parsedPayload.location);
+        const replacement = parsedPayload.interior
+          ? `${currentEpisode}-${nextSceneIndex} ${parsedPayload.timeOfDay} ${parsedPayload.interior} ${splitResult.location}`
+          : `${currentEpisode}-${nextSceneIndex} ${splitResult.location}，${parsedPayload.timeOfDay}`;
+
+        traces.push({
+          id: `trace_scene_label_${index + 1}`,
+          operation: 'normalize_scene_header',
+          before: trimmed,
+          after: replacement,
+          reason: 'Normalized loose scene label into a numbered scene header.',
+        });
+        normalizedLines.push(replacement);
+        if (splitResult.trailingLines.length > 0) {
+          traces.push({
+            id: `trace_scene_tail_${index + 1}`,
+            operation: 'split_paragraph',
+            before: trimmed,
+            after: `${replacement}\n${splitResult.trailingLines.join('\n')}`,
+            reason: 'Split dialogue that was attached to the end of a loose scene label line.',
+          });
+          normalizedLines.push(...splitResult.trailingLines);
+        }
+        return;
+      }
+    }
+
+    const numberedPrefixMatch = trimmed.match(NUMBERED_SCENE_PREFIX_RE);
+    if (numberedPrefixMatch) {
+      const episodeIndex = Number.parseInt(numberedPrefixMatch[1], 10);
+      const sceneIndex = Number.parseInt(numberedPrefixMatch[2], 10);
+      currentEpisode = episodeIndex;
+      sceneCounters.set(episodeIndex, Math.max(sceneCounters.get(episodeIndex) || 0, sceneIndex));
+    }
+
+    normalizedLines.push(line);
+  });
+
+  return { text: normalizedLines.join('\n'), traces };
+}
+
+function insertSyntheticEpisodeMarkers(text: string): { text: string; traces: NormalizationTrace[] } {
+  const lines = text.split(/\r?\n/);
+  if (lines.some((line) => EPISODE_MARKER_RE.test(line.trim()))) {
+    return { text, traces: [] };
+  }
+
+  const normalizedLines: string[] = [];
+  const traces: NormalizationTrace[] = [];
+  let lastEpisode: number | null = null;
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    const numberedSceneMatch = trimmed.match(NUMBERED_SCENE_PREFIX_RE);
+
+    if (numberedSceneMatch) {
+      const episodeIndex = Number.parseInt(numberedSceneMatch[1], 10);
+      if (lastEpisode !== episodeIndex) {
+        const marker = `第${episodeIndex}集`;
+        normalizedLines.push(marker);
+        traces.push({
+          id: `trace_episode_marker_${index + 1}`,
+          operation: 'insert_marker',
+          before: trimmed,
+          after: `${marker}\n${trimmed}`,
+          reason: 'Inserted a synthetic episode marker so parser output matches the detected scene numbering.',
+        });
+        lastEpisode = episodeIndex;
+      }
+    }
+
+    normalizedLines.push(line);
+  });
+
+  return traces.length > 0
+    ? { text: normalizedLines.join('\n'), traces }
+    : { text, traces: [] };
+}
+
+export function canonicalizeScriptText(rawText: string) {
+  const traces: NormalizationTrace[] = [];
+
+  const preprocessed = preprocessLineBreaks(rawText);
+  let workingText = preprocessed.text;
+  if (preprocessed.inserted) {
+    traces.push({
+      id: 'trace_preprocess_1',
+      operation: 'split_paragraph',
+      before: clipText(rawText),
+      after: clipText(workingText),
+      reason: 'Inserted line breaks for dense screenplay paragraphs before canonicalization.',
+    });
+  }
+
+  const bioStep = splitCompactBios(workingText);
+  workingText = bioStep.text;
+  traces.push(...bioStep.traces);
+
+  const sceneStep = canonicalizeSceneLines(workingText);
+  workingText = sceneStep.text;
+  traces.push(...sceneStep.traces);
+
+  const episodeStep = insertSyntheticEpisodeMarkers(workingText);
+  workingText = episodeStep.text;
+  traces.push(...episodeStep.traces);
 
   return {
-    canonicalText: sceneStep.text,
-    blocks: blocks.map((block) => ({ ...block })),
+    canonicalText: workingText,
     aliasMap: {} as Record<string, string>,
-    traces: [...bioStep.traces, ...sceneStep.traces],
+    traces,
   };
 }

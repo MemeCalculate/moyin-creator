@@ -48,4 +48,27 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.episodes.length).toBe(1);
     expect(result.parseResult?.scriptData.scenes.length).toBe(1);
   });
+
+  it('inserts synthetic episode markers from scene numbering and splits dense dialogue paragraphs', () => {
+    const raw = [
+      '《样例》',
+      '大纲：这是一个测试故事。',
+      '1-1 外 日 校门口马一花：我转学来的。△她背着书包。陈茉莉：跟我走。',
+      '2-1 外 夜 天台马一花：今晚见。',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('第1集');
+    expect(result.document.canonicalText).toContain('第2集');
+    expect(result.document.canonicalText).toContain('1-1 日 外 校门口');
+    expect(result.document.canonicalText).toContain('2-1 夜 外 天台');
+    expect(result.document.canonicalText).toContain('\n马一花：我转学来的。');
+    expect(result.document.canonicalText).toContain('\n陈茉莉：跟我走。');
+    expect(result.document.diagnostics.some((item) => item.code === 'dense_paragraphs_split')).toBe(true);
+    expect(result.document.diagnostics.some((item) => item.code === 'synthetic_episode_markers_inserted')).toBe(true);
+    expect(result.parseResult?.episodes.length).toBe(2);
+    expect(result.parseResult?.scriptData.scenes.length).toBe(2);
+  });
 });

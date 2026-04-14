@@ -32,6 +32,26 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
     });
   }
 
+  if (document.traces.some((trace) => trace.operation === 'split_paragraph')) {
+    diagnostics.push({
+      id: 'diag_medium_paragraph_1',
+      severity: 'medium',
+      code: 'dense_paragraphs_split',
+      message: 'Dense screenplay paragraphs were split into structural lines before parsing.',
+      suggestedFix: 'Keep dialogue, action, and scene headers on separate lines in the source manuscript when possible.',
+    });
+  }
+
+  if (document.traces.some((trace) => trace.operation === 'insert_marker')) {
+    diagnostics.push({
+      id: 'diag_medium_episode_1',
+      severity: 'medium',
+      code: 'synthetic_episode_markers_inserted',
+      message: 'Synthetic episode markers were inserted to align parser output with detected scene numbering.',
+      suggestedFix: 'Prefer explicit episode markers like `第1集：标题` before each episode block.',
+    });
+  }
+
   return diagnostics;
 }
 

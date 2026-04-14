@@ -526,4 +526,38 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 0 },
     ]);
   });
+
+  it("treats numbered scene headers without interior markers as blocking acceptance items", () => {
+    const canonicalText = ["Title", "\u7b2c1\u96c6\uff1aMeet", "1-1 \u65e5 Campus Gate"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "blocking-scene-interior-1",
+            severity: "high",
+            code: "numbered_scene_missing_interior_marker",
+            message: "Numbered scene header still lacks an interior marker: 1-1 日 Campus Gate",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 1,
+          characterCount: 0,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 1 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 0 },
+    ]);
+  });
 });

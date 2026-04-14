@@ -475,4 +475,19 @@ describe('standardizeScriptForImport', () => {
     expect(result.success).toBe(true);
     expect(result.document.diagnostics.some((item) => item.code === 'numbered_scene_missing_time_marker')).toBe(true);
   });
+
+  it('reports numbered scene headers that still lack an interior marker', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.diagnostics.some((item) => item.code === 'numbered_scene_missing_interior_marker')).toBe(true);
+  });
 });

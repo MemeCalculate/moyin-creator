@@ -185,4 +185,40 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.episodes.length).toBe(2);
     expect(result.parseResult?.scriptData.scenes.length).toBe(2);
   });
+
+  it('audits inferred scene character lines without misreporting synthetic episode markers', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE: Hello.',
+      'BOB: Follow me.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(
+      result.document.diagnostics.some((item) => item.code === 'inferred_scene_character_lines_inserted'),
+    ).toBe(true);
+    expect(result.document.diagnostics.some((item) => item.code === 'synthetic_episode_markers_inserted')).toBe(false);
+  });
+
+  it('audits scene-header character tags that were extracted into a standalone character line', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate \u4eba\u7269\uff1aALICE\u3001BOB',
+      '\u25b3They look at each other.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(
+      result.document.diagnostics.some((item) => item.code === 'scene_header_character_tags_extracted'),
+    ).toBe(true);
+  });
 });

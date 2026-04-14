@@ -354,16 +354,25 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
       const splitResult = splitTrailingDialogue(headerCharacters.text);
       currentEpisode = episodeIndex;
       sceneCounters.set(episodeIndex, Math.max(sceneCounters.get(episodeIndex) || 0, sceneIndex));
-      normalizedLines.push(`${episodeIndex}-${sceneIndex} ${standardMatch[3]} ${standardMatch[4]} ${splitResult.location}`);
+      const replacement = `${episodeIndex}-${sceneIndex} ${standardMatch[3]} ${standardMatch[4]} ${splitResult.location}`;
+      normalizedLines.push(replacement);
       if (headerCharacters.characters.length > 0) {
-        normalizedLines.push(`人物：${headerCharacters.characters.join('、')}`);
+        const characterLine = `人物：${headerCharacters.characters.join('、')}`;
+        traces.push({
+          id: `trace_scene_header_characters_${index + 1}`,
+          operation: 'insert_marker',
+          before: trimmed,
+          after: `${replacement}\n${characterLine}`,
+          reason: 'Extracted mixed scene-header character tags into a standalone parser-friendly character line.',
+        });
+        normalizedLines.push(characterLine);
       }
       if (splitResult.trailingLines.length > 0) {
         traces.push({
           id: `trace_scene_tail_${index + 1}`,
           operation: 'split_paragraph',
           before: trimmed,
-          after: `${episodeIndex}-${sceneIndex} ${standardMatch[3]} ${standardMatch[4]} ${splitResult.location}\n${splitResult.trailingLines.join('\n')}`,
+          after: `${replacement}\n${splitResult.trailingLines.join('\n')}`,
           reason: 'Split dialogue that was attached to the end of a scene header line.',
         });
         normalizedLines.push(...splitResult.trailingLines);
@@ -389,7 +398,15 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
       });
       normalizedLines.push(replacement);
       if (headerCharacters.characters.length > 0) {
-        normalizedLines.push(`人物：${headerCharacters.characters.join('、')}`);
+        const characterLine = `人物：${headerCharacters.characters.join('、')}`;
+        traces.push({
+          id: `trace_scene_header_characters_${index + 1}`,
+          operation: 'insert_marker',
+          before: trimmed,
+          after: `${replacement}\n${characterLine}`,
+          reason: 'Extracted mixed scene-header character tags into a standalone parser-friendly character line.',
+        });
+        normalizedLines.push(characterLine);
       }
       if (splitResult.trailingLines.length > 0) {
         traces.push({
@@ -425,7 +442,15 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
         });
         normalizedLines.push(replacement);
         if (headerCharacters.characters.length > 0) {
-          normalizedLines.push(`人物：${headerCharacters.characters.join('、')}`);
+          const characterLine = `人物：${headerCharacters.characters.join('、')}`;
+          traces.push({
+            id: `trace_scene_header_characters_${index + 1}`,
+            operation: 'insert_marker',
+            before: trimmed,
+            after: `${replacement}\n${characterLine}`,
+            reason: 'Extracted mixed scene-header character tags into a standalone parser-friendly character line.',
+          });
+          normalizedLines.push(characterLine);
         }
         if (splitResult.trailingLines.length > 0) {
           traces.push({

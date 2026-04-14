@@ -358,4 +358,27 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
   });
+
+  it('normalizes markdown-style character bios into parser-friendly lines', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u4eba\u7269\u5c0f\u4f20\uff1a',
+      '### ALICE',
+      '\u8f6c\u5b66\u751f\uff0c18\u5c81\uff0c\u5014\u5f3a\u3002',
+      '### BOB',
+      '\u73ed\u957f\uff0c19\u5c81\uff0c\u514b\u5236\u3002',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('\u4eba\u7269\u5c0f\u4f20\uff1a\nALICE\uff1a\u8f6c\u5b66\u751f\uff0c18\u5c81\uff0c\u5014\u5f3a\u3002\nBOB\uff1a\u73ed\u957f\uff0c19\u5c81\uff0c\u514b\u5236\u3002');
+    expect(result.document.diagnostics.some((item) => item.code === 'markdown_character_bios_normalized')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
+  });
 });

@@ -51,6 +51,7 @@ const AUTOFIXED_CODES = new Set([
   "normalized_alias",
   "scene_headers_normalized",
   "character_bio_section_normalized",
+  "markdown_character_bios_normalized",
 ]);
 
 type PreviewDiagnosticCategory =

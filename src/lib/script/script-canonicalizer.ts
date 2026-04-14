@@ -86,6 +86,7 @@ const CHARACTER_BIO_ENTRY_RE =
   /^([\u4e00-\u9fa5A-Za-z0-9路·]{2,12}[：:]\s*(?:年龄[：:]|年两[：:]|性别[：:]|身份[：:]|职业[：:]|关系[：:]|\d{1,3}岁))/m;
 const FRONT_MATTER_EPISODE_RE =
   /^\*{0,2}(?:第[零一二三四五六七八九十百千\d]+集|Episode\s+\d+)(?:\s|$|[：:])/im;
+const MARKDOWN_CHARACTER_BIO_HEADING_RE = /^#{2,6}\s*(.+?)\s*$/;
 
 function clipText(value: string, maxLength = 220): string {
   const compact = value.replace(/\s+/g, ' ').trim();
@@ -448,6 +449,88 @@ function insertImplicitCharacterBioSectionHeader(text: string): {
   }
 
   return { text, traces: [] };
+}
+
+function normalizeMarkdownCharacterBios(text: string): {
+  text: string;
+  traces: NormalizationTrace[];
+} {
+  const bioHeader = '人物小传：';
+  const bioStart = text.indexOf(bioHeader);
+  if (bioStart === -1) {
+    return { text, traces: [] };
+  }
+
+  const afterHeader = text.slice(bioStart + bioHeader.length);
+  const nextSectionMatch = afterHeader.match(/\n(?=第[零一二三四五六七八九十百千\d]+集[：:]?)/);
+  const bioSectionEnd = nextSectionMatch ? bioStart + bioHeader.length + nextSectionMatch.index! : text.length;
+  const bioSection = text.slice(bioStart + bioHeader.length, bioSectionEnd);
+  const sourceLines = bioSection.split(/\r?\n/);
+  const normalizedLines: string[] = [];
+  const traces: NormalizationTrace[] = [];
+  let currentName: string | null = null;
+  let currentDescriptionLines: string[] = [];
+  let sawMarkdownHeading = false;
+
+  const flushEntry = () => {
+    if (!currentName) {
+      return;
+    }
+
+    const description = currentDescriptionLines.join(' ').replace(/\s+/g, ' ').trim();
+    normalizedLines.push(description ? `${currentName}：${description}` : `${currentName}：`);
+    currentName = null;
+    currentDescriptionLines = [];
+  };
+
+  sourceLines.forEach((line) => {
+    const trimmed = line.trim();
+    const headingMatch = trimmed.match(MARKDOWN_CHARACTER_BIO_HEADING_RE);
+    if (headingMatch) {
+      flushEntry();
+      sawMarkdownHeading = true;
+      currentName = headingMatch[1].replace(/\*+/g, '').replace(/[：:]$/, '').trim();
+      currentDescriptionLines = [];
+      return;
+    }
+
+    if (currentName) {
+      if (trimmed) {
+        currentDescriptionLines.push(trimmed.replace(/^[-*•]\s*/, ''));
+      }
+      return;
+    }
+
+    if (trimmed) {
+      normalizedLines.push(trimmed);
+    }
+  });
+
+  flushEntry();
+
+  const replacementSection = normalizedLines.join('\n').trim();
+  if (!sawMarkdownHeading || !replacementSection) {
+    return { text, traces };
+  }
+
+  const normalizedOriginal = bioSection.trim();
+  if (replacementSection === normalizedOriginal) {
+    return { text, traces };
+  }
+
+  const replacement = `${bioHeader}\n${replacementSection}`;
+  traces.push({
+    id: `trace_markdown_character_bios_${bioStart + 1}`,
+    operation: 'normalize_character_bio_markdown',
+    before: clipText(`${bioHeader}${bioSection}`),
+    after: clipText(replacement),
+    reason: 'Normalized markdown-style character bio headings into parser-friendly `角色名：描述` lines.',
+  });
+
+  return {
+    text: `${text.slice(0, bioStart)}${replacement}${text.slice(bioSectionEnd)}`,
+    traces,
+  };
 }
 
 function parseLooseScenePayload(payload: string): { timeOfDay: string; interior?: string; location: string } | null {
@@ -920,6 +1003,10 @@ export function canonicalizeScriptText(rawText: string) {
   const inferredCharacterBioHeaderStep = insertImplicitCharacterBioSectionHeader(workingText);
   workingText = inferredCharacterBioHeaderStep.text;
   traces.push(...inferredCharacterBioHeaderStep.traces);
+
+  const markdownCharacterBioStep = normalizeMarkdownCharacterBios(workingText);
+  workingText = markdownCharacterBioStep.text;
+  traces.push(...markdownCharacterBioStep.traces);
 
   const bioStep = splitCompactBios(workingText);
   workingText = bioStep.text;

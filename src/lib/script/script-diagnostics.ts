@@ -240,6 +240,20 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
   diagnostics.push(
     ...buildTraceDiagnostics(
       document,
+      (trace) => trace.id.startsWith('trace_markdown_character_bios_'),
+      (trace, index) => ({
+        id: `diag_medium_markdown_character_bios_${index + 1}`,
+        severity: 'medium',
+        code: 'markdown_character_bios_normalized',
+        message: 'Normalized markdown-style character bio headings into parser-friendly lines.',
+        suggestedFix: 'Prefer `角色名：描述` lines under `人物小传：` when preparing the source manuscript.',
+      }),
+    ),
+  );
+
+  diagnostics.push(
+    ...buildTraceDiagnostics(
+      document,
       (trace) => trace.id.startsWith('trace_character_bio_header_'),
       (trace, index) => ({
         id: `diag_medium_character_bio_header_${index + 1}`,

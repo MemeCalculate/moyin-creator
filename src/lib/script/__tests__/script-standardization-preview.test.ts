@@ -424,4 +424,38 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 0 },
     ]);
   });
+
+  it("counts normalized markdown character bios as auto-fixed acceptance items", () => {
+    const canonicalText = ["Title", "\u4eba\u7269\u5c0f\u4f20\uff1a", "ALICE\uff1a18\u5c81\uff0c\u8f6c\u5b66\u751f", "\u7b2c1\u96c6\uff1aMeet"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "autofixed-markdown-bio-1",
+            severity: "medium",
+            code: "markdown_character_bios_normalized",
+            message: "Normalized markdown-style character bio headings into parser-friendly lines.",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 0,
+          characterCount: 1,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 0 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 1 },
+    ]);
+  });
 });

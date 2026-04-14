@@ -7,7 +7,7 @@ import type {
 } from '@/types/script';
 import { canonicalizeScriptText } from './script-canonicalizer';
 import { buildDiagnostics, hasFatalDiagnostics } from './script-diagnostics';
-import { convertToScriptData, parseFullScript } from './episode-parser';
+import { convertToScriptData, parseCharacterBios, parseFullScript } from './episode-parser';
 import { segmentScriptText } from './script-segmentation';
 
 function computeStats(canonicalText: string): CanonicalStats {
@@ -59,12 +59,35 @@ function findEpisodeMarkerSpan(
   return undefined;
 }
 
+function findMarkerSpan(
+  text: string,
+  marker: string,
+  target: 'source' | 'canonical',
+): Pick<ScriptDiagnostic, 'sourceStart' | 'sourceEnd'> | Pick<ScriptDiagnostic, 'canonicalStart' | 'canonicalEnd'> | undefined {
+  const start = text.indexOf(marker);
+  if (start < 0) {
+    return undefined;
+  }
+
+  if (target === 'source') {
+    return {
+      sourceStart: start,
+      sourceEnd: start + marker.length,
+    };
+  }
+
+  return {
+    canonicalStart: start,
+    canonicalEnd: start + marker.length,
+  };
+}
+
 function buildParseResultDiagnostics(
   rawText: string,
   canonicalText: string,
   parseResult: StandardizeScriptParseResult,
 ): ScriptDiagnostic[] {
-  return parseResult.episodes.flatMap((episode, index) => {
+  const diagnostics = parseResult.episodes.flatMap((episode, index) => {
     const fallbackScene = episode.scenes.find((scene) => scene.sceneHeader === '主场景');
     if (!fallbackScene) {
       return [];
@@ -82,6 +105,21 @@ function buildParseResultDiagnostics(
       },
     ];
   });
+
+  const parsedBioCharacters = parseCharacterBios(parseResult.background.characterBios);
+  if (parseResult.background.characterBios.trim() && parsedBioCharacters.length === 0) {
+    diagnostics.push({
+      id: 'diag_high_character_bios_unparsed',
+      severity: 'high',
+      code: 'character_bio_entries_unparsed',
+      message: 'Character bio section was detected but no characters could be parsed from it.',
+      suggestedFix: 'Use one character per entry under `人物小传：`, for example `角色名：描述`.',
+      ...findMarkerSpan(rawText, '人物小传：', 'source'),
+      ...findMarkerSpan(canonicalText, '人物小传：', 'canonical'),
+    });
+  }
+
+  return diagnostics;
 }
 
 export function standardizeScriptForImport(rawText: string): StandardizeScriptResult {

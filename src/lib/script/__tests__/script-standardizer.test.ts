@@ -438,4 +438,26 @@ describe('standardizeScriptForImport', () => {
     expect(result.document.diagnostics.some((item) => item.code === 'scene_headers_normalized')).toBe(true);
     expect(result.parseResult?.episodes[0]?.scenes[0]?.sceneHeader).toContain('Campus Gate');
   });
+
+  it('reports when a detected character bio section still yields no parsed characters', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u4eba\u7269\u5c0f\u4f20\uff1a',
+      '\u8fd9\u662f\u4e00\u6bb5\u6ca1\u6709\u89d2\u8272\u540d\u3001\u53ea\u6709\u6cdb\u5316\u8bbe\u5b9a\u7684\u63cf\u8ff0\u3002',
+      '\u53e6\u4e00\u6bb5\u8865\u5145\u8bf4\u660e\uff0c\u4f46\u4ecd\u7136\u6ca1\u6709\u53ef\u89e3\u6790\u7684\u4eba\u7269\u6761\u76ee\u3002',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE: Hello.',
+      'BOB: Follow me.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.diagnostics.some((item) => item.code === 'character_bio_entries_unparsed')).toBe(true);
+    expect(result.document.diagnostics.some((item) => item.code === 'inferred_scene_character_lines_inserted')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
+  });
 });

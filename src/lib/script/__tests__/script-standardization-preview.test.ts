@@ -458,4 +458,38 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 1 },
     ]);
   });
+
+  it("treats unparsed character bio sections as blocking acceptance items", () => {
+    const canonicalText = ["Title", "\u4eba\u7269\u5c0f\u4f20\uff1a", "\u8fd9\u662f\u4e00\u6bb5\u6ca1\u6709\u89d2\u8272\u540d\u7684\u63cf\u8ff0\u3002", "\u7b2c1\u96c6\uff1aMeet"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "blocking-bio-1",
+            severity: "high",
+            code: "character_bio_entries_unparsed",
+            message: "Character bio section was detected but no characters could be parsed from it.",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 0,
+          characterCount: 0,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 1 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 0 },
+    ]);
+  });
 });

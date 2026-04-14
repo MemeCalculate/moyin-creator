@@ -404,4 +404,38 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
   });
+
+  it('normalizes loose scene labels that use slash-separated time and interior markers', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '\u7b2c\u4e00\u573a \u5916/\u65e5 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('1-1 \u65e5 \u5916 Campus Gate');
+    expect(result.document.diagnostics.some((item) => item.code === 'scene_headers_normalized')).toBe(true);
+    expect(result.document.diagnostics.some((item) => item.code === 'unresolved_loose_scene_label')).toBe(false);
+  });
+
+  it('normalizes numbered scene headers that use slash-separated time and interior markers', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u5916/\u65e5 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('1-1 \u65e5 \u5916 Campus Gate');
+    expect(result.document.diagnostics.some((item) => item.code === 'scene_headers_normalized')).toBe(true);
+    expect(result.parseResult?.episodes[0]?.scenes[0]?.sceneHeader).toContain('Campus Gate');
+  });
 });

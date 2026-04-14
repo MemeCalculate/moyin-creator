@@ -557,7 +557,7 @@ function normalizeMarkdownCharacterBios(text: string): {
 
 function parseLooseScenePayload(payload: string): { timeOfDay: string; interior?: string; location: string } | null {
   const tokens = payload
-    .replace(/[：:]/g, ' ')
+    .replace(/[：:/／]/g, ' ')
     .split(/[，,\s]+/)
     .map((token) => token.trim())
     .filter(Boolean);
@@ -586,6 +586,16 @@ function parseLooseScenePayload(payload: string): { timeOfDay: string; interior?
   }
 
   return { timeOfDay, interior, location };
+}
+
+function formatParsedSceneHeader(
+  episodeIndex: number,
+  sceneIndex: number,
+  payload: { timeOfDay: string; interior?: string; location: string },
+): string {
+  return payload.interior
+    ? `${episodeIndex}-${sceneIndex} ${payload.timeOfDay} ${payload.interior} ${payload.location}`
+    : `${episodeIndex}-${sceneIndex} ${payload.timeOfDay} ${payload.location}`;
 }
 
 function extractSceneSpeakers(lines: string[]): string[] {
@@ -913,9 +923,10 @@ function canonicalizeSceneLines(text: string): {
         const nextSceneIndex = (sceneCounters.get(currentEpisode) || 0) + 1;
         sceneCounters.set(currentEpisode, nextSceneIndex);
         const splitResult = splitTrailingDialogue(parsedPayload.location);
-        const replacement = parsedPayload.interior
-          ? `${currentEpisode}-${nextSceneIndex} ${parsedPayload.timeOfDay} ${parsedPayload.interior} ${splitResult.location}`
-          : `${currentEpisode}-${nextSceneIndex} ${splitResult.location}，${parsedPayload.timeOfDay}`;
+        const replacement = formatParsedSceneHeader(currentEpisode, nextSceneIndex, {
+          ...parsedPayload,
+          location: splitResult.location,
+        });
 
         traces.push({
           id: `trace_scene_label_${index + 1}`,
@@ -954,8 +965,52 @@ function canonicalizeSceneLines(text: string): {
     if (numberedPrefixMatch) {
       const episodeIndex = Number.parseInt(numberedPrefixMatch[1], 10);
       const sceneIndex = Number.parseInt(numberedPrefixMatch[2], 10);
+      const scenePayload = trimmed.slice(numberedPrefixMatch[0].length).trim();
+      const headerCharacters = extractSceneHeaderCharacters(scenePayload);
+      mergeAliasMaps(aliasMap, headerCharacters.aliasMap);
+      const parsedPayload = parseLooseScenePayload(headerCharacters.text);
+
       currentEpisode = episodeIndex;
       sceneCounters.set(episodeIndex, Math.max(sceneCounters.get(episodeIndex) || 0, sceneIndex));
+
+      if (parsedPayload) {
+        const splitResult = splitTrailingDialogue(parsedPayload.location);
+        const replacement = formatParsedSceneHeader(episodeIndex, sceneIndex, {
+          ...parsedPayload,
+          location: splitResult.location,
+        });
+
+        traces.push({
+          id: `trace_scene_numbered_payload_${index + 1}`,
+          operation: 'normalize_scene_header',
+          before: trimmed,
+          after: replacement,
+          reason: 'Normalized a numbered scene header that used slash-separated or loose time/interior markers.',
+        });
+        normalizedLines.push(replacement);
+        if (headerCharacters.characters.length > 0) {
+          const characterLine = `人物：${headerCharacters.characters.join('、')}`;
+          traces.push({
+            id: `trace_scene_header_characters_${index + 1}`,
+            operation: 'insert_marker',
+            before: trimmed,
+            after: `${replacement}\n${characterLine}`,
+            reason: 'Extracted mixed scene-header character tags into a standalone parser-friendly character line.',
+          });
+          normalizedLines.push(characterLine);
+        }
+        if (splitResult.trailingLines.length > 0) {
+          traces.push({
+            id: `trace_scene_tail_${index + 1}`,
+            operation: 'split_paragraph',
+            before: trimmed,
+            after: `${replacement}\n${splitResult.trailingLines.join('\n')}`,
+            reason: 'Split dialogue that was attached to the end of a numbered scene header line.',
+          });
+          normalizedLines.push(...splitResult.trailingLines);
+        }
+        return;
+      }
     }
 
     normalizedLines.push(line);

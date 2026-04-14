@@ -410,6 +410,28 @@ function insertImplicitCharacterBioSectionHeader(text: string): {
 
   const frontMatterEnd = FRONT_MATTER_EPISODE_RE.exec(text)?.index ?? text.length;
   const frontMatter = text.slice(0, frontMatterEnd);
+  const markdownBioHeadings = [...frontMatter.matchAll(/^#{2,6}\s*(.+?)\s*$/gm)].filter((match) => {
+    const candidate = match[1].replace(/\*+/g, '').replace(/[：:]$/, '').trim();
+    return isLikelyCharacterName(candidate);
+  });
+  if (markdownBioHeadings.length >= 2) {
+    const insertPos = markdownBioHeadings[0].index ?? 0;
+    const firstHeading = markdownBioHeadings[0][0];
+    return {
+      text: `${text.slice(0, insertPos)}人物小传：\n${text.slice(insertPos)}`,
+      traces: [
+        {
+          id: `trace_character_bio_inferred_${insertPos + 1}`,
+          operation: 'insert_marker',
+          before: firstHeading,
+          after: `人物小传：\n${firstHeading}`,
+          reason:
+            'Inserted a missing `人物小传：` header before repeated markdown-style character bio headings so the import parser can recognize the character bio section.',
+        },
+      ],
+    };
+  }
+
   const candidates: Array<{
     regex: RegExp;
     reason: string;

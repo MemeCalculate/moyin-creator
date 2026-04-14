@@ -5,11 +5,17 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  SCREENPLAY_IMPORT_ADAPTER_USAGE,
   buildScreenplayImportSummary,
+  parseCliArgs,
   resolveScreenplayImportOutputDir,
   runScreenplayImportTool,
 } from "../../../../scripts/screenplay-import-adapter";
-import { buildScreenplayImportRunnerPlan } from "../../../../scripts/run-screenplay-import-adapter.mjs";
+import {
+  SCREENPLAY_IMPORT_ADAPTER_RUNNER_USAGE,
+  buildScreenplayImportRunnerPlan,
+  shouldShowScreenplayImportRunnerHelp,
+} from "../../../../scripts/run-screenplay-import-adapter.mjs";
 
 describe("screenplay-import-adapter CLI tool", () => {
   const tempDirs: string[] = [];
@@ -24,6 +30,18 @@ describe("screenplay-import-adapter CLI tool", () => {
     const outputDir = resolveScreenplayImportOutputDir("C:\\demo\\pilot.txt");
 
     expect(outputDir).toBe(path.join("C:\\demo", "pilot.screenplay-import"));
+  });
+
+  it("parses help flags without requiring an input file", () => {
+    expect(parseCliArgs(["--help"])).toEqual({
+      showHelp: true,
+      outputDir: undefined,
+    });
+    expect(parseCliArgs(["-h"])).toEqual({
+      showHelp: true,
+      outputDir: undefined,
+    });
+    expect(SCREENPLAY_IMPORT_ADAPTER_USAGE).toContain("run-screenplay-import-adapter.mjs");
   });
 
   it("writes standalone import artifacts to disk", async () => {
@@ -159,5 +177,12 @@ describe("screenplay-import-adapter CLI tool", () => {
       "--out-dir",
       "C:\\exports\\normalized",
     ]);
+  });
+
+  it("detects wrapper help mode without building the adapter bundle", () => {
+    expect(shouldShowScreenplayImportRunnerHelp(["--help"])).toBe(true);
+    expect(shouldShowScreenplayImportRunnerHelp(["-h"])).toBe(true);
+    expect(shouldShowScreenplayImportRunnerHelp(["pilot.txt"])).toBe(false);
+    expect(SCREENPLAY_IMPORT_ADAPTER_RUNNER_USAGE).toContain("run-screenplay-import-adapter.mjs");
   });
 });

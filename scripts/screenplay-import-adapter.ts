@@ -23,9 +23,13 @@ export interface ScreenplayImportToolArtifacts {
 }
 
 interface CliArgs {
-  inputPath: string;
+  inputPath?: string;
   outputDir?: string;
+  showHelp?: boolean;
 }
+
+export const SCREENPLAY_IMPORT_ADAPTER_USAGE =
+  "Usage: node ./scripts/run-screenplay-import-adapter.mjs <input-file> [--out-dir <dir>]";
 
 function getOverviewCount(
   adapted: ScriptImportAdapterResult,
@@ -115,12 +119,19 @@ function formatRunSummary(result: ScreenplayImportToolArtifacts): string {
   ].join("\n");
 }
 
-function parseCliArgs(argv: string[]): CliArgs {
+export function parseCliArgs(argv: string[]): CliArgs {
   const positional: string[] = [];
   let outputDir: string | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
+    if (token === "--help" || token === "-h") {
+      return {
+        showHelp: true,
+        outputDir,
+      };
+    }
+
     if (token === "--out-dir") {
       outputDir = argv[index + 1];
       index += 1;
@@ -131,9 +142,7 @@ function parseCliArgs(argv: string[]): CliArgs {
   }
 
   if (!positional[0]) {
-    throw new Error(
-      "Usage: node ./scripts/run-screenplay-import-adapter.mjs <input-file> [--out-dir <dir>]",
-    );
+    throw new Error(SCREENPLAY_IMPORT_ADAPTER_USAGE);
   }
 
   return {
@@ -145,6 +154,11 @@ function parseCliArgs(argv: string[]): CliArgs {
 async function main() {
   try {
     const args = parseCliArgs(process.argv.slice(2));
+    if (args.showHelp) {
+      process.stdout.write(`${SCREENPLAY_IMPORT_ADAPTER_USAGE}\n`);
+      return;
+    }
+
     const result = await runScreenplayImportTool(args);
     process.stdout.write(`${formatRunSummary(result)}\n`);
   } catch (error) {

@@ -6,6 +6,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const defaultRepoRoot = path.resolve(__dirname, "..");
+export const SCREENPLAY_IMPORT_ADAPTER_RUNNER_USAGE =
+  "Usage: node ./scripts/run-screenplay-import-adapter.mjs <input-file> [--out-dir <dir>]";
+
+export function shouldShowScreenplayImportRunnerHelp(cliArgs = []) {
+  return cliArgs.includes("--help") || cliArgs.includes("-h");
+}
 
 export function buildScreenplayImportRunnerPlan({
   repoRoot = defaultRepoRoot,
@@ -91,6 +97,11 @@ export async function runScreenplayImportAdapterCli(options = {}) {
 
 export async function main(argv = process.argv.slice(2)) {
   try {
+    if (shouldShowScreenplayImportRunnerHelp(argv)) {
+      process.stdout.write(`${SCREENPLAY_IMPORT_ADAPTER_RUNNER_USAGE}\n`);
+      return;
+    }
+
     await runScreenplayImportAdapterCli({ cliArgs: argv });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

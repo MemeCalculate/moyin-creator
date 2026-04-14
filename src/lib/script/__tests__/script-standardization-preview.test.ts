@@ -251,4 +251,38 @@ describe("buildStandardizationPreview", () => {
     expect(preview?.hasFatalIssues).toBe(false);
     expect(preview?.hasBlockingIssues).toBe(true);
   });
+  it("treats residual multi-speaker dialogue lines as blocking issues", () => {
+    const canonicalText = ["\u7b2c1\u96c6\uff1aMeet", "1-1 \u65e5 \u5916 Campus Gate", "ALICE: HelloBOB: Follow me."].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "blocking-2",
+            severity: "high",
+            code: "multiple_dialogue_markers_same_line",
+            message: "Multiple dialogue markers remain on the same line: ALICE: HelloBOB: Follow me.",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 1,
+          characterCount: 2,
+          dialogueCount: 1,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 1 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 0 },
+    ]);
+    expect(preview?.hasBlockingIssues).toBe(true);
+  });
 });

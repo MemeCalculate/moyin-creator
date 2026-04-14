@@ -34,6 +34,7 @@ const BLOCKING_CODES = new Set([
   "fatal_parser_exception",
   "unresolved_loose_scene_label",
   "missing_episode_marker",
+  "multiple_dialogue_markers_same_line",
 ]);
 
 const INFERRED_CODES = new Set([

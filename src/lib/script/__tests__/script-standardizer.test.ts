@@ -227,4 +227,25 @@ describe('standardizeScriptForImport', () => {
     expect(diagnostic?.message).toContain('ALICE');
     expect(diagnostic?.message).toContain('BOB');
   });
+
+  it('flags residual multi-speaker dialogue lines that still need to be split', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE: HelloBOB: Follow me.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    const diagnostic = result.document.diagnostics.find(
+      (item) => item.code === 'multiple_dialogue_markers_same_line',
+    );
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.message).toContain('ALICE: HelloBOB: Follow me.');
+    expect(diagnostic?.sourceStart).toBeTypeOf('number');
+    expect(diagnostic?.canonicalStart).toBeTypeOf('number');
+  });
 });

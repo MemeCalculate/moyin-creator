@@ -560,4 +560,38 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 0 },
     ]);
   });
+
+  it("treats numbered scene headers without locations as blocking acceptance items", () => {
+    const canonicalText = ["Title", "\u7b2c1\u96c6\uff1aMeet", "1-1 \u65e5 \u5916"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "blocking-scene-location-1",
+            severity: "high",
+            code: "numbered_scene_missing_location",
+            message: "Numbered scene header still lacks a location payload: 1-1 日 外",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 1,
+          characterCount: 0,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 1 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 0 },
+    ]);
+  });
 });

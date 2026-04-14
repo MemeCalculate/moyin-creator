@@ -8,6 +8,8 @@ const NUMBERED_SCENE_PREFIX_RE = /^\s*\d+-\d+\s+/;
 const SCENE_TIME_TOKEN_RE =
   /(?:^|\s)(?:\u65e5|\u591c|\u6668|\u66ae|\u9ec4\u660f|\u9ece\u660e|\u6e05\u6668|\u508d\u665a)(?=\s|$)/;
 const SCENE_INTERIOR_TOKEN_RE = /(?:^|\s)(?:\u5185\/\u5916|\u5185|\u5916)(?=\s|$)/;
+const COMPLETE_NUMBERED_SCENE_RE =
+  /^\s*\d+-\d+\s+(?:\u65e5|\u591c|\u6668|\u66ae|\u9ec4\u660f|\u9ece\u660e|\u6e05\u6668|\u508d\u665a)\s+(?:\u5185\/\u5916|\u5185|\u5916)\s*(.*)$/;
 const DIALOGUE_MARKER_RE = /[\u4e00-\u9fa5A-Za-z0-9路]{1,12}[\uff1a:]/g;
 const NON_DIALOGUE_PREFIX_RE = /^(?:人物|角色|地点|时间|大纲|备注|补充|旁白|字幕)[\uff1a:]/;
 
@@ -223,6 +225,26 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
         canonicalEnd: line.end,
         suggestedFix:
           'Add an interior marker such as `\u5185` or `\u5916`, for example `1-1 \u65e5 \u5916 \u5730\u70b9`.',
+      });
+    });
+
+  lineSpans
+    .filter((line) => {
+      const location = line.trimmed.match(COMPLETE_NUMBERED_SCENE_RE)?.[1]?.trim() ?? '';
+      return Boolean(line.trimmed && location.length === 0 && COMPLETE_NUMBERED_SCENE_RE.test(line.trimmed));
+    })
+    .forEach((line, index) => {
+      const sourceSpan = findSpanBySnippet(document.rawText, line.trimmed, 'source');
+      diagnostics.push({
+        id: `diag_high_numbered_scene_location_${index + 1}`,
+        severity: 'high',
+        code: 'numbered_scene_missing_location',
+        message: `Numbered scene header still lacks a location payload: ${line.trimmed}`,
+        ...sourceSpan,
+        canonicalStart: line.start,
+        canonicalEnd: line.end,
+        suggestedFix:
+          'Add a location after the time and interior markers, for example `1-1 \u65e5 \u5916 \u5b66\u6821\u95e8\u53e3`.',
       });
     });
 

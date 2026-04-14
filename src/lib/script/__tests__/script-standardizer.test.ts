@@ -22,4 +22,13 @@ describe('standardizeScriptForImport', () => {
     expect(result.document.canonicalText).toContain('1-1 日 外 学校门口');
     expect(result.hasFatalIssues).toBe(false);
   });
+
+  it('flags fatal issues when canonical text still lacks structured scenes', () => {
+    const raw = '没有标题也没有集场结构，只有一大段叙述文本';
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.hasFatalIssues).toBe(true);
+    expect(result.document.diagnostics.some((item) => item.code === 'fatal_no_scene_detected')).toBe(true);
+  });
 });

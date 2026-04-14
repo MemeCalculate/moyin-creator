@@ -33,7 +33,9 @@
     "build:mac:universal": "node ./scripts/build-desktop.mjs --mac --universal",
     "build:linux": "node ./scripts/build-desktop.mjs --linux",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "electron-vite preview"
+    "preview": "electron-vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@radix-ui/react-context-menu": "^2.2.16",
@@ -92,7 +94,8 @@
     "typescript": "^5.2.2",
     "vite": "^5.1.6",
     "vite-plugin-electron": "^0.29.0",
-    "vite-plugin-electron-renderer": "^0.14.6"
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "vitest": "^3.2.4"
   },
   "main": "out/main/index.cjs"
 }

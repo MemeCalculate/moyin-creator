@@ -1,4 +1,10 @@
-import type { CanonicalScriptDocument, CanonicalStats, StandardizeScriptResult } from '@/types/script';
+import type {
+  CanonicalScriptDocument,
+  CanonicalStats,
+  ScriptDiagnostic,
+  StandardizeScriptParseResult,
+  StandardizeScriptResult,
+} from '@/types/script';
 import { canonicalizeScriptText } from './script-canonicalizer';
 import { buildDiagnostics, hasFatalDiagnostics } from './script-diagnostics';
 import { convertToScriptData, parseFullScript } from './episode-parser';
@@ -13,6 +19,23 @@ function computeStats(canonicalText: string): CanonicalStats {
     characterCount: lines.filter((line) => /^[\u4e00-\u9fa5A-Za-z0-9·]{2,12}（\d{1,3}）[：:]/.test(line)).length,
     dialogueCount: lines.filter((line) => /^[\u4e00-\u9fa5A-Za-z0-9·]{1,12}[：:]/.test(line)).length,
   };
+}
+
+function buildParseResultDiagnostics(parseResult: StandardizeScriptParseResult): ScriptDiagnostic[] {
+  return parseResult.episodes.flatMap((episode, index) => {
+    const fallbackScene = episode.scenes.find((scene) => scene.sceneHeader === '主场景');
+    if (!fallbackScene) {
+      return [];
+    }
+
+    return [{
+      id: `diag_high_episode_fallback_${index + 1}`,
+      severity: 'high',
+      code: 'episode_default_scene_fallback',
+      message: `第${episode.episodeIndex}集 fell back to a default scene because no parser-friendly scene header was found.`,
+      suggestedFix: 'Add scene headers like `1-1 日 内 地点` for every episode block before import.',
+    }];
+  });
 }
 
 export function standardizeScriptForImport(rawText: string): StandardizeScriptResult {
@@ -42,16 +65,18 @@ export function standardizeScriptForImport(rawText: string): StandardizeScriptRe
   try {
     const { background, episodes } = parseFullScript(document.canonicalText);
     const scriptData = convertToScriptData(background, episodes);
+    const parseResult: StandardizeScriptParseResult = {
+      background,
+      episodes,
+      scriptData,
+    };
+    document.diagnostics.push(...buildParseResultDiagnostics(parseResult));
 
     return {
       success: true,
       hasFatalIssues: false,
       document,
-      parseResult: {
-        background,
-        episodes,
-        scriptData,
-      },
+      parseResult,
     };
   } catch (error) {
     document.diagnostics.push({

@@ -122,6 +122,29 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === '陈茉莉')).toBe(true);
   });
 
+  it('reports which episode fell back to a default scene because no parser-friendly scene header was found', () => {
+    const raw = [
+      '《样例》',
+      '大纲：这是一个测试故事。',
+      '第一集：相遇',
+      '1-1 日 外 学校门口',
+      '马一花：我来了。',
+      '第二集：失联',
+      '这一集只有一整段叙述，没有任何标准场景头。',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(
+      result.document.diagnostics.some(
+        (item) =>
+          item.code === 'episode_default_scene_fallback' &&
+          item.message.includes('第2集'),
+      ),
+    ).toBe(true);
+  });
+
   it('inserts synthetic episode markers from scene numbering and splits dense dialogue paragraphs', () => {
     const raw = [
       '《样例》',

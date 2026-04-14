@@ -460,4 +460,19 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
   });
+
+  it('reports numbered scene headers that still lack a recognizable time marker', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.diagnostics.some((item) => item.code === 'numbered_scene_missing_time_marker')).toBe(true);
+  });
 });

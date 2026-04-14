@@ -33,6 +33,7 @@ const BLOCKING_CODES = new Set([
   "fatal_no_scene_detected",
   "fatal_parser_exception",
   "unresolved_loose_scene_label",
+  "numbered_scene_missing_time_marker",
   "missing_episode_marker",
   "multiple_dialogue_markers_same_line",
   "character_bio_entries_unparsed",

@@ -4,6 +4,9 @@ const LOOSE_SCENE_LABEL_RE =
   /^\s*(?:\u7b2c[\u96f6\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u5343\d]+\u573a|\u573a\u666f[\u96f6\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u5343\d]+)(?:\s|$|[\uff1a:])/;
 const EPISODE_MARKER_RE =
   /^\s*\*{0,2}(?:\u7b2c[\u96f6\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u5343\d]+\u96c6|Episode\s+\d+)(?:\s|$|[\uff1a:])/i;
+const NUMBERED_SCENE_PREFIX_RE = /^\s*\d+-\d+\s+/;
+const SCENE_TIME_TOKEN_RE =
+  /(?:^|\s)(?:\u65e5|\u591c|\u6668|\u66ae|\u9ec4\u660f|\u9ece\u660e|\u6e05\u6668|\u508d\u665a)(?=\s|$)/;
 const DIALOGUE_MARKER_RE = /[\u4e00-\u9fa5A-Za-z0-9路]{1,12}[\uff1a:]/g;
 const NON_DIALOGUE_PREFIX_RE = /^(?:人物|角色|地点|时间|大纲|备注|补充|旁白|字幕)[\uff1a:]/;
 
@@ -174,6 +177,28 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
         canonicalStart: line.start,
         canonicalEnd: line.end,
         suggestedFix: 'Add time/interior info, for example `第一场 外 日 学校门口` or `1-1 日 外 学校门口`.',
+      });
+    });
+
+  lineSpans
+    .filter(
+      (line) =>
+        line.trimmed &&
+        NUMBERED_SCENE_PREFIX_RE.test(line.trimmed) &&
+        !SCENE_TIME_TOKEN_RE.test(line.trimmed),
+    )
+    .forEach((line, index) => {
+      const sourceSpan = findSpanBySnippet(document.rawText, line.trimmed, 'source');
+      diagnostics.push({
+        id: `diag_high_numbered_scene_time_${index + 1}`,
+        severity: 'high',
+        code: 'numbered_scene_missing_time_marker',
+        message: `Numbered scene header still lacks a recognizable time marker: ${line.trimmed}`,
+        ...sourceSpan,
+        canonicalStart: line.start,
+        canonicalEnd: line.end,
+        suggestedFix:
+          'Add a time token such as `\u65e5` or `\u591c`, for example `1-1 \u65e5 \u5916 \u5730\u70b9`.',
       });
     });
 

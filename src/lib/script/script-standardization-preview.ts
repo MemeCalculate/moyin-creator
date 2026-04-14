@@ -49,6 +49,7 @@ const AUTOFIXED_CODES = new Set([
   "dense_paragraphs_split",
   "normalized_alias",
   "scene_headers_normalized",
+  "character_bio_section_normalized",
 ]);
 
 type PreviewDiagnosticCategory =

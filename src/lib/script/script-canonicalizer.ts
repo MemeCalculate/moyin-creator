@@ -75,6 +75,11 @@ const SAFE_ALIAS_QUALIFIER_LABELS = new Set([
 const CHARACTER_LINE_RE = /^(人物|角色)[：:]\s*(.+)$/;
 const DIALOGUE_LINE_RE = /^(\s*)([^：:\n]+?)([：:].*)$/;
 const NON_DIALOGUE_PREFIX_RE = /^(?:人物|角色|地点|时间|大纲|备注|补充|旁白|字幕)[：:]/;
+const CHARACTER_BIO_SECTION_HEADER_PATTERNS = [
+  /^((?:人物|角色)(?:介绍|设定|简介|列表|描述)[：:])/m,
+  /^((?:主要|核心|重要)(?:角色|人物)[：:])/m,
+  /^(角色表[：:])/m,
+];
 
 function clipText(value: string, maxLength = 220): string {
   const compact = value.replace(/\s+/g, ' ').trim();
@@ -348,6 +353,37 @@ function splitCompactBios(text: string): { text: string; traces: NormalizationTr
   };
 }
 
+function normalizeCharacterBioSectionHeader(text: string): { text: string; traces: NormalizationTrace[] } {
+  if (text.includes('人物小传：')) {
+    return { text, traces: [] };
+  }
+
+  for (const regex of CHARACTER_BIO_SECTION_HEADER_PATTERNS) {
+    const match = regex.exec(text);
+    if (!match || match.index === undefined) {
+      continue;
+    }
+
+    const before = text.slice(0, match.index);
+    const after = text.slice(match.index + match[0].length);
+    const replacement = '人物小传：';
+    return {
+      text: `${before}${replacement}${after}`,
+      traces: [
+        {
+          id: `trace_character_bio_header_${match.index + 1}`,
+          operation: 'insert_marker',
+          before: match[0],
+          after: replacement,
+          reason: 'Normalized an explicit non-standard character bio section header into the parser-friendly `人物小传：` label.',
+        },
+      ],
+    };
+  }
+
+  return { text, traces: [] };
+}
+
 function parseLooseScenePayload(payload: string): { timeOfDay: string; interior?: string; location: string } | null {
   const tokens = payload
     .replace(/[：:]/g, ' ')
@@ -490,7 +526,7 @@ function splitResidualDialogueRuns(text: string): { text: string; traces: Normal
       NUMBERED_SCENE_PREFIX_RE.test(trimmed) ||
       EPISODE_MARKER_RE.test(trimmed) ||
       LOOSE_SCENE_LABEL_RE.test(trimmed) ||
-      /^[△【\[]/.test(trimmed)
+      /^[[△【]/.test(trimmed)
     ) {
       normalizedLines.push(line);
       return;
@@ -810,6 +846,10 @@ export function canonicalizeScriptText(rawText: string) {
       reason: 'Inserted line breaks for dense screenplay paragraphs before canonicalization.',
     });
   }
+
+  const characterBioHeaderStep = normalizeCharacterBioSectionHeader(workingText);
+  workingText = characterBioHeaderStep.text;
+  traces.push(...characterBioHeaderStep.traces);
 
   const bioStep = splitCompactBios(workingText);
   workingText = bioStep.text;

@@ -356,4 +356,38 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 1 },
     ]);
   });
+
+  it("counts normalized character bio section headers as auto-fixed acceptance items", () => {
+    const canonicalText = ["Title", "\u4eba\u7269\u5c0f\u4f20\uff1a", "ALICE\uff1a\u5e74\u9f84\uff1a18", "\u7b2c1\u96c6\uff1aMeet"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "autofixed-4",
+            severity: "medium",
+            code: "character_bio_section_normalized",
+            message: "Normalized character bio section header: 主要角色： -> 人物小传：",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 0,
+          characterCount: 1,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 0 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 1 },
+    ]);
+  });
 });

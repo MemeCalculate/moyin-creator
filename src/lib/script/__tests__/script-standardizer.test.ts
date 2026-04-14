@@ -295,4 +295,26 @@ describe('standardizeScriptForImport', () => {
     expect(diagnostic?.message).toContain('1-1');
     expect(diagnostic?.message).toContain('Campus Gate');
   });
+
+  it('normalizes explicit non-standard character bio headers into the parser-friendly section label', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u4e3b\u8981\u89d2\u8272\uff1a',
+      'ALICE\uff1a\u5e74\u9f84\uff1a18\uff0c\u8f6c\u5b66\u751f\u3002',
+      'BOB\uff1a\u5e74\u9f84\uff1a19\uff0c\u73ed\u957f\u3002',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('\u4eba\u7269\u5c0f\u4f20\uff1a');
+    expect(result.document.canonicalText).not.toContain('\u4e3b\u8981\u89d2\u8272\uff1a');
+    expect(result.document.diagnostics.some((item) => item.code === 'character_bio_section_normalized')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
+  });
 });

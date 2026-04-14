@@ -1,6 +1,8 @@
 import type { CanonicalScriptDocument, ScriptDiagnostic } from "@/types/script";
 
 export interface StandardizationPreviewDiagnostic extends ScriptDiagnostic {
+  sourceLocationLabel?: string;
+  sourceContextLine?: string;
   locationLabel?: string;
   contextLine?: string;
 }
@@ -66,22 +68,30 @@ function findLineForOffset(lineSpans: LineSpan[], offset: number): LineSpan | un
 
 function decorateDiagnostic(
   diagnostic: ScriptDiagnostic,
-  lineSpans: LineSpan[]
+  sourceLineSpans: LineSpan[],
+  canonicalLineSpans: LineSpan[]
 ): StandardizationPreviewDiagnostic {
-  if (typeof diagnostic.canonicalStart !== "number") {
-    return diagnostic;
-  }
-
-  const line = findLineForOffset(lineSpans, diagnostic.canonicalStart);
-  if (!line) {
-    return diagnostic;
-  }
-
-  return {
+  const decorated: StandardizationPreviewDiagnostic = {
     ...diagnostic,
-    locationLabel: `标准稿第 ${line.lineNumber} 行`,
-    contextLine: line.trimmed || line.text.trim(),
   };
+
+  if (typeof diagnostic.sourceStart === "number") {
+    const sourceLine = findLineForOffset(sourceLineSpans, diagnostic.sourceStart);
+    if (sourceLine) {
+      decorated.sourceLocationLabel = `原稿第 ${sourceLine.lineNumber} 行`;
+      decorated.sourceContextLine = sourceLine.trimmed || sourceLine.text.trim();
+    }
+  }
+
+  if (typeof diagnostic.canonicalStart === "number") {
+    const canonicalLine = findLineForOffset(canonicalLineSpans, diagnostic.canonicalStart);
+    if (canonicalLine) {
+      decorated.locationLabel = `标准稿第 ${canonicalLine.lineNumber} 行`;
+      decorated.contextLine = canonicalLine.trimmed || canonicalLine.text.trim();
+    }
+  }
+
+  return decorated;
 }
 
 export function buildStandardizationPreview(
@@ -89,7 +99,8 @@ export function buildStandardizationPreview(
   standardizedScript: string | null | undefined
 ): StandardizationPreview | null {
   const canonicalText = report?.canonicalText || standardizedScript || "";
-  const lineSpans = getLineSpans(canonicalText);
+  const sourceLineSpans = getLineSpans(report?.rawText || "");
+  const canonicalLineSpans = getLineSpans(canonicalText);
   const excerpt = canonicalText
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -112,7 +123,7 @@ export function buildStandardizationPreview(
   const diagnostics = (report?.diagnostics || [])
     .filter((item) => DIAGNOSTIC_PRIORITY[item.severity] <= DIAGNOSTIC_PRIORITY.medium)
     .sort((left, right) => DIAGNOSTIC_PRIORITY[left.severity] - DIAGNOSTIC_PRIORITY[right.severity])
-    .map((item) => decorateDiagnostic(item, lineSpans))
+    .map((item) => decorateDiagnostic(item, sourceLineSpans, canonicalLineSpans))
     .slice(0, 3);
 
   return {

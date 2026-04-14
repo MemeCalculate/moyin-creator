@@ -22,10 +22,11 @@ function computeStats(canonicalText: string): CanonicalStats {
 }
 
 function findEpisodeMarkerSpan(
-  canonicalText: string,
+  text: string,
   episodeOrder: number,
-): Pick<ScriptDiagnostic, 'canonicalStart' | 'canonicalEnd'> | undefined {
-  const normalized = canonicalText.replace(/\r\n/g, '\n');
+  target: 'source' | 'canonical',
+): Pick<ScriptDiagnostic, 'sourceStart' | 'sourceEnd'> | Pick<ScriptDiagnostic, 'canonicalStart' | 'canonicalEnd'> | undefined {
+  const normalized = text.replace(/\r\n/g, '\n');
   const lines = normalized.split('\n');
   let cursor = 0;
   let matchedEpisodeCount = 0;
@@ -36,6 +37,13 @@ function findEpisodeMarkerSpan(
     if (/^第[零一二三四五六七八九十百千万\d]+集[：:]?/.test(trimmed)) {
       if (matchedEpisodeCount === episodeOrder) {
         const start = cursor + leadingWhitespace;
+        if (target === 'source') {
+          return {
+            sourceStart: start,
+            sourceEnd: start + trimmed.length,
+          };
+        }
+
         return {
           canonicalStart: start,
           canonicalEnd: start + trimmed.length,
@@ -52,6 +60,7 @@ function findEpisodeMarkerSpan(
 }
 
 function buildParseResultDiagnostics(
+  rawText: string,
   canonicalText: string,
   parseResult: StandardizeScriptParseResult,
 ): ScriptDiagnostic[] {
@@ -68,7 +77,8 @@ function buildParseResultDiagnostics(
         code: 'episode_default_scene_fallback',
         message: `第${episode.episodeIndex}集 fell back to a default scene because no parser-friendly scene header was found.`,
         suggestedFix: 'Add scene headers like `1-1 日 外 地点` for every episode block before import.',
-        ...findEpisodeMarkerSpan(canonicalText, index),
+        ...findEpisodeMarkerSpan(rawText, index, 'source'),
+        ...findEpisodeMarkerSpan(canonicalText, index, 'canonical'),
       },
     ];
   });
@@ -106,7 +116,7 @@ export function standardizeScriptForImport(rawText: string): StandardizeScriptRe
       episodes,
       scriptData,
     };
-    document.diagnostics.push(...buildParseResultDiagnostics(document.canonicalText, parseResult));
+    document.diagnostics.push(...buildParseResultDiagnostics(rawText, document.canonicalText, parseResult));
 
     return {
       success: true,

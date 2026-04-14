@@ -327,9 +327,15 @@ export function ScriptInput({
                             {item.severity.toUpperCase()} · {item.code}
                           </p>
                           <p>{item.message}</p>
+                          {item.sourceLocationLabel && (
+                            <p className="text-[11px] text-amber-700/90">
+                              原稿：{item.sourceLocationLabel}
+                              {item.sourceContextLine ? ` · ${item.sourceContextLine}` : ""}
+                            </p>
+                          )}
                           {item.locationLabel && (
                             <p className="text-[11px] text-amber-700/90">
-                              位置：{item.locationLabel}
+                              标准稿：{item.locationLabel}
                               {item.contextLine ? ` · ${item.contextLine}` : ""}
                             </p>
                           )}

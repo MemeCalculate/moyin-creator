@@ -88,6 +88,8 @@ describe("buildStandardizationPreview", () => {
             severity: "high",
             code: "unresolved_loose_scene_label",
             message: "Loose scene label still needs normalization: 第一场 学校门口",
+            sourceStart: canonicalText.indexOf("第一场 学校门口"),
+            sourceEnd: canonicalText.indexOf("第一场 学校门口") + "第一场 学校门口".length,
             canonicalStart: canonicalText.indexOf("第一场 学校门口"),
             canonicalEnd: canonicalText.indexOf("第一场 学校门口") + "第一场 学校门口".length,
             suggestedFix: "Add scene headers like `1-1 日 外 学校门口`.",
@@ -106,6 +108,8 @@ describe("buildStandardizationPreview", () => {
     expect(preview?.diagnostics).toEqual([
       expect.objectContaining({
         code: "unresolved_loose_scene_label",
+        sourceLocationLabel: "原稿第 2 行",
+        sourceContextLine: "第一场 学校门口",
         locationLabel: "标准稿第 2 行",
         contextLine: "第一场 学校门口",
         suggestedFix: "Add scene headers like `1-1 日 外 学校门口`.",

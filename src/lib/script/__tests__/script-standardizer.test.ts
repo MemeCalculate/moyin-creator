@@ -69,8 +69,13 @@ describe('standardizeScriptForImport', () => {
     );
 
     expect(diagnostic).toBeDefined();
+    expect(diagnostic?.sourceStart).toBeTypeOf('number');
+    expect(diagnostic?.sourceEnd).toBeTypeOf('number');
     expect(diagnostic?.canonicalStart).toBeTypeOf('number');
     expect(diagnostic?.canonicalEnd).toBeTypeOf('number');
+    expect(
+      raw.slice(diagnostic?.sourceStart ?? 0, diagnostic?.sourceEnd ?? 0),
+    ).toBe('第一场 学校门口');
     expect(
       result.document.canonicalText.slice(diagnostic?.canonicalStart ?? 0, diagnostic?.canonicalEnd ?? 0),
     ).toBe('第一场 学校门口');
@@ -148,7 +153,11 @@ describe('standardizeScriptForImport', () => {
     );
 
     expect(diagnostic).toBeDefined();
+    expect(diagnostic?.sourceStart).toBeTypeOf('number');
     expect(diagnostic?.canonicalStart).toBeTypeOf('number');
+    expect(
+      raw.slice(diagnostic?.sourceStart ?? 0, diagnostic?.sourceEnd ?? 0),
+    ).toContain('第二集');
     expect(
       result.document.canonicalText.slice(diagnostic?.canonicalStart ?? 0, diagnostic?.canonicalEnd ?? 0),
     ).toContain('失联');

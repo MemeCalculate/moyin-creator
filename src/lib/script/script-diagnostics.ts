@@ -35,10 +35,11 @@ function getLineSpans(text: string): LineSpan[] {
   return spans;
 }
 
-function findCanonicalSpanBySnippet(
-  canonicalText: string,
+function findSpanBySnippet(
+  text: string,
   snippet: string | undefined,
-): Pick<ScriptDiagnostic, 'canonicalStart' | 'canonicalEnd'> | undefined {
+  target: 'source' | 'canonical',
+): Pick<ScriptDiagnostic, 'sourceStart' | 'sourceEnd'> | Pick<ScriptDiagnostic, 'canonicalStart' | 'canonicalEnd'> | undefined {
   if (!snippet) {
     return undefined;
   }
@@ -61,8 +62,15 @@ function findCanonicalSpanBySnippet(
   ].filter(Boolean);
 
   for (const anchor of anchors) {
-    const start = canonicalText.indexOf(anchor);
+    const start = text.indexOf(anchor);
     if (start >= 0) {
+      if (target === 'source') {
+        return {
+          sourceStart: start,
+          sourceEnd: start + anchor.length,
+        };
+      }
+
       return {
         canonicalStart: start,
         canonicalEnd: start + anchor.length,
@@ -79,13 +87,17 @@ function buildTraceDiagnostic(
   baseDiagnostic: ScriptDiagnostic,
 ): ScriptDiagnostic {
   const trace = document.traces.find((item) => item.operation === operation);
-  const span =
-    findCanonicalSpanBySnippet(document.canonicalText, trace?.after) ??
-    findCanonicalSpanBySnippet(document.canonicalText, trace?.before);
+  const canonicalSpan =
+    findSpanBySnippet(document.canonicalText, trace?.after, 'canonical') ??
+    findSpanBySnippet(document.canonicalText, trace?.before, 'canonical');
+  const sourceSpan =
+    findSpanBySnippet(document.rawText, trace?.before, 'source') ??
+    findSpanBySnippet(document.rawText, trace?.after, 'source');
 
   return {
     ...baseDiagnostic,
-    ...span,
+    ...sourceSpan,
+    ...canonicalSpan,
   };
 }
 
@@ -96,11 +108,13 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
   lineSpans
     .filter((line) => line.trimmed && LOOSE_SCENE_LABEL_RE.test(line.trimmed))
     .forEach((line, index) => {
+      const sourceSpan = findSpanBySnippet(document.rawText, line.trimmed, 'source');
       diagnostics.push({
         id: `diag_high_loose_scene_${index + 1}`,
         severity: 'high',
         code: 'unresolved_loose_scene_label',
         message: `Loose scene label still needs normalization: ${line.trimmed}`,
+        ...sourceSpan,
         canonicalStart: line.start,
         canonicalEnd: line.end,
         suggestedFix: 'Add time/interior info, for example `第一场 外 日 学校门口` or `1-1 日 外 学校门口`.',

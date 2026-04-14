@@ -17,6 +17,24 @@ const LOOSE_SCENE_LABEL_RE = /^\s*(第[零一二三四五六七八九十百千\d
 const CHINESE_SURNAMES =
   '赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯昝管卢莫经房裘缪干解应宗丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢裴陆荣翁荀羊于惠甄曲家封芮羿储靳汲邴糜松井段富巫乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘厉戎祖武符刘景詹束龙叶幸司韶郜黎蓟薄印宿白怀蒲邰从鄂索咸籍赖卓蔺屠蒙池乔阴胥苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍却璩桑桂濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习艾鱼容向古易慎戈廖庾终暨居衡步都耿满弘匡国文寇广禄阙东欧殳沃利蔚越夔隆师巩厍聂晁勾敖融冷辛阚简饶曾关蒯相查后荆红游竺权逯盖益桓公';
 const SPECIAL_SPEAKER_LABELS = new Set(['旁白', '内心', '画外音', 'VO', 'OS']);
+const BIO_FIELD_LABELS = new Set([
+  '年龄',
+  '年两',
+  '身份',
+  '性格',
+  '职业',
+  '关系',
+  '外貌',
+  '特点',
+  '特征',
+  '关键行为',
+  '技能',
+  '能力',
+  '标签',
+  '阵营',
+  '立场',
+  '备注',
+]);
 
 function clipText(value: string, maxLength = 220): string {
   const compact = value.replace(/\s+/g, ' ').trim();
@@ -71,6 +89,34 @@ function cleanSceneLocation(location: string): string {
     .replace(/[，,]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function stripDecoratorLabel(value: string): string {
+  return value
+    .replace(/[：:]$/, '')
+    .replace(/（\d{1,3}）$/, '')
+    .trim();
+}
+
+function isLikelyCharacterName(value: string): boolean {
+  const normalized = stripDecoratorLabel(value);
+  if (!normalized || BIO_FIELD_LABELS.has(normalized)) {
+    return false;
+  }
+
+  if (/^[\u4e00-\u9fa5]{2,4}$/.test(normalized)) {
+    return CHINESE_SURNAMES.includes(normalized[0]);
+  }
+
+  if (/^[\u4e00-\u9fa5·]{2,12}$/.test(normalized) && normalized.includes('·')) {
+    return true;
+  }
+
+  if (/^[A-Za-z][A-Za-z0-9 ._-]{1,15}$/.test(normalized)) {
+    return true;
+  }
+
+  return false;
 }
 
 function splitTrailingDialogue(text: string): { location: string; trailingLines: string[] } {
@@ -128,8 +174,17 @@ function splitCompactBios(text: string): { text: string; traces: NormalizationTr
   const nextSectionMatch = afterHeader.match(/\n(?=第[零一二三四五六七八九十百千\d]+集[：:]?)/);
   const bioSectionEnd = nextSectionMatch ? bioStart + bioHeader.length + nextSectionMatch.index! : text.length;
   const bioSection = text.slice(bioStart + bioHeader.length, bioSectionEnd).trim();
-  const entryRegex = /([\u4e00-\u9fa5A-Za-z0-9路]{2,12}(?:（\d{1,3}）)?[：:][^。；;\n]+[。；;]?)/g;
-  const entries = [...bioSection.matchAll(entryRegex)].map((match) => match[1].trim()).filter(Boolean);
+  const entryStartRegex = /[\u4e00-\u9fa5A-Za-z0-9路·]{2,12}(?:（\d{1,3}）)?[：:]/g;
+  const entryStarts = [...bioSection.matchAll(entryStartRegex)].filter((match) =>
+    isLikelyCharacterName(match[0]),
+  );
+  const entries = entryStarts
+    .map((match, index) => {
+      const start = match.index ?? 0;
+      const end = index < entryStarts.length - 1 ? entryStarts[index + 1].index ?? bioSection.length : bioSection.length;
+      return bioSection.slice(start, end).trim();
+    })
+    .filter(Boolean);
 
   if (entries.length < 2) {
     return { text, traces };

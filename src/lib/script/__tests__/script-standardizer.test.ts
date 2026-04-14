@@ -23,6 +23,24 @@ describe('standardizeScriptForImport', () => {
     expect(result.hasFatalIssues).toBe(false);
   });
 
+  it('splits compact bios even when consecutive entries are not separated by punctuation', () => {
+    const raw = [
+      '《样例》',
+      '大纲：这是一个测试故事。',
+      '人物小传：马一花（17）：转学生 倔强 陈茉莉（17）：班长 克制',
+      '第一集：相遇',
+      '1-1 日 外 学校门口',
+      '马一花：我转学来的。',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('人物小传：\n马一花（17）：转学生 倔强\n陈茉莉（17）：班长 克制');
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === '马一花')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === '陈茉莉')).toBe(true);
+  });
+
   it('flags fatal issues when canonical text still lacks structured scenes', () => {
     const raw = '没有标题也没有集场结构，只有一大段叙述文本';
 

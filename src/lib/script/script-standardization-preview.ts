@@ -7,8 +7,14 @@ export interface StandardizationPreviewDiagnostic extends ScriptDiagnostic {
   contextLine?: string;
 }
 
+export interface StandardizationPreviewOverviewItem {
+  key: "blocking" | "inferred" | "autofixed";
+  count: number;
+}
+
 export interface StandardizationPreview {
   stats: Array<{ label: string; value: number }>;
+  overview: StandardizationPreviewOverviewItem[];
   diagnostics: StandardizationPreviewDiagnostic[];
   excerpt: string[];
   hasFatalIssues: boolean;
@@ -21,6 +27,25 @@ const DIAGNOSTIC_PRIORITY: Record<ScriptDiagnostic["severity"], number> = {
   low: 3,
   info: 4,
 };
+
+const BLOCKING_CODES = new Set([
+  "fatal_no_scene_detected",
+  "fatal_parser_exception",
+  "unresolved_loose_scene_label",
+  "missing_episode_marker",
+]);
+
+const INFERRED_CODES = new Set([
+  "synthetic_episode_markers_inserted",
+  "inferred_scene_character_lines_inserted",
+  "scene_header_character_tags_extracted",
+  "episode_default_scene_fallback",
+]);
+
+const AUTOFIXED_CODES = new Set([
+  "bio_compact_entries_split",
+  "dense_paragraphs_split",
+]);
 
 interface LineSpan {
   lineNumber: number;
@@ -94,6 +119,36 @@ function decorateDiagnostic(
   return decorated;
 }
 
+function buildOverview(diagnostics: ScriptDiagnostic[]): StandardizationPreviewOverviewItem[] {
+  const counts = {
+    blocking: 0,
+    inferred: 0,
+    autofixed: 0,
+  };
+
+  diagnostics.forEach((diagnostic) => {
+    if (BLOCKING_CODES.has(diagnostic.code) || diagnostic.severity === "fatal") {
+      counts.blocking += 1;
+      return;
+    }
+
+    if (INFERRED_CODES.has(diagnostic.code)) {
+      counts.inferred += 1;
+      return;
+    }
+
+    if (AUTOFIXED_CODES.has(diagnostic.code)) {
+      counts.autofixed += 1;
+    }
+  });
+
+  return [
+    { key: "blocking", count: counts.blocking },
+    { key: "inferred", count: counts.inferred },
+    { key: "autofixed", count: counts.autofixed },
+  ];
+}
+
 export function buildStandardizationPreview(
   report: CanonicalScriptDocument | null | undefined,
   standardizedScript: string | null | undefined
@@ -128,6 +183,7 @@ export function buildStandardizationPreview(
 
   return {
     stats,
+    overview: buildOverview(report?.diagnostics || []),
     diagnostics,
     excerpt,
     hasFatalIssues: (report?.diagnostics || []).some((item) => item.severity === "fatal"),

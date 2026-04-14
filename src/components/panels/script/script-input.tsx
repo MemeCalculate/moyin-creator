@@ -81,6 +81,21 @@ const SHOT_COUNT_OPTIONS = [
   { value: "custom", label: "自定义..." },
 ];
 
+const STANDARDIZATION_OVERVIEW_META = {
+  blocking: {
+    label: "阻塞问题",
+    className: "border-red-200 bg-red-50 text-red-700",
+  },
+  inferred: {
+    label: "系统推断",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  autofixed: {
+    label: "已自动修复",
+    className: "border-blue-200 bg-blue-50 text-blue-700",
+  },
+} as const;
+
 interface ScriptInputProps {
   rawScript: string;
   language: string;
@@ -310,6 +325,25 @@ export function ScriptInput({
                         {item.label} {item.value}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {standardizationPreview.overview.some((item) => item.count > 0) && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-medium text-muted-foreground">验收总览</p>
+                    <div className="flex flex-wrap gap-2">
+                      {standardizationPreview.overview.map((item) => {
+                        const meta = STANDARDIZATION_OVERVIEW_META[item.key];
+                        return (
+                          <div
+                            key={item.key}
+                            className={`rounded-md border px-2 py-1 text-xs font-medium ${meta.className}`}
+                          >
+                            {meta.label} {item.count}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 

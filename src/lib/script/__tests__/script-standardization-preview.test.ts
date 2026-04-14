@@ -116,4 +116,56 @@ describe("buildStandardizationPreview", () => {
       }),
     ]);
   });
+
+  it("builds acceptance overview counts for blocking issues, inferred structure, and auto-fixes", () => {
+    const canonicalText = ["第1集：相遇", "1-1 日 外 学校门口", "人物：ALICE、BOB"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "fatal-1",
+            severity: "fatal",
+            code: "fatal_no_scene_detected",
+            message: "No parser-friendly scene header was recognized after canonicalization.",
+          },
+          {
+            id: "inferred-1",
+            severity: "medium",
+            code: "inferred_scene_character_lines_inserted",
+            message: "Inserted inferred character line: 人物：ALICE、BOB",
+          },
+          {
+            id: "inferred-2",
+            severity: "high",
+            code: "episode_default_scene_fallback",
+            message: "第2集 fell back to a default scene because no parser-friendly scene header was found.",
+          },
+          {
+            id: "fixed-1",
+            severity: "medium",
+            code: "dense_paragraphs_split",
+            message: "Dense screenplay paragraphs were split into structural lines before parsing.",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 1,
+          characterCount: 2,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 1 },
+      { key: "inferred", count: 2 },
+      { key: "autofixed", count: 1 },
+    ]);
+  });
 });

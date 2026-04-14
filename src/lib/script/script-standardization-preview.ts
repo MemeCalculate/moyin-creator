@@ -47,6 +47,10 @@ const AUTOFIXED_CODES = new Set([
   "dense_paragraphs_split",
 ]);
 
+type PreviewDiagnosticCategory =
+  | StandardizationPreviewOverviewItem["key"]
+  | "other";
+
 interface LineSpan {
   lineNumber: number;
   start: number;
@@ -149,6 +153,59 @@ function buildOverview(diagnostics: ScriptDiagnostic[]): StandardizationPreviewO
   ];
 }
 
+function getDiagnosticCategory(diagnostic: ScriptDiagnostic): PreviewDiagnosticCategory {
+  if (BLOCKING_CODES.has(diagnostic.code) || diagnostic.severity === "fatal") {
+    return "blocking";
+  }
+
+  if (INFERRED_CODES.has(diagnostic.code)) {
+    return "inferred";
+  }
+
+  if (AUTOFIXED_CODES.has(diagnostic.code)) {
+    return "autofixed";
+  }
+
+  return "other";
+}
+
+function selectPreviewDiagnostics(
+  diagnostics: StandardizationPreviewDiagnostic[]
+): StandardizationPreviewDiagnostic[] {
+  const preferredCategories: StandardizationPreviewOverviewItem["key"][] = [
+    "blocking",
+    "inferred",
+    "autofixed",
+  ];
+  const selected: StandardizationPreviewDiagnostic[] = [];
+  const seenIds = new Set<string>();
+
+  preferredCategories.forEach((category) => {
+    const match = diagnostics.find(
+      (diagnostic) =>
+        !seenIds.has(diagnostic.id) &&
+        getDiagnosticCategory(diagnostic) === category
+    );
+    if (!match) {
+      return;
+    }
+
+    selected.push(match);
+    seenIds.add(match.id);
+  });
+
+  diagnostics.forEach((diagnostic) => {
+    if (selected.length >= 3 || seenIds.has(diagnostic.id)) {
+      return;
+    }
+
+    selected.push(diagnostic);
+    seenIds.add(diagnostic.id);
+  });
+
+  return selected.slice(0, 3);
+}
+
 export function buildStandardizationPreview(
   report: CanonicalScriptDocument | null | undefined,
   standardizedScript: string | null | undefined
@@ -175,11 +232,12 @@ export function buildStandardizationPreview(
       ]
     : [];
 
-  const diagnostics = (report?.diagnostics || [])
+  const diagnostics = selectPreviewDiagnostics(
+    (report?.diagnostics || [])
     .filter((item) => DIAGNOSTIC_PRIORITY[item.severity] <= DIAGNOSTIC_PRIORITY.medium)
     .sort((left, right) => DIAGNOSTIC_PRIORITY[left.severity] - DIAGNOSTIC_PRIORITY[right.severity])
     .map((item) => decorateDiagnostic(item, sourceLineSpans, canonicalLineSpans))
-    .slice(0, 3);
+  );
 
   return {
     stats,

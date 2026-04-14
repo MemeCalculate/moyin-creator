@@ -168,4 +168,56 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 1 },
     ]);
   });
+
+  it("selects representative diagnostics across blocking, inferred, and auto-fixed categories", () => {
+    const canonicalText = ["第1集：相遇", "1-1 日 外 学校门口", "人物：ALICE、BOB"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "blocking-1",
+            severity: "fatal",
+            code: "fatal_no_scene_detected",
+            message: "No parser-friendly scene header was recognized after canonicalization.",
+          },
+          {
+            id: "blocking-2",
+            severity: "high",
+            code: "unresolved_loose_scene_label",
+            message: "Loose scene label still needs normalization: 第一场 学校门口",
+          },
+          {
+            id: "inferred-1",
+            severity: "medium",
+            code: "inferred_scene_character_lines_inserted",
+            message: "Inserted inferred character line: 人物：ALICE、BOB",
+          },
+          {
+            id: "fixed-1",
+            severity: "medium",
+            code: "dense_paragraphs_split",
+            message: "Dense screenplay paragraphs were split into structural lines before parsing.",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 1,
+          characterCount: 2,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.diagnostics.map((item) => item.code)).toEqual([
+      "fatal_no_scene_detected",
+      "inferred_scene_character_lines_inserted",
+      "dense_paragraphs_split",
+    ]);
+  });
 });

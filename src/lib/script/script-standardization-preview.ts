@@ -17,6 +17,7 @@ export interface StandardizationPreview {
   overview: StandardizationPreviewOverviewItem[];
   diagnostics: StandardizationPreviewDiagnostic[];
   excerpt: string[];
+  hasBlockingIssues: boolean;
   hasFatalIssues: boolean;
 }
 
@@ -238,12 +239,14 @@ export function buildStandardizationPreview(
     .sort((left, right) => DIAGNOSTIC_PRIORITY[left.severity] - DIAGNOSTIC_PRIORITY[right.severity])
     .map((item) => decorateDiagnostic(item, sourceLineSpans, canonicalLineSpans))
   );
+  const overview = buildOverview(report?.diagnostics || []);
 
   return {
     stats,
-    overview: buildOverview(report?.diagnostics || []),
+    overview,
     diagnostics,
     excerpt,
+    hasBlockingIssues: overview.some((item) => item.key === "blocking" && item.count > 0),
     hasFatalIssues: (report?.diagnostics || []).some((item) => item.severity === "fatal"),
   };
 }

@@ -306,12 +306,12 @@ export function ScriptInput({
                   </div>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                      standardizationPreview.hasFatalIssues
+                      standardizationPreview.hasBlockingIssues
                         ? "bg-amber-100 text-amber-700"
                         : "bg-green-100 text-green-700"
                     }`}
                   >
-                    {standardizationPreview.hasFatalIssues ? "需复核" : "可导入"}
+                    {standardizationPreview.hasBlockingIssues ? "需复核" : "可导入"}
                   </span>
                 </div>
 

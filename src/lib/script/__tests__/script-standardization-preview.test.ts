@@ -220,4 +220,35 @@ describe("buildStandardizationPreview", () => {
       "dense_paragraphs_split",
     ]);
   });
+
+  it("treats blocking issues as requiring review even when there is no fatal diagnostic", () => {
+    const canonicalText = ["第1集：相遇", "第一场 学校门口", "马一花：我来了。"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "blocking-1",
+            severity: "high",
+            code: "unresolved_loose_scene_label",
+            message: "Loose scene label still needs normalization: 第一场 学校门口",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 0,
+          characterCount: 1,
+          dialogueCount: 1,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.hasFatalIssues).toBe(false);
+    expect(preview?.hasBlockingIssues).toBe(true);
+  });
 });

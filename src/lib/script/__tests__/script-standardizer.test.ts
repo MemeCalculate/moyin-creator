@@ -199,9 +199,12 @@ describe('standardizeScriptForImport', () => {
     const result = standardizeScriptForImport(raw);
 
     expect(result.success).toBe(true);
-    expect(
-      result.document.diagnostics.some((item) => item.code === 'inferred_scene_character_lines_inserted'),
-    ).toBe(true);
+    const diagnostic = result.document.diagnostics.find(
+      (item) => item.code === 'inferred_scene_character_lines_inserted',
+    );
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.message).toContain('人物');
+    expect(diagnostic?.message).toContain('ALICE');
     expect(result.document.diagnostics.some((item) => item.code === 'synthetic_episode_markers_inserted')).toBe(false);
   });
 
@@ -217,8 +220,11 @@ describe('standardizeScriptForImport', () => {
     const result = standardizeScriptForImport(raw);
 
     expect(result.success).toBe(true);
-    expect(
-      result.document.diagnostics.some((item) => item.code === 'scene_header_character_tags_extracted'),
-    ).toBe(true);
+    const diagnostic = result.document.diagnostics.find(
+      (item) => item.code === 'scene_header_character_tags_extracted',
+    );
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.message).toContain('ALICE');
+    expect(diagnostic?.message).toContain('BOB');
   });
 });

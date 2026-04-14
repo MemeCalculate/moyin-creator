@@ -123,6 +123,19 @@ function buildTraceDiagnostics(
     .map((trace, index) => buildDiagnosticFromTrace(document, trace, createDiagnostic(trace, index)));
 }
 
+function getTraceLine(traceText: string, mode: 'first' | 'last'): string {
+  const lines = traceText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    return '';
+  }
+
+  return mode === 'first' ? lines[0] : lines[lines.length - 1];
+}
+
 export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagnostic[] {
   const diagnostics: ScriptDiagnostic[] = [];
   const lineSpans = getLineSpans(document.canonicalText);
@@ -196,11 +209,11 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
     ...buildTraceDiagnostics(
       document,
       (trace) => trace.id.startsWith('trace_episode_marker_'),
-      (_trace, index) => ({
+      (trace, index) => ({
         id: `diag_medium_episode_marker_${index + 1}`,
         severity: 'medium',
         code: 'synthetic_episode_markers_inserted',
-        message: 'A synthetic episode marker was inserted to align parser output with detected scene numbering.',
+        message: `Inserted synthetic episode marker: ${getTraceLine(trace.after, 'first')}`,
         suggestedFix: 'Prefer explicit episode markers like `第1集：标题` before each episode block.',
       }),
     ),
@@ -210,11 +223,11 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
     ...buildTraceDiagnostics(
       document,
       (trace) => trace.id.startsWith('trace_scene_characters_'),
-      (_trace, index) => ({
+      (trace, index) => ({
         id: `diag_medium_scene_characters_${index + 1}`,
         severity: 'medium',
         code: 'inferred_scene_character_lines_inserted',
-        message: 'A parser-friendly `人物：...` line was inserted by inferring speakers from dialogue in this scene.',
+        message: `Inserted inferred character line: ${getTraceLine(trace.after, 'last')}`,
         suggestedFix: 'Add an explicit `人物：角色A、角色B` line under the scene header if you want to avoid inference.',
       }),
     ),
@@ -224,11 +237,11 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
     ...buildTraceDiagnostics(
       document,
       (trace) => trace.id.startsWith('trace_scene_header_characters_'),
-      (_trace, index) => ({
+      (trace, index) => ({
         id: `diag_medium_scene_header_characters_${index + 1}`,
         severity: 'medium',
         code: 'scene_header_character_tags_extracted',
-        message: 'Character tags that were mixed into the scene header were extracted into a standalone `人物：...` line.',
+        message: `Extracted scene-header character tags into: ${getTraceLine(trace.after, 'last')}`,
         suggestedFix: 'Keep the scene header and the `人物：...` line on separate lines in the source manuscript.',
       }),
     ),

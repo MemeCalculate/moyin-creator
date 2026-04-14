@@ -252,6 +252,16 @@ function mergeAliasMaps(target: Record<string, string>, source: Record<string, s
   });
 }
 
+function isLikelySpeakerLabel(value: string): boolean {
+  const normalized = value.trim();
+  const upper = normalized.toUpperCase();
+  return (
+    isLikelyCharacterName(normalized) ||
+    SPECIAL_SPEAKER_LABELS.has(normalized) ||
+    SPECIAL_SPEAKER_LABELS.has(upper)
+  );
+}
+
 function splitTrailingDialogue(text: string): { location: string; trailingLines: string[] } {
   const trimmed = text.trim();
   const colonIndex = Math.max(trimmed.indexOf('：'), trimmed.indexOf(':'));
@@ -377,7 +387,7 @@ function extractSceneSpeakers(lines: string[]): string[] {
 
   lines.forEach((line) => {
     const trimmed = line.trim();
-    const match = trimmed.match(/^([^：:（\(【\n△]{1,10})[：:]/);
+    const match = trimmed.match(/^([^：:（(【\n△]{1,10})[：:]/);
     const candidate = match?.[1]?.trim();
     if (!candidate || /^[字幕旁白场景人物]/.test(candidate) || seen.has(candidate)) {
       return;
@@ -464,6 +474,72 @@ function normalizeExplicitCharacterAliases(text: string): {
     text: normalizedLines.join('\n'),
     traces,
     aliasMap,
+  };
+}
+
+function splitResidualDialogueRuns(text: string): { text: string; traces: NormalizationTrace[] } {
+  const sourceLines = text.split(/\r?\n/);
+  const normalizedLines: string[] = [];
+  const traces: NormalizationTrace[] = [];
+
+  sourceLines.forEach((line, index) => {
+    const trimmed = line.trim();
+    if (
+      !trimmed ||
+      NON_DIALOGUE_PREFIX_RE.test(trimmed) ||
+      NUMBERED_SCENE_PREFIX_RE.test(trimmed) ||
+      EPISODE_MARKER_RE.test(trimmed) ||
+      LOOSE_SCENE_LABEL_RE.test(trimmed) ||
+      /^[△【\[]/.test(trimmed)
+    ) {
+      normalizedLines.push(line);
+      return;
+    }
+
+    const speakerMatches = [...trimmed.matchAll(/[\u4e00-\u9fa5A-Za-z0-9路]{1,12}[：:]/g)]
+      .map((match) => ({
+        start: match.index ?? 0,
+        token: match[0],
+        speaker: match[0].slice(0, -1).trim(),
+      }))
+      .filter((match) => isLikelySpeakerLabel(match.speaker));
+
+    if (speakerMatches.length < 2 || speakerMatches[0].start !== 0) {
+      normalizedLines.push(line);
+      return;
+    }
+
+    const splitStarts = speakerMatches
+      .slice(1)
+      .map((match) => match.start)
+      .filter((start) => /[\s"'“”‘’）)\]】.。!?！？;；,，]/.test(trimmed[start - 1] ?? ''));
+
+    if (splitStarts.length === 0) {
+      normalizedLines.push(line);
+      return;
+    }
+
+    const segments: string[] = [];
+    let cursor = 0;
+    splitStarts.forEach((start) => {
+      segments.push(trimmed.slice(cursor, start).trim());
+      cursor = start;
+    });
+    segments.push(trimmed.slice(cursor).trim());
+
+    traces.push({
+      id: `trace_dialogue_run_${index + 1}`,
+      operation: 'split_paragraph',
+      before: line,
+      after: segments.join('\n'),
+      reason: 'Split a residual multi-speaker dialogue run into one speaker per line.',
+    });
+    normalizedLines.push(...segments);
+  });
+
+  return {
+    text: normalizedLines.join('\n'),
+    traces,
   };
 }
 
@@ -752,6 +828,10 @@ export function canonicalizeScriptText(rawText: string) {
   workingText = aliasStep.text;
   traces.push(...aliasStep.traces);
   mergeAliasMaps(aliasMap, aliasStep.aliasMap);
+
+  const dialogueRunStep = splitResidualDialogueRuns(workingText);
+  workingText = dialogueRunStep.text;
+  traces.push(...dialogueRunStep.traces);
 
   const characterLineStep = injectSceneCharacterLines(workingText);
   workingText = characterLineStep.text;

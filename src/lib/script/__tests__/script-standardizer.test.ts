@@ -527,4 +527,25 @@ describe('standardizeScriptForImport', () => {
     expect(result.document.diagnostics.some((item) => item.code === 'episode_markers_normalized')).toBe(true);
     expect(result.parseResult?.episodes.map((episode) => episode.episodeIndex)).toEqual([1, 2]);
   });
+
+  it('normalizes speaker-only dialogue blocks into parser-friendly dialogue lines', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE',
+      'Hello there.',
+      'How are you?',
+      'BOB',
+      'I am fine.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('ALICE: Hello there. How are you?');
+    expect(result.document.canonicalText).toContain('BOB: I am fine.');
+    expect(result.document.diagnostics.some((item) => item.code === 'speaker_blocks_normalized')).toBe(true);
+  });
 });

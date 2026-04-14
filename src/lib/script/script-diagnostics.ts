@@ -353,6 +353,20 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
   diagnostics.push(
     ...buildTraceDiagnostics(
       document,
+      (trace) => trace.id.startsWith('trace_speaker_block_'),
+      (trace, index) => ({
+        id: `diag_medium_speaker_block_${index + 1}`,
+        severity: 'medium',
+        code: 'speaker_blocks_normalized',
+        message: `Normalized speaker-only dialogue block: ${getTraceLine(trace.before, 'first')} -> ${trace.after}`,
+        suggestedFix: 'Prefer `角色名：台词` lines instead of speaker-only dialogue blocks in the source manuscript.',
+      }),
+    ),
+  );
+
+  diagnostics.push(
+    ...buildTraceDiagnostics(
+      document,
       (trace) => trace.operation === 'normalize_scene_header',
       (trace, index) => ({
         id: `diag_medium_scene_header_${index + 1}`,

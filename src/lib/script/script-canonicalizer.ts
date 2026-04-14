@@ -274,6 +274,28 @@ function isLikelySpeakerLabel(value: string): boolean {
   );
 }
 
+function isLikelyStandaloneSpeakerLabel(value: string): boolean {
+  const normalized = stripDecoratorLabel(value.trim());
+  const upper = normalized.toUpperCase();
+  if (!normalized) {
+    return false;
+  }
+
+  if (SPECIAL_SPEAKER_LABELS.has(normalized) || SPECIAL_SPEAKER_LABELS.has(upper)) {
+    return true;
+  }
+
+  if (/^[\u4e00-\u9fa5]{2,4}$/.test(normalized)) {
+    return CHINESE_SURNAMES.includes(normalized[0]);
+  }
+
+  if (/^[\u4e00-\u9fa5·]{2,12}$/.test(normalized) && normalized.includes('·')) {
+    return true;
+  }
+
+  return /^[A-Za-z][A-Za-z0-9_.-]{0,15}$/.test(normalized);
+}
+
 function splitTrailingDialogue(text: string): { location: string; trailingLines: string[] } {
   const trimmed = text.trim();
   const colonIndex = Math.max(trimmed.indexOf('：'), trimmed.indexOf(':'));
@@ -674,6 +696,100 @@ function extractSceneSpeakers(lines: string[]): string[] {
   });
 
   return speakers;
+}
+
+function isSpeakerBlockStructuralLine(trimmed: string): boolean {
+  return (
+    !trimmed ||
+    NUMBERED_SCENE_PREFIX_RE.test(trimmed) ||
+    EPISODE_MARKER_RE.test(trimmed) ||
+    LOOSE_SCENE_LABEL_RE.test(trimmed) ||
+    CHARACTER_LINE_RE.test(trimmed) ||
+    DIALOGUE_LINE_RE.test(trimmed) ||
+    NON_DIALOGUE_PREFIX_RE.test(trimmed) ||
+    /^[△【\[]/.test(trimmed)
+  );
+}
+
+function normalizeSpeakerOnlyDialogueBlocks(text: string): { text: string; traces: NormalizationTrace[] } {
+  const sourceLines = text.split(/\r?\n/);
+  const normalizedLines: string[] = [];
+  const traces: NormalizationTrace[] = [];
+  let cursor = 0;
+
+  while (cursor < sourceLines.length) {
+    const currentLine = sourceLines[cursor];
+    const trimmed = currentLine.trim();
+
+    if (!NUMBERED_SCENE_PREFIX_RE.test(trimmed)) {
+      normalizedLines.push(currentLine);
+      cursor += 1;
+      continue;
+    }
+
+    normalizedLines.push(currentLine);
+    cursor += 1;
+
+    while (
+      cursor < sourceLines.length &&
+      !NUMBERED_SCENE_PREFIX_RE.test(sourceLines[cursor].trim()) &&
+      !EPISODE_MARKER_RE.test(sourceLines[cursor].trim())
+    ) {
+      const speakerLine = sourceLines[cursor];
+      const speakerTrimmed = speakerLine.trim();
+      const nextTrimmed = sourceLines[cursor + 1]?.trim() ?? '';
+
+      const canStartSpeakerBlock =
+        isLikelyStandaloneSpeakerLabel(speakerTrimmed) &&
+        !isSpeakerBlockStructuralLine(nextTrimmed) &&
+        !isLikelyStandaloneSpeakerLabel(nextTrimmed);
+
+      if (!canStartSpeakerBlock) {
+        normalizedLines.push(speakerLine);
+        cursor += 1;
+        continue;
+      }
+
+      const normalizedSpeaker = normalizeCharacterAlias(speakerTrimmed).canonical;
+      const dialogueSegments: string[] = [];
+      let nextCursor = cursor + 1;
+
+      while (nextCursor < sourceLines.length) {
+        const candidateTrimmed = sourceLines[nextCursor].trim();
+        if (
+          isSpeakerBlockStructuralLine(candidateTrimmed) ||
+          isLikelyStandaloneSpeakerLabel(candidateTrimmed)
+        ) {
+          break;
+        }
+
+        dialogueSegments.push(candidateTrimmed);
+        nextCursor += 1;
+      }
+
+      if (dialogueSegments.length === 0) {
+        normalizedLines.push(speakerLine);
+        cursor += 1;
+        continue;
+      }
+
+      const replacement = `${normalizedSpeaker}: ${dialogueSegments.join(' ')}`;
+      traces.push({
+        id: `trace_speaker_block_${cursor + 1}`,
+        operation: 'normalize_speaker_block',
+        before: sourceLines.slice(cursor, nextCursor).join('\n'),
+        after: replacement,
+        reason: 'Normalized a speaker-only dialogue block into parser-friendly `角色名: 台词` lines.',
+      });
+      normalizedLines.push(replacement);
+      cursor = nextCursor;
+    }
+  }
+
+  return {
+    text: normalizedLines.join('\n'),
+    traces,
+  };
 }
 
 function normalizeExplicitCharacterAliases(text: string): {
@@ -1156,6 +1272,10 @@ export function canonicalizeScriptText(rawText: string) {
   workingText = sceneStep.text;
   traces.push(...sceneStep.traces);
   mergeAliasMaps(aliasMap, sceneStep.aliasMap);
+
+  const speakerBlockStep = normalizeSpeakerOnlyDialogueBlocks(workingText);
+  workingText = speakerBlockStep.text;
+  traces.push(...speakerBlockStep.traces);
 
   const episodeStep = insertSyntheticEpisodeMarkers(workingText);
   workingText = episodeStep.text;

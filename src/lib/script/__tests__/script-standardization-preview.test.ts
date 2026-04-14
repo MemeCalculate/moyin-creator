@@ -628,4 +628,38 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 1 },
     ]);
   });
+
+  it("counts normalized speaker-only dialogue blocks as auto-fixed acceptance items", () => {
+    const canonicalText = ["Title", "\u7b2c1\u96c6\uff1aMeet", "ALICE: Hello there."].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "autofixed-speaker-block-1",
+            severity: "medium",
+            code: "speaker_blocks_normalized",
+            message: "Normalized speaker-only dialogue block: ALICE -> ALICE: Hello there.",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 0,
+          characterCount: 1,
+          dialogueCount: 1,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 0 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 1 },
+    ]);
+  });
 });

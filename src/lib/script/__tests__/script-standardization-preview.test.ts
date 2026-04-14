@@ -322,4 +322,38 @@ describe("buildStandardizationPreview", () => {
     ]);
     expect(preview?.hasBlockingIssues).toBe(false);
   });
+
+  it("counts normalized scene headers as auto-fixed acceptance items", () => {
+    const canonicalText = ["\u7b2c1\u96c6\uff1aMeet", "1-1 \u65e5 \u5916 Campus Gate", "ALICE: Hello."].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "autofixed-3",
+            severity: "medium",
+            code: "scene_headers_normalized",
+            message: "Normalized scene header: 1-1 \u5916 \u65e5 Campus Gate -> 1-1 \u65e5 \u5916 Campus Gate",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 1,
+          characterCount: 1,
+          dialogueCount: 1,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 0 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 1 },
+    ]);
+  });
 });

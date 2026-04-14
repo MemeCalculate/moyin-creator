@@ -48,6 +48,7 @@ const AUTOFIXED_CODES = new Set([
   "bio_compact_entries_split",
   "dense_paragraphs_split",
   "normalized_alias",
+  "scene_headers_normalized",
 ]);
 
 type PreviewDiagnosticCategory =

@@ -223,6 +223,20 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
     });
   });
 
+  diagnostics.push(
+    ...buildTraceDiagnostics(
+      document,
+      (trace) => trace.operation === 'normalize_scene_header',
+      (trace, index) => ({
+        id: `diag_medium_scene_header_${index + 1}`,
+        severity: 'medium',
+        code: 'scene_headers_normalized',
+        message: `Normalized scene header: ${trace.before} -> ${trace.after}`,
+        suggestedFix: 'Prefer parser-friendly scene headers like `1-1 日 外 地点` in the source manuscript.',
+      }),
+    ),
+  );
+
   const compactBioDiagnostic = buildFirstTraceDiagnostic(
     document,
     (trace) => trace.operation === 'split_character_bios',

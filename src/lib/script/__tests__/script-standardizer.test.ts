@@ -278,4 +278,25 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE\uff08OS\uff09')).toBe(false);
   });
+
+  it('audits scene headers that were auto-normalized into parser-friendly format', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u5916 \u65e5 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('1-1 \u65e5 \u5916 Campus Gate');
+    const diagnostic = result.document.diagnostics.find(
+      (item) => item.code === 'scene_headers_normalized',
+    );
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.message).toContain('1-1');
+    expect(diagnostic?.message).toContain('Campus Gate');
+  });
 });

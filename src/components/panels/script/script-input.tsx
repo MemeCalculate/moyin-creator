@@ -327,6 +327,17 @@ export function ScriptInput({
                             {item.severity.toUpperCase()} · {item.code}
                           </p>
                           <p>{item.message}</p>
+                          {item.locationLabel && (
+                            <p className="text-[11px] text-amber-700/90">
+                              位置：{item.locationLabel}
+                              {item.contextLine ? ` · ${item.contextLine}` : ""}
+                            </p>
+                          )}
+                          {item.suggestedFix && (
+                            <p className="text-[11px] text-amber-800/90">
+                              建议：{item.suggestedFix}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}

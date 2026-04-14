@@ -72,4 +72,44 @@ describe("buildStandardizationPreview", () => {
     expect(preview?.excerpt).toEqual(["第1集", "1-1 日 外 校门口"]);
     expect(preview?.hasFatalIssues).toBe(false);
   });
+
+  it("formats diagnostic locations and preserves suggested fixes for preview cards", () => {
+    const canonicalText = ["第1集：相遇", "第一场 学校门口", "马一花：我来了。"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "high-1",
+            severity: "high",
+            code: "unresolved_loose_scene_label",
+            message: "Loose scene label still needs normalization: 第一场 学校门口",
+            canonicalStart: canonicalText.indexOf("第一场 学校门口"),
+            canonicalEnd: canonicalText.indexOf("第一场 学校门口") + "第一场 学校门口".length,
+            suggestedFix: "Add scene headers like `1-1 日 外 学校门口`.",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 0,
+          characterCount: 1,
+          dialogueCount: 1,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.diagnostics).toEqual([
+      expect.objectContaining({
+        code: "unresolved_loose_scene_label",
+        locationLabel: "标准稿第 2 行",
+        contextLine: "第一场 学校门口",
+        suggestedFix: "Add scene headers like `1-1 日 外 学校门口`.",
+      }),
+    ]);
+  });
 });

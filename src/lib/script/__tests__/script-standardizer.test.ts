@@ -62,13 +62,18 @@ describe('standardizeScriptForImport', () => {
     const result = standardizeScriptForImport(raw);
 
     expect(result.hasFatalIssues).toBe(true);
+    const diagnostic = result.document.diagnostics.find(
+      (item) =>
+        item.code === 'unresolved_loose_scene_label' &&
+        item.message.includes('第一场 学校门口'),
+    );
+
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.canonicalStart).toBeTypeOf('number');
+    expect(diagnostic?.canonicalEnd).toBeTypeOf('number');
     expect(
-      result.document.diagnostics.some(
-        (item) =>
-          item.code === 'unresolved_loose_scene_label' &&
-          item.message.includes('第一场 学校门口'),
-      ),
-    ).toBe(true);
+      result.document.canonicalText.slice(diagnostic?.canonicalStart ?? 0, diagnostic?.canonicalEnd ?? 0),
+    ).toBe('第一场 学校门口');
   });
 
   it('returns parse-ready data when canonicalization succeeds', () => {
@@ -136,13 +141,17 @@ describe('standardizeScriptForImport', () => {
     const result = standardizeScriptForImport(raw);
 
     expect(result.success).toBe(true);
+    const diagnostic = result.document.diagnostics.find(
+      (item) =>
+        item.code === 'episode_default_scene_fallback' &&
+        item.message.includes('第2集'),
+    );
+
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.canonicalStart).toBeTypeOf('number');
     expect(
-      result.document.diagnostics.some(
-        (item) =>
-          item.code === 'episode_default_scene_fallback' &&
-          item.message.includes('第2集'),
-      ),
-    ).toBe(true);
+      result.document.canonicalText.slice(diagnostic?.canonicalStart ?? 0, diagnostic?.canonicalEnd ?? 0),
+    ).toContain('失联');
   });
 
   it('inserts synthetic episode markers from scene numbering and splits dense dialogue paragraphs', () => {

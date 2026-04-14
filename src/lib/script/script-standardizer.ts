@@ -14,27 +14,63 @@ function computeStats(canonicalText: string): CanonicalStats {
   const lines = canonicalText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 
   return {
-    episodeCount: lines.filter((line) => /^第[一二三四五六七八九十百千万零\d]+集[：:]?/.test(line)).length,
+    episodeCount: lines.filter((line) => /^第[零一二三四五六七八九十百千万\d]+集[：:]?/.test(line)).length,
     sceneCount: lines.filter((line) => /^\d+-\d+\s+/.test(line)).length,
-    characterCount: lines.filter((line) => /^[\u4e00-\u9fa5A-Za-z0-9·]{2,12}（\d{1,3}）[：:]/.test(line)).length,
+    characterCount: lines.filter((line) => /^[\u4e00-\u9fa5A-Za-z0-9·]{2,12}（?\d{1,3}）?[：:]/.test(line)).length,
     dialogueCount: lines.filter((line) => /^[\u4e00-\u9fa5A-Za-z0-9·]{1,12}[：:]/.test(line)).length,
   };
 }
 
-function buildParseResultDiagnostics(parseResult: StandardizeScriptParseResult): ScriptDiagnostic[] {
+function findEpisodeMarkerSpan(
+  canonicalText: string,
+  episodeOrder: number,
+): Pick<ScriptDiagnostic, 'canonicalStart' | 'canonicalEnd'> | undefined {
+  const normalized = canonicalText.replace(/\r\n/g, '\n');
+  const lines = normalized.split('\n');
+  let cursor = 0;
+  let matchedEpisodeCount = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const leadingWhitespace = line.match(/^\s*/)?.[0].length ?? 0;
+    if (/^第[零一二三四五六七八九十百千万\d]+集[：:]?/.test(trimmed)) {
+      if (matchedEpisodeCount === episodeOrder) {
+        const start = cursor + leadingWhitespace;
+        return {
+          canonicalStart: start,
+          canonicalEnd: start + trimmed.length,
+        };
+      }
+
+      matchedEpisodeCount += 1;
+    }
+
+    cursor += line.length + 1;
+  }
+
+  return undefined;
+}
+
+function buildParseResultDiagnostics(
+  canonicalText: string,
+  parseResult: StandardizeScriptParseResult,
+): ScriptDiagnostic[] {
   return parseResult.episodes.flatMap((episode, index) => {
     const fallbackScene = episode.scenes.find((scene) => scene.sceneHeader === '主场景');
     if (!fallbackScene) {
       return [];
     }
 
-    return [{
-      id: `diag_high_episode_fallback_${index + 1}`,
-      severity: 'high',
-      code: 'episode_default_scene_fallback',
-      message: `第${episode.episodeIndex}集 fell back to a default scene because no parser-friendly scene header was found.`,
-      suggestedFix: 'Add scene headers like `1-1 日 内 地点` for every episode block before import.',
-    }];
+    return [
+      {
+        id: `diag_high_episode_fallback_${index + 1}`,
+        severity: 'high',
+        code: 'episode_default_scene_fallback',
+        message: `第${episode.episodeIndex}集 fell back to a default scene because no parser-friendly scene header was found.`,
+        suggestedFix: 'Add scene headers like `1-1 日 外 地点` for every episode block before import.',
+        ...findEpisodeMarkerSpan(canonicalText, index),
+      },
+    ];
   });
 }
 
@@ -70,7 +106,7 @@ export function standardizeScriptForImport(rawText: string): StandardizeScriptRe
       episodes,
       scriptData,
     };
-    document.diagnostics.push(...buildParseResultDiagnostics(parseResult));
+    document.diagnostics.push(...buildParseResultDiagnostics(document.canonicalText, parseResult));
 
     return {
       success: true,

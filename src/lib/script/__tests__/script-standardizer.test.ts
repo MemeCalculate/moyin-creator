@@ -1,0 +1,25 @@
+import { describe, expect, it } from 'vitest';
+import { standardizeScriptForImport } from '@/lib/script/script-standardizer';
+
+describe('standardizeScriptForImport', () => {
+  it('splits compact bios and normalizes loose scene headers', () => {
+    const raw = [
+      '《样例》',
+      '大纲：这是一个测试故事。',
+      '人物小传：马一花（17）：转学生，倔强。陈茉莉（17）：班长，克制。',
+      '第一集：相遇',
+      '第一场 外 日 学校门口',
+      '马一花：我转学来的。',
+      '陈茉莉：跟我走。',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('人物小传：');
+    expect(result.document.canonicalText).toContain('马一花（17）：转学生，倔强。');
+    expect(result.document.canonicalText).toContain('陈茉莉（17）：班长，克制。');
+    expect(result.document.canonicalText).toContain('1-1 日 外 学校门口');
+    expect(result.hasFatalIssues).toBe(false);
+  });
+});

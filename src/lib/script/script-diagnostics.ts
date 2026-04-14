@@ -213,6 +213,16 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
     });
   }
 
+  Object.entries(document.aliasMap).forEach(([alias, canonical], index) => {
+    diagnostics.push({
+      id: `diag_medium_alias_${index + 1}`,
+      severity: 'medium',
+      code: 'normalized_alias',
+      message: `Normalized character alias \`${alias}\` to \`${canonical}\`.`,
+      suggestedFix: 'Prefer the canonical character name consistently in dialogue lines and `人物：...` lines.',
+    });
+  });
+
   const compactBioDiagnostic = buildFirstTraceDiagnostic(
     document,
     (trace) => trace.operation === 'split_character_bios',

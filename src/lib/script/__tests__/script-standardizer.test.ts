@@ -248,4 +248,34 @@ describe('standardizeScriptForImport', () => {
     expect(diagnostic?.sourceStart).toBeTypeOf('number');
     expect(diagnostic?.canonicalStart).toBeTypeOf('number');
   });
+
+  it('normalizes low-risk character aliases and reports merged names', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      '\u4eba\u7269\uff1aALICE\uff08\u9752\u5e74\uff09\u3001BOB\uff08\u7535\u8bdd\u4e2d\uff09',
+      'ALICE\uff08OS\uff09: Hello.',
+      'BOB\uff08\u7535\u8bdd\u4e2d\uff09: I can hear you.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('\u4eba\u7269\uff1aALICE\u3001BOB');
+    expect(result.document.canonicalText).toContain('ALICE: Hello.');
+    expect(result.document.canonicalText).toContain('BOB: I can hear you.');
+    expect(result.document.aliasMap).toEqual(
+      expect.objectContaining({
+        'ALICE\uff08\u9752\u5e74\uff09': 'ALICE',
+        'ALICE\uff08OS\uff09': 'ALICE',
+        'BOB\uff08\u7535\u8bdd\u4e2d\uff09': 'BOB',
+      }),
+    );
+    expect(result.document.diagnostics.some((item) => item.code === 'normalized_alias')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE\uff08OS\uff09')).toBe(false);
+  });
 });

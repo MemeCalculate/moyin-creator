@@ -285,4 +285,41 @@ describe("buildStandardizationPreview", () => {
     ]);
     expect(preview?.hasBlockingIssues).toBe(true);
   });
+
+  it("counts normalized aliases as auto-fixed acceptance items", () => {
+    const canonicalText = ["\u7b2c1\u96c6\uff1aMeet", "1-1 \u65e5 \u5916 Campus Gate", "\u4eba\u7269\uff1aALICE\u3001BOB"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {
+          "ALICE\uff08OS\uff09": "ALICE",
+        },
+        traces: [],
+        diagnostics: [
+          {
+            id: "autofixed-2",
+            severity: "medium",
+            code: "normalized_alias",
+            message: "Normalized character alias `ALICE\uff08OS\uff09` to `ALICE`.",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 1,
+          characterCount: 2,
+          dialogueCount: 1,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 0 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 1 },
+    ]);
+    expect(preview?.hasBlockingIssues).toBe(false);
+  });
 });

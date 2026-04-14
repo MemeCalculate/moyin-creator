@@ -47,6 +47,7 @@ const INFERRED_CODES = new Set([
 const AUTOFIXED_CODES = new Set([
   "bio_compact_entries_split",
   "dense_paragraphs_split",
+  "normalized_alias",
 ]);
 
 type PreviewDiagnosticCategory =

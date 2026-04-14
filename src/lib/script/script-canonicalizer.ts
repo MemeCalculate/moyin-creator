@@ -35,6 +35,46 @@ const BIO_FIELD_LABELS = new Set([
   '立场',
   '备注',
 ]);
+const SAFE_ALIAS_QUALIFIER_LABELS = new Set([
+  'OS',
+  'O.S.',
+  'VO',
+  'V.O.',
+  '画外音',
+  '电话',
+  '电话中',
+  '旁白',
+  '内心',
+  '独白',
+  '回忆',
+  '闪回',
+  '梦境',
+  '广播',
+  '对讲机',
+  '耳机',
+  '青年',
+  '少年',
+  '幼年',
+  '童年',
+  '中年',
+  '老年',
+  '小时候',
+  '成年',
+  '醉酒',
+  '低声',
+  '轻声',
+  '压低声音',
+  '小声',
+  '笑着',
+  '哭着',
+  '哽咽',
+  '愤怒',
+  '激动',
+  '平静',
+]);
+const CHARACTER_LINE_RE = /^(人物|角色)[：:]\s*(.+)$/;
+const DIALOGUE_LINE_RE = /^(\s*)([^：:\n]+?)([：:].*)$/;
+const NON_DIALOGUE_PREFIX_RE = /^(?:人物|角色|地点|时间|大纲|备注|补充|旁白|字幕)[：:]/;
 
 function clipText(value: string, maxLength = 220): string {
   const compact = value.replace(/\s+/g, ' ').trim();
@@ -91,20 +131,31 @@ function cleanSceneLocation(location: string): string {
     .trim();
 }
 
-function extractSceneHeaderCharacters(text: string): { text: string; characters: string[] } {
+function extractSceneHeaderCharacters(text: string): {
+  text: string;
+  characters: string[];
+  aliasMap: Record<string, string>;
+} {
   const match = text.match(/^(.*?)(?:\s+(?:人物|角色)[：:]\s*([^\n]+))$/);
   if (!match) {
-    return { text, characters: [] };
+    return { text, characters: [], aliasMap: {} };
   }
 
+  const aliasMap: Record<string, string> = {};
   const names = match[2]
     .split(/[、,，/]/)
     .map((item) => item.trim())
+    .map((item) => {
+      const normalized = normalizeCharacterAlias(item);
+      recordAlias(aliasMap, normalized.alias, normalized.canonical);
+      return normalized.canonical;
+    })
     .filter((item) => isLikelyCharacterName(item));
 
   return {
     text: match[1].trim(),
     characters: [...new Set(names)],
+    aliasMap,
   };
 }
 
@@ -134,6 +185,71 @@ function isLikelyCharacterName(value: string): boolean {
   }
 
   return false;
+}
+
+function normalizeAliasQualifierToken(value: string): string {
+  return value.replace(/[.\s]/g, '').toUpperCase();
+}
+
+function isSafeAliasQualifier(value: string): boolean {
+  const tokens = value
+    .split(/[、，,/／\s-]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return tokens.length > 0 && tokens.every((item) => {
+    const normalized = normalizeAliasQualifierToken(item);
+    return SAFE_ALIAS_QUALIFIER_LABELS.has(item) || SAFE_ALIAS_QUALIFIER_LABELS.has(normalized);
+  });
+}
+
+function normalizeCharacterAlias(value: string): { canonical: string; alias?: string } {
+  const original = value.trim();
+  if (!original) {
+    return { canonical: original };
+  }
+
+  let canonical = original;
+  let changed = false;
+
+  while (true) {
+    const match = canonical.match(/^(.*?)[（(]([^（）()]*)[）)]$/);
+    if (!match) {
+      break;
+    }
+
+    const base = match[1].trim();
+    const qualifier = match[2].trim();
+    if (!base || !qualifier || !isSafeAliasQualifier(qualifier)) {
+      break;
+    }
+
+    canonical = base;
+    changed = true;
+  }
+
+  if (!changed || canonical === original || !isLikelyCharacterName(canonical)) {
+    return { canonical: original };
+  }
+
+  return {
+    canonical,
+    alias: original,
+  };
+}
+
+function recordAlias(aliasMap: Record<string, string>, alias: string | undefined, canonical: string): void {
+  if (!alias || !canonical || alias === canonical) {
+    return;
+  }
+
+  aliasMap[alias] = canonical;
+}
+
+function mergeAliasMaps(target: Record<string, string>, source: Record<string, string>): void {
+  Object.entries(source).forEach(([alias, canonical]) => {
+    recordAlias(target, alias, canonical);
+  });
 }
 
 function splitTrailingDialogue(text: string): { location: string; trailingLines: string[] } {
@@ -274,6 +390,83 @@ function extractSceneSpeakers(lines: string[]): string[] {
   return speakers;
 }
 
+function normalizeExplicitCharacterAliases(text: string): {
+  text: string;
+  traces: NormalizationTrace[];
+  aliasMap: Record<string, string>;
+} {
+  const sourceLines = text.split(/\r?\n/);
+  const normalizedLines: string[] = [];
+  const traces: NormalizationTrace[] = [];
+  const aliasMap: Record<string, string> = {};
+  const tracedAliases = new Set<string>();
+
+  sourceLines.forEach((line, index) => {
+    const trimmed = line.trim();
+    const characterLineMatch = trimmed.match(CHARACTER_LINE_RE);
+    if (characterLineMatch) {
+      const normalizedNames = characterLineMatch[2]
+        .split(/[、,，/]/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .map((item) => {
+          const normalized = normalizeCharacterAlias(item);
+          recordAlias(aliasMap, normalized.alias, normalized.canonical);
+          return normalized.canonical;
+        })
+        .filter((item, idx, arr) => Boolean(item) && arr.indexOf(item) === idx);
+      const updatedLine = `${characterLineMatch[1]}：${normalizedNames.join('、')}`;
+      normalizedLines.push(updatedLine);
+
+      const changedAliases = Object.entries(aliasMap).filter(
+        ([alias, canonical]) =>
+          line.includes(alias) && updatedLine.includes(canonical) && !tracedAliases.has(alias),
+      );
+      if (updatedLine !== line && changedAliases.length > 0) {
+        changedAliases.forEach(([alias]) => tracedAliases.add(alias));
+        traces.push({
+          id: `trace_alias_line_${index + 1}`,
+          operation: 'normalize_alias',
+          before: line,
+          after: updatedLine,
+          reason: `Normalized aliases: ${changedAliases.map(([alias, canonical]) => `${alias} -> ${canonical}`).join(', ')}`,
+        });
+      }
+      return;
+    }
+
+    const dialogueLineMatch = line.match(DIALOGUE_LINE_RE);
+    if (dialogueLineMatch && !NON_DIALOGUE_PREFIX_RE.test(trimmed)) {
+      const speaker = dialogueLineMatch[2].trim();
+      const normalized = normalizeCharacterAlias(speaker);
+      if (normalized.alias) {
+        recordAlias(aliasMap, normalized.alias, normalized.canonical);
+        const updatedLine = `${dialogueLineMatch[1]}${normalized.canonical}${dialogueLineMatch[3]}`;
+        normalizedLines.push(updatedLine);
+        if (!tracedAliases.has(normalized.alias)) {
+          tracedAliases.add(normalized.alias);
+          traces.push({
+            id: `trace_alias_line_${index + 1}`,
+            operation: 'normalize_alias',
+            before: line,
+            after: updatedLine,
+            reason: `Normalized aliases: ${normalized.alias} -> ${normalized.canonical}`,
+          });
+        }
+        return;
+      }
+    }
+
+    normalizedLines.push(line);
+  });
+
+  return {
+    text: normalizedLines.join('\n'),
+    traces,
+    aliasMap,
+  };
+}
+
 function injectSceneCharacterLines(text: string): { text: string; traces: NormalizationTrace[] } {
   const sourceLines = text.split(/\r?\n/);
   const normalizedLines: string[] = [];
@@ -323,10 +516,15 @@ function injectSceneCharacterLines(text: string): { text: string; traces: Normal
   return { text: normalizedLines.join('\n'), traces };
 }
 
-function canonicalizeSceneLines(text: string): { text: string; traces: NormalizationTrace[] } {
+function canonicalizeSceneLines(text: string): {
+  text: string;
+  traces: NormalizationTrace[];
+  aliasMap: Record<string, string>;
+} {
   const lines = text.split(/\r?\n/);
   const normalizedLines: string[] = [];
   const traces: NormalizationTrace[] = [];
+  const aliasMap: Record<string, string> = {};
   const sceneCounters = new Map<number, number>();
   let currentEpisode = 1;
 
@@ -351,6 +549,7 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
       const episodeIndex = Number.parseInt(standardMatch[1], 10);
       const sceneIndex = Number.parseInt(standardMatch[2], 10);
       const headerCharacters = extractSceneHeaderCharacters(standardMatch[5]);
+      mergeAliasMaps(aliasMap, headerCharacters.aliasMap);
       const splitResult = splitTrailingDialogue(headerCharacters.text);
       currentEpisode = episodeIndex;
       sceneCounters.set(episodeIndex, Math.max(sceneCounters.get(episodeIndex) || 0, sceneIndex));
@@ -385,6 +584,7 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
       const episodeIndex = Number.parseInt(reversedMatch[1], 10);
       const sceneIndex = Number.parseInt(reversedMatch[2], 10);
       const headerCharacters = extractSceneHeaderCharacters(reversedMatch[5]);
+      mergeAliasMaps(aliasMap, headerCharacters.aliasMap);
       const splitResult = splitTrailingDialogue(headerCharacters.text);
       const replacement = `${episodeIndex}-${sceneIndex} ${reversedMatch[4]} ${reversedMatch[3]} ${splitResult.location}`;
       currentEpisode = episodeIndex;
@@ -424,6 +624,7 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
     const looseSceneLabelMatch = trimmed.match(LOOSE_SCENE_LABEL_RE);
     if (looseSceneLabelMatch) {
       const headerCharacters = extractSceneHeaderCharacters(looseSceneLabelMatch[2]);
+      mergeAliasMaps(aliasMap, headerCharacters.aliasMap);
       const parsedPayload = parseLooseScenePayload(headerCharacters.text);
       if (parsedPayload) {
         const nextSceneIndex = (sceneCounters.get(currentEpisode) || 0) + 1;
@@ -477,7 +678,7 @@ function canonicalizeSceneLines(text: string): { text: string; traces: Normaliza
     normalizedLines.push(line);
   });
 
-  return { text: normalizedLines.join('\n'), traces };
+  return { text: normalizedLines.join('\n'), traces, aliasMap };
 }
 
 function insertSyntheticEpisodeMarkers(text: string): { text: string; traces: NormalizationTrace[] } {
@@ -520,6 +721,7 @@ function insertSyntheticEpisodeMarkers(text: string): { text: string; traces: No
 
 export function canonicalizeScriptText(rawText: string) {
   const traces: NormalizationTrace[] = [];
+  const aliasMap: Record<string, string> = {};
 
   const preprocessed = preprocessLineBreaks(rawText);
   let workingText = preprocessed.text;
@@ -540,10 +742,16 @@ export function canonicalizeScriptText(rawText: string) {
   const sceneStep = canonicalizeSceneLines(workingText);
   workingText = sceneStep.text;
   traces.push(...sceneStep.traces);
+  mergeAliasMaps(aliasMap, sceneStep.aliasMap);
 
   const episodeStep = insertSyntheticEpisodeMarkers(workingText);
   workingText = episodeStep.text;
   traces.push(...episodeStep.traces);
+
+  const aliasStep = normalizeExplicitCharacterAliases(workingText);
+  workingText = aliasStep.text;
+  traces.push(...aliasStep.traces);
+  mergeAliasMaps(aliasMap, aliasStep.aliasMap);
 
   const characterLineStep = injectSceneCharacterLines(workingText);
   workingText = characterLineStep.text;
@@ -551,7 +759,7 @@ export function canonicalizeScriptText(rawText: string) {
 
   return {
     canonicalText: workingText,
-    aliasMap: {} as Record<string, string>,
+    aliasMap,
     traces,
   };
 }

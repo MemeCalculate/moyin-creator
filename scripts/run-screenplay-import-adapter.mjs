@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const defaultRepoRoot = path.resolve(__dirname, "..");
 export const SCREENPLAY_IMPORT_ADAPTER_RUNNER_USAGE =
-  "Usage: node ./scripts/run-screenplay-import-adapter.mjs <input-file> [--out-dir <dir>]";
+  "Usage: node ./scripts/run-screenplay-import-adapter.mjs <input-file-or-dir> [more-inputs...] [--out-dir <dir>]";
 
 export function shouldShowScreenplayImportRunnerHelp(cliArgs = []) {
   return cliArgs.includes("--help") || cliArgs.includes("-h");

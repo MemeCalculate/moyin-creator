@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -9,6 +9,7 @@ import {
   buildScreenplayImportSummary,
   parseCliArgs,
   resolveScreenplayImportOutputDir,
+  runScreenplayImportBatch,
   runScreenplayImportTool,
 } from "../../../../scripts/screenplay-import-adapter";
 import {
@@ -44,6 +45,13 @@ describe("screenplay-import-adapter CLI tool", () => {
     expect(SCREENPLAY_IMPORT_ADAPTER_USAGE).toContain("run-screenplay-import-adapter.mjs");
   });
 
+  it("parses multiple input paths for batch mode", () => {
+    expect(parseCliArgs(["pilot-a.txt", "pilot-b.txt", "--out-dir", "exports"])).toEqual({
+      inputPaths: ["pilot-a.txt", "pilot-b.txt"],
+      outputDir: "exports",
+    });
+  });
+
   it("writes standalone import artifacts to disk", async () => {
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "screenplay-import-tool-"));
     tempDirs.push(tempDir);
@@ -74,6 +82,47 @@ describe("screenplay-import-adapter CLI tool", () => {
     expect(summary.autofixedItemCount).toBeGreaterThan(0);
     expect(preview.hasBlockingIssues).toBe(false);
     expect(result.parseResultPath).toBeDefined();
+  });
+
+  it("processes directories in batch mode and keeps outputs separated", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "screenplay-import-batch-"));
+    tempDirs.push(tempDir);
+
+    const sourceDir = path.join(tempDir, "inputs");
+    const nestedDir = path.join(sourceDir, "nested");
+    const outputDir = path.join(tempDir, "exports");
+    await Promise.all([mkdir(sourceDir, { recursive: true }), mkdir(nestedDir, { recursive: true })]);
+
+    const scriptText = [
+      "Title",
+      "Outline: test story",
+      "绗?绔狅細Meet",
+      "1-1 鏃?澶?Campus Gate",
+      "ALICE",
+      "Hello there.",
+    ].join("\n");
+
+    await Promise.all([
+      writeFile(path.join(sourceDir, "pilot-a.txt"), scriptText, "utf8"),
+      writeFile(path.join(nestedDir, "pilot-b.md"), scriptText, "utf8"),
+    ]);
+
+    const batch = await runScreenplayImportBatch({
+      inputPaths: [sourceDir],
+      outputDir,
+    });
+
+    expect(batch.discoveredInputPaths).toHaveLength(2);
+    expect(batch.results).toHaveLength(2);
+    expect(batch.results.map((item) => path.basename(item.outputDir)).sort()).toEqual([
+      "pilot-a.screenplay-import",
+      "pilot-b.screenplay-import",
+    ]);
+    expect(
+      batch.results.some((item) =>
+        item.outputDir.includes(path.join("exports", "nested", "pilot-b.screenplay-import")),
+      ),
+    ).toBe(true);
   });
 
   it("builds a compact standalone summary for review tooling", () => {

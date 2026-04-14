@@ -505,4 +505,26 @@ describe('standardizeScriptForImport', () => {
     expect(result.success).toBe(true);
     expect(result.document.diagnostics.some((item) => item.code === 'numbered_scene_missing_location')).toBe(true);
   });
+
+  it('normalizes non-standard episode markers into parser-friendly episode headers', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u7b2c1\u7ae0\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE: Hello.',
+      '',
+      'EP. 2: Return',
+      '2-1 \u591c \u5185 Hallway',
+      'BOB: Back.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('\u7b2c1\u96c6\uff1aMeet');
+    expect(result.document.canonicalText).toContain('\u7b2c2\u96c6\uff1aReturn');
+    expect(result.document.diagnostics.some((item) => item.code === 'episode_markers_normalized')).toBe(true);
+    expect(result.parseResult?.episodes.map((episode) => episode.episodeIndex)).toEqual([1, 2]);
+  });
 });

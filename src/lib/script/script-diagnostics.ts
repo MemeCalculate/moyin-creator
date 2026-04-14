@@ -339,6 +339,20 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
   diagnostics.push(
     ...buildTraceDiagnostics(
       document,
+      (trace) => trace.id.startsWith('trace_episode_header_'),
+      (trace, index) => ({
+        id: `diag_medium_episode_header_${index + 1}`,
+        severity: 'medium',
+        code: 'episode_markers_normalized',
+        message: `Normalized episode marker: ${trace.before} -> ${trace.after}`,
+        suggestedFix: 'Prefer parser-friendly episode markers like `第1集：标题` in the source manuscript.',
+      }),
+    ),
+  );
+
+  diagnostics.push(
+    ...buildTraceDiagnostics(
+      document,
       (trace) => trace.operation === 'normalize_scene_header',
       (trace, index) => ({
         id: `diag_medium_scene_header_${index + 1}`,

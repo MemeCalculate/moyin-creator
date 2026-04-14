@@ -53,6 +53,7 @@ const AUTOFIXED_CODES = new Set([
   "bio_compact_entries_split",
   "dense_paragraphs_split",
   "normalized_alias",
+  "episode_markers_normalized",
   "scene_headers_normalized",
   "character_bio_section_normalized",
   "markdown_character_bios_normalized",

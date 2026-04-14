@@ -594,4 +594,38 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 0 },
     ]);
   });
+
+  it("counts normalized episode markers as auto-fixed acceptance items", () => {
+    const canonicalText = ["Title", "\u7b2c1\u96c6\uff1aMeet"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "autofixed-episode-marker-1",
+            severity: "medium",
+            code: "episode_markers_normalized",
+            message: "Normalized episode marker: 第1章：Meet -> 第1集：Meet",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 0,
+          characterCount: 0,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 0 },
+      { key: "inferred", count: 0 },
+      { key: "autofixed", count: 1 },
+    ]);
+  });
 });

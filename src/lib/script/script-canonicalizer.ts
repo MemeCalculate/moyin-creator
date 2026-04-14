@@ -555,6 +555,65 @@ function normalizeMarkdownCharacterBios(text: string): {
   };
 }
 
+function normalizeEpisodeMarkers(text: string): { text: string; traces: NormalizationTrace[] } {
+  const lines = text.split(/\r?\n/);
+  const normalizedLines: string[] = [];
+  const traces: NormalizationTrace[] = [];
+  const chapterLikeMarkerRe =
+    /^(\*{0,2})第([零一二三四五六七八九十百千\d]+)(章|幕|话|回)([：:]\s*[^\n*]*)?(\*{0,2})$/i;
+  const englishEpisodeMarkerRe =
+    /^(\*{0,2})(?:Episode|EP\.?)\s*(\d+)\s*(?:[：:.-]\s*([^\n*]*))?(\*{0,2})$/i;
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      normalizedLines.push(line);
+      return;
+    }
+
+    const chapterLikeMatch = trimmed.match(chapterLikeMarkerRe);
+    if (chapterLikeMatch) {
+      const title = chapterLikeMatch[4]?.replace(/^[：:]\s*/, '').trim() ?? '';
+      const replacement = `${chapterLikeMatch[1]}第${chapterLikeMatch[2]}集${title ? `：${title}` : ''}${chapterLikeMatch[5]}`;
+      normalizedLines.push(replacement);
+      if (replacement !== trimmed) {
+        traces.push({
+          id: `trace_episode_header_${index + 1}`,
+          operation: 'normalize_episode_marker',
+          before: trimmed,
+          after: replacement,
+          reason: 'Normalized a non-standard episode marker into the parser-friendly `第X集：标题` format.',
+        });
+      }
+      return;
+    }
+
+    const englishEpisodeMatch = trimmed.match(englishEpisodeMarkerRe);
+    if (englishEpisodeMatch) {
+      const title = englishEpisodeMatch[3]?.trim() ?? '';
+      const replacement = `${englishEpisodeMatch[1]}第${englishEpisodeMatch[2]}集${title ? `：${title}` : ''}${englishEpisodeMatch[4]}`;
+      normalizedLines.push(replacement);
+      if (replacement !== trimmed) {
+        traces.push({
+          id: `trace_episode_header_${index + 1}`,
+          operation: 'normalize_episode_marker',
+          before: trimmed,
+          after: replacement,
+          reason: 'Normalized a non-standard episode marker into the parser-friendly `第X集：标题` format.',
+        });
+      }
+      return;
+    }
+
+    normalizedLines.push(line);
+  });
+
+  return {
+    text: normalizedLines.join('\n'),
+    traces,
+  };
+}
+
 function parseLooseScenePayload(payload: string): { timeOfDay: string; interior?: string; location: string } | null {
   const tokens = payload
     .replace(/[：:/／]/g, ' ')
@@ -1088,6 +1147,10 @@ export function canonicalizeScriptText(rawText: string) {
   const bioStep = splitCompactBios(workingText);
   workingText = bioStep.text;
   traces.push(...bioStep.traces);
+
+  const episodeMarkerNormalizationStep = normalizeEpisodeMarkers(workingText);
+  workingText = episodeMarkerNormalizationStep.text;
+  traces.push(...episodeMarkerNormalizationStep.traces);
 
   const sceneStep = canonicalizeSceneLines(workingText);
   workingText = sceneStep.text;

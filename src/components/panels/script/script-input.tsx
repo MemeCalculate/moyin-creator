@@ -37,8 +37,8 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { StylePicker } from "@/components/ui/style-picker";
-import type { VisualStyleId } from "@/lib/constants/visual-styles";
-import type { PromptLanguage } from "@/types/script";
+import { buildStandardizationPreview } from "@/lib/script/script-standardization-preview";
+import type { CanonicalScriptDocument, PromptLanguage } from "@/types/script";
 import { useScriptStore } from "@/stores/script-store";
 
 const PROMPT_LANGUAGE_OPTIONS = [
@@ -103,6 +103,8 @@ interface ScriptInputProps {
   onImportFullScript?: (text: string) => Promise<void>;
   importStatus?: 'idle' | 'importing' | 'ready' | 'error';
   importError?: string;
+  standardizationReport?: CanonicalScriptDocument | null;
+  standardizedScript?: string;
   // AI校准
   onCalibrate?: () => Promise<void>;
   calibrationStatus?: 'idle' | 'calibrating' | 'completed' | 'error';
@@ -145,6 +147,8 @@ export function ScriptInput({
   onImportFullScript,
   importStatus,
   importError,
+  standardizationReport,
+  standardizedScript,
   onCalibrate,
   calibrationStatus,
   missingTitleCount,
@@ -173,6 +177,7 @@ export function ScriptInput({
   const [isImporting, setIsImporting] = useState(false);
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [isGeneratingSynopsis, setIsGeneratingSynopsis] = useState(false);
+  const standardizationPreview = buildStandardizationPreview(standardizationReport, standardizedScript);
 
   // Reload persisted draft when project switches
   useEffect(() => {
@@ -271,12 +276,83 @@ export function ScriptInput({
             {importStatus === "error" && importError && (
               <p className="text-xs text-destructive">导入失败：{importError}</p>
             )}
-            
+
+            {standardizationPreview && (
+              <div className="space-y-3 rounded-lg border border-border/70 bg-muted/30 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <BookOpen className="h-4 w-4" />
+                      <span>标准化预览</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      导入前按当前解析链路生成的结构化预检结果
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      standardizationPreview.hasFatalIssues
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {standardizationPreview.hasFatalIssues ? "需复核" : "可导入"}
+                  </span>
+                </div>
+
+                {standardizationPreview.stats.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {standardizationPreview.stats.map((item) => (
+                      <div
+                        key={item.label}
+                        className="rounded-md border border-border/60 bg-background px-2 py-1 text-xs text-muted-foreground"
+                      >
+                        {item.label} {item.value}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {standardizationPreview.diagnostics.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-medium text-muted-foreground">重点诊断</p>
+                    {standardizationPreview.diagnostics.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-2 py-2 text-xs text-amber-900"
+                      >
+                        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        <div className="space-y-1">
+                          <p className="font-medium">
+                            {item.severity.toUpperCase()} · {item.code}
+                          </p>
+                          <p>{item.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    未发现需要人工复核的高优先级结构问题。
+                  </p>
+                )}
+
+                {standardizationPreview.excerpt.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-medium text-muted-foreground">标准化片段</p>
+                    <pre className="max-h-44 overflow-auto rounded-md border border-border/60 bg-background p-2 text-xs leading-5 whitespace-pre-wrap">
+                      {standardizationPreview.excerpt.join("\n")}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* 持久进度状态显示 - 在执行过程中始终可见 */}
-            {(importStatus === 'importing' || 
-              calibrationStatus === 'calibrating' || 
-              synopsisStatus === 'generating' || 
-              viewpointAnalysisStatus === 'analyzing' || 
+            {(importStatus === 'importing' ||
+              calibrationStatus === 'calibrating' ||
+              synopsisStatus === 'generating' ||
+              viewpointAnalysisStatus === 'analyzing' ||
               characterCalibrationStatus === 'calibrating' ||
               sceneCalibrationStatus === 'calibrating') && (
               <div className="p-4 rounded-xl bg-primary/10 border-2 border-primary/30 space-y-3 shadow-lg">

@@ -31,4 +31,21 @@ describe('standardizeScriptForImport', () => {
     expect(result.hasFatalIssues).toBe(true);
     expect(result.document.diagnostics.some((item) => item.code === 'fatal_no_scene_detected')).toBe(true);
   });
+
+  it('returns parse-ready data when canonicalization succeeds', () => {
+    const raw = [
+      '《样例》',
+      '大纲：这是一个测试故事。',
+      '人物小传：马一花（17）：转学生，倔强。',
+      '第一集：相遇',
+      '1-1 日 外 学校门口',
+      '人物：马一花',
+      '马一花：我来了。',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.parseResult?.episodes.length).toBe(1);
+    expect(result.parseResult?.scriptData.scenes.length).toBe(1);
+  });
 });

@@ -80,6 +80,12 @@ const CHARACTER_BIO_SECTION_HEADER_PATTERNS = [
   /^((?:主要|核心|重要)(?:角色|人物)[：:])/m,
   /^(角色表[：:])/m,
 ];
+const CHARACTER_BIO_GROUP_LABEL_RE =
+  /^([零一二三四五六七八九十百千\d]+[、.]\s*(?:核心|主要|正面|反面|反派|配角|主角|正派|女主|男主|重要|关键|次要)(?:势力)?(?:角色|主角|配角|人物)?[^\n]*)/m;
+const CHARACTER_BIO_ENTRY_RE =
+  /^([\u4e00-\u9fa5A-Za-z0-9路·]{2,12}[：:]\s*(?:年龄[：:]|年两[：:]|性别[：:]|身份[：:]|职业[：:]|关系[：:]|\d{1,3}岁))/m;
+const FRONT_MATTER_EPISODE_RE =
+  /^\*{0,2}(?:第[零一二三四五六七八九十百千\d]+集|Episode\s+\d+)(?:\s|$|[：:])/im;
 
 function clipText(value: string, maxLength = 220): string {
   const compact = value.replace(/\s+/g, ' ').trim();
@@ -333,8 +339,17 @@ function splitCompactBios(text: string): { text: string; traces: NormalizationTr
       return bioSection.slice(start, end).trim();
     })
     .filter(Boolean);
+  const hasCompactBoundary = entryStarts.some((match, index) => {
+    if (index >= entryStarts.length - 1) {
+      return false;
+    }
 
-  if (entries.length < 2) {
+    const start = match.index ?? 0;
+    const nextStart = entryStarts[index + 1].index ?? bioSection.length;
+    return !bioSection.slice(start, nextStart).includes('\n');
+  });
+
+  if (entries.length < 2 || !hasCompactBoundary) {
     return { text, traces };
   }
 
@@ -376,6 +391,57 @@ function normalizeCharacterBioSectionHeader(text: string): { text: string; trace
           before: match[0],
           after: replacement,
           reason: 'Normalized an explicit non-standard character bio section header into the parser-friendly `人物小传：` label.',
+        },
+      ],
+    };
+  }
+
+  return { text, traces: [] };
+}
+
+function insertImplicitCharacterBioSectionHeader(text: string): {
+  text: string;
+  traces: NormalizationTrace[];
+} {
+  if (text.includes('人物小传：')) {
+    return { text, traces: [] };
+  }
+
+  const frontMatterEnd = FRONT_MATTER_EPISODE_RE.exec(text)?.index ?? text.length;
+  const frontMatter = text.slice(0, frontMatterEnd);
+  const candidates: Array<{
+    regex: RegExp;
+    reason: string;
+  }> = [
+    {
+      regex: CHARACTER_BIO_GROUP_LABEL_RE,
+      reason:
+        'Inserted a missing `人物小传：` header before a numbered character-group label so the import parser can recognize the character bio section.',
+    },
+    {
+      regex: CHARACTER_BIO_ENTRY_RE,
+      reason:
+        'Inserted a missing `人物小传：` header before standalone bio-like character entries so the import parser can recognize the character bio section.',
+    },
+  ];
+
+  for (const candidate of candidates) {
+    const match = candidate.regex.exec(frontMatter);
+    if (!match || match.index === undefined) {
+      continue;
+    }
+
+    const insertPos = match.index;
+    const replacement = `人物小传：\n${match[0]}`;
+    return {
+      text: `${text.slice(0, insertPos)}人物小传：\n${text.slice(insertPos)}`,
+      traces: [
+        {
+          id: `trace_character_bio_inferred_${insertPos + 1}`,
+          operation: 'insert_marker',
+          before: match[0],
+          after: replacement,
+          reason: candidate.reason,
         },
       ],
     };
@@ -850,6 +916,10 @@ export function canonicalizeScriptText(rawText: string) {
   const characterBioHeaderStep = normalizeCharacterBioSectionHeader(workingText);
   workingText = characterBioHeaderStep.text;
   traces.push(...characterBioHeaderStep.traces);
+
+  const inferredCharacterBioHeaderStep = insertImplicitCharacterBioSectionHeader(workingText);
+  workingText = inferredCharacterBioHeaderStep.text;
+  traces.push(...inferredCharacterBioHeaderStep.traces);
 
   const bioStep = splitCompactBios(workingText);
   workingText = bioStep.text;

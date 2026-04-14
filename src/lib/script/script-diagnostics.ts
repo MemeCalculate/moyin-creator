@@ -226,6 +226,20 @@ export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagn
   diagnostics.push(
     ...buildTraceDiagnostics(
       document,
+      (trace) => trace.id.startsWith('trace_character_bio_inferred_'),
+      (trace, index) => ({
+        id: `diag_medium_character_bio_inferred_${index + 1}`,
+        severity: 'medium',
+        code: 'character_bio_section_inferred',
+        message: `Inserted missing character bio section header before: ${getTraceLine(trace.before, 'first')}`,
+        suggestedFix: 'Add an explicit `人物小传：` section label before the character bios in the source manuscript.',
+      }),
+    ),
+  );
+
+  diagnostics.push(
+    ...buildTraceDiagnostics(
+      document,
       (trace) => trace.id.startsWith('trace_character_bio_header_'),
       (trace, index) => ({
         id: `diag_medium_character_bio_header_${index + 1}`,

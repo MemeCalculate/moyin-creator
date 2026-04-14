@@ -42,6 +42,7 @@ const INFERRED_CODES = new Set([
   "inferred_scene_character_lines_inserted",
   "scene_header_character_tags_extracted",
   "episode_default_scene_fallback",
+  "character_bio_section_inferred",
 ]);
 
 const AUTOFIXED_CODES = new Set([

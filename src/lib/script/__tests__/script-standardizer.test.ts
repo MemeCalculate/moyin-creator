@@ -317,4 +317,45 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
     expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
   });
+
+  it('infers a missing character bio section header from numbered character-group labels', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      '\u4e00\u3001\u6838\u5fc3\u4e3b\u89d2',
+      'ALICE\uff1a\u5e74\u9f84\uff1a18\uff0c\u8f6c\u5b66\u751f\u3002',
+      'BOB\uff1a\u5e74\u9f84\uff1a19\uff0c\u73ed\u957f\u3002',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('\u4eba\u7269\u5c0f\u4f20\uff1a\n\u4e00\u3001\u6838\u5fc3\u4e3b\u89d2');
+    expect(result.document.diagnostics.some((item) => item.code === 'character_bio_section_inferred')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
+  });
+
+  it('infers a missing character bio section header from standalone bio-like entries', () => {
+    const raw = [
+      'Title',
+      'Outline: test story',
+      'ALICE\uff1a\u5e74\u9f84\uff1a18\uff0c\u8f6c\u5b66\u751f\u3002',
+      'BOB\uff1a\u8eab\u4efd\uff1a19\u5c81\uff0c\u73ed\u957f\u3002',
+      '\u7b2c1\u96c6\uff1aMeet',
+      '1-1 \u65e5 \u5916 Campus Gate',
+      'ALICE: Hello.',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('\u4eba\u7269\u5c0f\u4f20\uff1a\nALICE\uff1a\u5e74\u9f84\uff1a18\uff0c\u8f6c\u5b66\u751f\u3002');
+    expect(result.document.diagnostics.some((item) => item.code === 'character_bio_section_inferred')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'ALICE')).toBe(true);
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === 'BOB')).toBe(true);
+  });
 });

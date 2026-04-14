@@ -390,4 +390,38 @@ describe("buildStandardizationPreview", () => {
       { key: "autofixed", count: 1 },
     ]);
   });
+
+  it("counts inferred character bio section insertions as inferred acceptance items", () => {
+    const canonicalText = ["Title", "\u4eba\u7269\u5c0f\u4f20\uff1a", "\u4e00\u3001\u6838\u5fc3\u4e3b\u89d2", "ALICE\uff1a\u5e74\u9f84\uff1a18", "\u7b2c1\u96c6\uff1aMeet"].join("\n");
+    const preview = buildStandardizationPreview(
+      {
+        rawText: canonicalText,
+        canonicalText,
+        blocks: [],
+        aliasMap: {},
+        traces: [],
+        diagnostics: [
+          {
+            id: "inferred-bio-1",
+            severity: "medium",
+            code: "character_bio_section_inferred",
+            message: "Inserted missing character bio section header before: 一、核心主角",
+          },
+        ],
+        stats: {
+          episodeCount: 1,
+          sceneCount: 0,
+          characterCount: 1,
+          dialogueCount: 0,
+        },
+      },
+      canonicalText
+    );
+
+    expect(preview?.overview).toEqual([
+      { key: "blocking", count: 0 },
+      { key: "inferred", count: 1 },
+      { key: "autofixed", count: 0 },
+    ]);
+  });
 });

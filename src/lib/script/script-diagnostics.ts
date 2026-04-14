@@ -1,7 +1,25 @@
 import type { CanonicalScriptDocument, ScriptDiagnostic } from '@/types/script';
 
+const LOOSE_SCENE_LABEL_RE =
+  /^\s*(第[零一二三四五六七八九十百千\d]+场|场景[零一二三四五六七八九十百千\d]+)(?:\s|$|[：:])/;
+
 export function buildDiagnostics(document: CanonicalScriptDocument): ScriptDiagnostic[] {
   const diagnostics: ScriptDiagnostic[] = [];
+
+  document.canonicalText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => LOOSE_SCENE_LABEL_RE.test(line))
+    .forEach((line, index) => {
+      diagnostics.push({
+        id: `diag_high_loose_scene_${index + 1}`,
+        severity: 'high',
+        code: 'unresolved_loose_scene_label',
+        message: `Loose scene label still needs normalization: ${line}`,
+        suggestedFix: 'Add time/interior info, for example `第一场 外 日 学校门口` or `1-1 日 外 学校门口`.',
+      });
+    });
 
   if (document.stats.sceneCount === 0) {
     diagnostics.push({

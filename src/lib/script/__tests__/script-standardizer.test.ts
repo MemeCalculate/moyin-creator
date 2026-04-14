@@ -32,6 +32,27 @@ describe('standardizeScriptForImport', () => {
     expect(result.document.diagnostics.some((item) => item.code === 'fatal_no_scene_detected')).toBe(true);
   });
 
+  it('reports unresolved loose scene labels with the original line content', () => {
+    const raw = [
+      '《样例》',
+      '大纲：这是一个测试故事。',
+      '第一集：相遇',
+      '第一场 学校门口',
+      '马一花：我来了。',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.hasFatalIssues).toBe(true);
+    expect(
+      result.document.diagnostics.some(
+        (item) =>
+          item.code === 'unresolved_loose_scene_label' &&
+          item.message.includes('第一场 学校门口'),
+      ),
+    ).toBe(true);
+  });
+
   it('returns parse-ready data when canonicalization succeeds', () => {
     const raw = [
       '《样例》',

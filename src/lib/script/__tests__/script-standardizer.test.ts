@@ -88,6 +88,23 @@ describe('standardizeScriptForImport', () => {
     expect(result.parseResult?.scriptData.scenes.length).toBe(1);
   });
 
+  it('injects a character line for scenes that only expose speakers via dialogue', () => {
+    const raw = [
+      '《样例》',
+      '大纲：这是一个测试故事。',
+      '第一集：相遇',
+      '1-1 日 外 学校门口',
+      '马一花：我来了。',
+      '陈茉莉：跟我走。',
+    ].join('\n');
+
+    const result = standardizeScriptForImport(raw);
+
+    expect(result.success).toBe(true);
+    expect(result.document.canonicalText).toContain('1-1 日 外 学校门口\n人物：马一花、陈茉莉');
+    expect(result.parseResult?.scriptData.characters.some((item) => item.name === '人物')).toBe(false);
+  });
+
   it('inserts synthetic episode markers from scene numbering and splits dense dialogue paragraphs', () => {
     const raw = [
       '《样例》',

@@ -238,6 +238,74 @@ function parseLooseScenePayload(payload: string): { timeOfDay: string; interior?
   return { timeOfDay, interior, location };
 }
 
+function extractSceneSpeakers(lines: string[]): string[] {
+  const speakers: string[] = [];
+  const seen = new Set<string>();
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    const match = trimmed.match(/^([^：:（\(【\n△]{1,10})[：:]/);
+    const candidate = match?.[1]?.trim();
+    if (!candidate || /^[字幕旁白场景人物]/.test(candidate) || seen.has(candidate)) {
+      return;
+    }
+
+    seen.add(candidate);
+    speakers.push(candidate);
+  });
+
+  return speakers;
+}
+
+function injectSceneCharacterLines(text: string): { text: string; traces: NormalizationTrace[] } {
+  const sourceLines = text.split(/\r?\n/);
+  const normalizedLines: string[] = [];
+  const traces: NormalizationTrace[] = [];
+  let cursor = 0;
+
+  while (cursor < sourceLines.length) {
+    const currentLine = sourceLines[cursor];
+    const trimmed = currentLine.trim();
+
+    if (!NUMBERED_SCENE_PREFIX_RE.test(trimmed)) {
+      normalizedLines.push(currentLine);
+      cursor += 1;
+      continue;
+    }
+
+    let nextCursor = cursor + 1;
+    while (
+      nextCursor < sourceLines.length &&
+      !NUMBERED_SCENE_PREFIX_RE.test(sourceLines[nextCursor].trim()) &&
+      !EPISODE_MARKER_RE.test(sourceLines[nextCursor].trim())
+    ) {
+      nextCursor += 1;
+    }
+
+    const sceneBody = sourceLines.slice(cursor + 1, nextCursor);
+    normalizedLines.push(currentLine);
+
+    const hasCharacterLine = sceneBody.some((line) => /^人物[：:]/.test(line.trim()));
+    const speakers = hasCharacterLine ? [] : extractSceneSpeakers(sceneBody);
+    if (!hasCharacterLine && speakers.length > 0) {
+      const characterLine = `人物：${speakers.join('、')}`;
+      traces.push({
+        id: `trace_scene_characters_${cursor + 1}`,
+        operation: 'insert_marker',
+        before: currentLine,
+        after: `${currentLine}\n${characterLine}`,
+        reason: 'Inserted a parser-friendly character line inferred from dialogue speakers in the scene.',
+      });
+      normalizedLines.push(characterLine);
+    }
+
+    normalizedLines.push(...sceneBody);
+    cursor = nextCursor;
+  }
+
+  return { text: normalizedLines.join('\n'), traces };
+}
+
 function canonicalizeSceneLines(text: string): { text: string; traces: NormalizationTrace[] } {
   const lines = text.split(/\r?\n/);
   const normalizedLines: string[] = [];
@@ -422,6 +490,10 @@ export function canonicalizeScriptText(rawText: string) {
   const episodeStep = insertSyntheticEpisodeMarkers(workingText);
   workingText = episodeStep.text;
   traces.push(...episodeStep.traces);
+
+  const characterLineStep = injectSceneCharacterLines(workingText);
+  workingText = characterLineStep.text;
+  traces.push(...characterLineStep.traces);
 
   return {
     canonicalText: workingText,

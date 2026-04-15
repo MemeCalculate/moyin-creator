@@ -91,6 +91,7 @@ After the command completes, you should see:
       adapter-summary.json
       standardization-report.json
       standardization-preview.json
+      review-report.md
       parse-result.json
 ```
 
@@ -147,6 +148,12 @@ The checked-in sample currently produces:
 - Full raw-to-canonical trace log
 - Best place to understand which fixes were inferred or auto-applied
 
+`review-report.md`
+
+- Human-readable import review for operators or producers
+- Summarizes import readiness, issue counts, representative diagnostics, and the next recommended step
+- Best first artifact when you want a quick go or no-go answer without reading JSON
+
 `parse-result.json`
 
 - Present when the standardized screenplay is parseable
@@ -183,6 +190,7 @@ Each screenplay output directory includes:
 - `adapter-summary.json`
 - `standardization-report.json`
 - `standardization-preview.json`
+- `review-report.md`
 - `parse-result.json` when parsing succeeds
 
 ## How To Read The Results
@@ -204,6 +212,11 @@ Each screenplay output directory includes:
 - Import-facing preview summary
 - Blocking/fatal flags
 - Top diagnostics and short excerpt
+
+`review-report.md`
+
+- Human-readable review summary for manual triage
+- Useful for sharing import status with non-engineering teammates
 
 `parse-result.json`
 

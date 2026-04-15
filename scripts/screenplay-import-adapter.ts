@@ -23,6 +23,7 @@ export interface ScreenplayImportToolArtifacts {
   summaryPath: string;
   reportPath: string;
   previewPath: string;
+  reviewReportPath: string;
   parseResultPath?: string;
   adapted: ScriptImportAdapterResult;
 }
@@ -138,6 +139,68 @@ export function buildScreenplayImportSummary(adapted: ScriptImportAdapterResult)
   };
 }
 
+function formatYesNo(value: boolean): string {
+  return value ? "Yes" : "No";
+}
+
+export function buildScreenplayImportReviewReport(
+  adapted: ScriptImportAdapterResult,
+  options: {
+    inputPath: string;
+    outputDir: string;
+  },
+): string {
+  const summary = buildScreenplayImportSummary(adapted);
+  const preview = adapted.preview;
+  const diagnostics = preview?.diagnostics ?? [];
+  const excerpt = preview?.excerpt ?? [];
+
+  const recommendedNextStep = summary.hasFatalIssues || !summary.canImport
+    ? "Stop import and fix the blocking screenplay structure before retrying."
+    : summary.requiresReview
+      ? "Review the standardized script and preview diagnostics before importing."
+      : "Import the standardized screenplay or hand off parse-result.json to the next step.";
+
+  return [
+    "# Screenplay Import Review",
+    "",
+    "## Input",
+    `- Source file: \`${options.inputPath}\``,
+    `- Artifact directory: \`${options.outputDir}\``,
+    "",
+    "## Decision",
+    `- Can import: ${formatYesNo(summary.canImport)}`,
+    `- Requires review: ${formatYesNo(summary.requiresReview)}`,
+    `- Fatal issues: ${formatYesNo(summary.hasFatalIssues)}`,
+    "",
+    "## Counts",
+    `- Episodes: ${summary.stats.episodeCount}`,
+    `- Scenes: ${summary.stats.sceneCount}`,
+    `- Characters: ${summary.stats.characterCount}`,
+    `- Dialogues: ${summary.stats.dialogueCount}`,
+    `- Blocking issues: ${summary.blockingIssueCount}`,
+    `- Inferred items: ${summary.inferredItemCount}`,
+    `- Auto-fixed items: ${summary.autofixedItemCount}`,
+    "",
+    "## Representative Diagnostics",
+    ...(diagnostics.length > 0
+      ? diagnostics.flatMap((item) => [
+          `- [${item.severity}] ${item.code}: ${item.message}`,
+          ...(item.suggestedFix ? [`  Suggested fix: ${item.suggestedFix}`] : []),
+          ...(item.sourceLocationLabel ? [`  Source: ${item.sourceLocationLabel}`] : []),
+          ...(item.locationLabel ? [`  Standardized: ${item.locationLabel}`] : []),
+        ])
+      : ["- None"]),
+    "",
+    "## Canonical Excerpt",
+    ...(excerpt.length > 0 ? excerpt.map((line) => `- ${line}`) : ["- None"]),
+    "",
+    "## Recommended Next Step",
+    recommendedNextStep,
+    "",
+  ].join("\n");
+}
+
 export async function runScreenplayImportTool(
   options: ScreenplayImportToolOptions,
 ): Promise<ScreenplayImportToolArtifacts> {
@@ -152,6 +215,7 @@ export async function runScreenplayImportTool(
   const summaryPath = path.join(outputDir, "adapter-summary.json");
   const reportPath = path.join(outputDir, "standardization-report.json");
   const previewPath = path.join(outputDir, "standardization-preview.json");
+  const reviewReportPath = path.join(outputDir, "review-report.md");
   const parseResultPath = adapted.parseResult
     ? path.join(outputDir, "parse-result.json")
     : undefined;
@@ -160,6 +224,14 @@ export async function runScreenplayImportTool(
   await writeFile(summaryPath, `${JSON.stringify(buildScreenplayImportSummary(adapted), null, 2)}\n`, "utf8");
   await writeFile(reportPath, `${JSON.stringify(adapted.report, null, 2)}\n`, "utf8");
   await writeFile(previewPath, `${JSON.stringify(adapted.preview, null, 2)}\n`, "utf8");
+  await writeFile(
+    reviewReportPath,
+    buildScreenplayImportReviewReport(adapted, {
+      inputPath,
+      outputDir,
+    }),
+    "utf8",
+  );
 
   if (parseResultPath && adapted.parseResult) {
     await writeFile(parseResultPath, `${JSON.stringify(adapted.parseResult, null, 2)}\n`, "utf8");
@@ -171,6 +243,7 @@ export async function runScreenplayImportTool(
     summaryPath,
     reportPath,
     previewPath,
+    reviewReportPath,
     parseResultPath,
     adapted,
   };
@@ -215,6 +288,7 @@ function formatRunSummary(result: ScreenplayImportToolArtifacts): string {
     `summary: ${result.summaryPath}`,
     `report: ${result.reportPath}`,
     `preview: ${result.previewPath}`,
+    `reviewReport: ${result.reviewReportPath}`,
     result.parseResultPath ? `parseResult: ${result.parseResultPath}` : "parseResult: <none>",
   ].join("\n");
 }

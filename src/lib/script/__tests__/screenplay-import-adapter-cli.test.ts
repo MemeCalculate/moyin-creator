@@ -74,6 +74,9 @@ describe("screenplay-import-adapter CLI tool", () => {
     const summary = JSON.parse(await readFile(result.summaryPath, "utf8"));
     const standardizedScript = await readFile(result.standardizedScriptPath, "utf8");
     const preview = JSON.parse(await readFile(result.previewPath, "utf8"));
+    const reviewReport = result.reviewReportPath
+      ? await readFile(result.reviewReportPath, "utf8")
+      : "";
 
     expect(result.outputDir).toBe(path.join(tempDir, "pilot.screenplay-import"));
     expect(standardizedScript).toContain("第1集：Meet");
@@ -82,6 +85,10 @@ describe("screenplay-import-adapter CLI tool", () => {
     expect(summary.autofixedItemCount).toBeGreaterThan(0);
     expect(preview.hasBlockingIssues).toBe(false);
     expect(result.parseResultPath).toBeDefined();
+    expect(result.reviewReportPath).toBe(path.join(tempDir, "pilot.screenplay-import", "review-report.md"));
+    expect(reviewReport).toContain("# Screenplay Import Review");
+    expect(reviewReport).toContain("Can import: Yes");
+    expect(reviewReport).toContain("## Recommended Next Step");
   });
 
   it("processes directories in batch mode and keeps outputs separated", async () => {

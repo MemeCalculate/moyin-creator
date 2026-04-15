@@ -75,6 +75,12 @@ Run the adapter against that sample and write artifacts into an ignored temp dir
 npm run screenplay:adapt -- ./demo-data/screenplay-import-adapter/campus-gate-raw.txt --out-dir ./.tmp/screenplay-import-demo
 ```
 
+Shortcut:
+
+```bash
+npm run screenplay:adapt:demo
+```
+
 After the command completes, you should see:
 
 ```text

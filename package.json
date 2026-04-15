@@ -36,6 +36,7 @@
     "lint:full": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "preview": "electron-vite preview",
     "screenplay:adapt": "node ./scripts/run-screenplay-import-adapter.mjs",
+    "screenplay:adapt:demo": "node ./scripts/run-screenplay-import-adapter.mjs ./demo-data/screenplay-import-adapter/campus-gate-raw.txt --out-dir ./.tmp/screenplay-import-demo",
     "test": "vitest run",
     "test:watch": "vitest"
   },

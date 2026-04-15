@@ -32,8 +32,10 @@
     "build:mac:arm64": "node ./scripts/build-desktop.mjs --mac --arm64",
     "build:mac:universal": "node ./scripts/build-desktop.mjs --mac --universal",
     "build:linux": "node ./scripts/build-desktop.mjs --linux",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --quiet",
+    "lint:full": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "preview": "electron-vite preview",
+    "screenplay:adapt": "node ./scripts/run-screenplay-import-adapter.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

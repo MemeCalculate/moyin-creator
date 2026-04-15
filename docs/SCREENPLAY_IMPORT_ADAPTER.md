@@ -40,7 +40,7 @@ Supported source extensions:
 Single file:
 
 ```bash
-npm run screenplay:adapt -- ./examples/pilot.txt
+npm run screenplay:adapt -- ./demo-data/screenplay-import-adapter/campus-gate-raw.txt
 ```
 
 Multiple files:
@@ -60,6 +60,91 @@ Show help:
 ```bash
 npm run screenplay:adapt -- --help
 ```
+
+## End-to-End Demo
+
+The repository includes a checked-in raw screenplay sample at:
+
+```text
+./demo-data/screenplay-import-adapter/campus-gate-raw.txt
+```
+
+Run the adapter against that sample and write artifacts into an ignored temp directory:
+
+```bash
+npm run screenplay:adapt -- ./demo-data/screenplay-import-adapter/campus-gate-raw.txt --out-dir ./.tmp/screenplay-import-demo
+```
+
+After the command completes, you should see:
+
+```text
+.tmp/
+  screenplay-import-demo/
+    campus-gate-raw.screenplay-import/
+      standardized-script.txt
+      adapter-summary.json
+      standardization-report.json
+      standardization-preview.json
+      parse-result.json
+```
+
+Even when you pass a single file, the CLI still writes artifacts into a dedicated
+`<input-name>.screenplay-import/` folder so the standalone and batch layouts stay consistent.
+
+What this sample demonstrates:
+
+- Compact character bios written on one line
+- Loose scene header format such as `第一场 外/日 校门口`
+- Scene-header character tags mixed into the same line
+- Action and dialogue packed into dense paragraph blocks
+- Two speakers written on the same source line
+
+What to inspect first:
+
+`standardized-script.txt`
+
+- Confirms the canonical screenplay text the parser will consume
+- You should see the loose scene header normalized into a numbered scene header
+- You should see a standalone `人物：...` line and one-speaker-per-line dialogue blocks
+
+`adapter-summary.json`
+
+- Fast acceptance verdict for the sample
+- Start with `canImport`, `requiresReview`, and `hasFatalIssues`
+- Use the issue counts to decide whether to stop, review, or continue importing
+
+The checked-in sample currently produces:
+
+```json
+{
+  "canImport": true,
+  "requiresReview": false,
+  "hasFatalIssues": false,
+  "blockingIssueCount": 0,
+  "inferredItemCount": 1,
+  "autofixedItemCount": 3
+}
+```
+
+`standardization-preview.json`
+
+- Short import-facing report for product or operator review
+- Shows the most important diagnostics, plus a short canonical excerpt
+- For the checked-in sample, the top diagnostics are currently:
+  - `scene_headers_normalized`
+  - `bio_compact_entries_split`
+  - `dense_paragraphs_split`
+  - `scene_header_character_tags_extracted`
+
+`standardization-report.json`
+
+- Full raw-to-canonical trace log
+- Best place to understand which fixes were inferred or auto-applied
+
+`parse-result.json`
+
+- Present when the standardized screenplay is parseable
+- Useful for checking episodes, scenes, extracted characters, and downstream script data
 
 ## Output Layout
 

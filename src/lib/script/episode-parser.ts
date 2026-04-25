@@ -601,7 +601,7 @@ function parseCharacters(text: string): string[] {
   dialogueMatches.forEach(m => {
     const name = m[1].trim();
     // 过滤掉非人名的内容
-    if (name && !name.match(/^[△【字幕旁白VO场景]/)) {
+    if (name && !name.match(/^[△【字幕旁白VO场景人物]/)) {
       characters.add(name);
     }
   });

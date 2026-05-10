@@ -20,6 +20,7 @@ release/
 
 # Local workspace artifacts
 .changes/
+.worktrees/
 .codex-backups/
 .oz-backups/
 .spec-workflow/

@@ -557,3 +557,82 @@ export interface Shot {
   // Video interval (CineGen-AI pattern)
   interval?: VideoInterval;
 }
+
+export interface CanonicalStats {
+  episodeCount: number;
+  sceneCount: number;
+  characterCount: number;
+  dialogueCount: number;
+}
+
+export interface CanonicalBlock {
+  id: string;
+  type:
+    | 'title'
+    | 'outline'
+    | 'character_bio'
+    | 'episode'
+    | 'scene_header'
+    | 'character_line'
+    | 'dialogue'
+    | 'action'
+    | 'subtitle'
+    | 'note'
+    | 'unknown';
+  sourceText: string;
+  normalizedText: string;
+  sourceStart: number;
+  sourceEnd: number;
+  confidence: number;
+  meta?: Record<string, string | number | boolean>;
+}
+
+export interface NormalizationTrace {
+  id: string;
+  blockId?: string;
+  operation:
+    | 'insert_marker'
+    | 'split_paragraph'
+    | 'normalize_scene_header'
+    | 'split_character_bios'
+    | 'normalize_alias'
+    | 'reclassify_block';
+  before: string;
+  after: string;
+  reason: string;
+}
+
+export interface ScriptDiagnostic {
+  id: string;
+  severity: 'fatal' | 'high' | 'medium' | 'low' | 'info';
+  code: string;
+  message: string;
+  sourceStart?: number;
+  sourceEnd?: number;
+  canonicalStart?: number;
+  canonicalEnd?: number;
+  suggestedFix?: string;
+}
+
+export interface CanonicalScriptDocument {
+  rawText: string;
+  canonicalText: string;
+  blocks: CanonicalBlock[];
+  aliasMap: Record<string, string>;
+  traces: NormalizationTrace[];
+  diagnostics: ScriptDiagnostic[];
+  stats: CanonicalStats;
+}
+
+export interface StandardizeScriptParseResult {
+  background: ProjectBackground;
+  episodes: EpisodeRawScript[];
+  scriptData: ScriptData;
+}
+
+export interface StandardizeScriptResult {
+  success: boolean;
+  document: CanonicalScriptDocument;
+  parseResult?: StandardizeScriptParseResult;
+  hasFatalIssues: boolean;
+}

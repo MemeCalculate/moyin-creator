@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit3 } from "lucide-react";
+import { t } from "@/lib/i18n/translate";
 
 export interface EditableTextFieldProps {
   label: string;
@@ -110,7 +111,7 @@ export function EditableTextField({
     <div 
       className={cn("cursor-pointer group/field", className)}
       onDoubleClick={startEditing}
-      title="双击编辑"
+      title={t("双击编辑")}
     >
       <Label className="text-[10px] text-muted-foreground flex items-center gap-1">
         {label}

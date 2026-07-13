@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { usePreviewStore } from "@/stores/preview-store";
+import { useTranslation } from "react-i18next";
 
 interface DragState {
   isDragging: boolean;
@@ -33,6 +34,7 @@ interface DragState {
 }
 
 export function SimpleTimeline() {
+  const { t } = useTranslation();
   const {
     clips,
     addClip,
@@ -101,12 +103,12 @@ export function SimpleTimeline() {
             // Use the data directly from the drag event (includes full info)
             addClip({
               mediaId: data.id || `clip-${Date.now()}`,
-              name: data.name || '视频片段',
+              name: data.name || t("视频片段"),
               url: data.url,
               thumbnailUrl: data.thumbnailUrl,
               duration: data.duration || 5,
             });
-            toast.success(`已添加: ${data.name || '视频片段'}`);
+            toast.success(t("已添加: {{name}}", { name: data.name || t("视频片段") }));
             handled = true;
           } else if (data.type === "video" && data.id) {
             // Fallback: try to get from media store if URL not provided
@@ -123,7 +125,7 @@ export function SimpleTimeline() {
                   thumbnailUrl: mediaFile.thumbnailUrl,
                   duration: mediaFile.duration || 5,
                 });
-                toast.success(`已添加: ${mediaFile.name || data.name}`);
+                toast.success(t("已添加: {{name}}", { name: mediaFile.name || data.name }));
                 handled = true;
               }
             } catch {
@@ -147,7 +149,7 @@ export function SimpleTimeline() {
               thumbnailUrl: data.thumbnailUrl,
               duration: data.duration || 5,
             });
-            toast.success(`已添加: ${data.name}`);
+            toast.success(t("已添加: {{name}}", { name: data.name }));
             handled = true;
           }
         } catch (err) {
@@ -157,7 +159,7 @@ export function SimpleTimeline() {
 
       setDragState({ isDragging: false, dragIndex: null, dropIndex: null });
     },
-    [addClip]
+    [addClip, t]
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -202,11 +204,13 @@ export function SimpleTimeline() {
             variant="ghost"
             className="h-7 w-7"
             onClick={() => setIsCollapsed(false)}
+            aria-label={t("展开时间线")}
+            title={t("展开时间线")}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
           <span className="text-xs text-muted-foreground">
-            时间线 ({clips.length} 个片段)
+            {t("时间线 ({{count}} 个片段)", { count: clips.length })}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -216,6 +220,8 @@ export function SimpleTimeline() {
             className="h-7 w-7"
             onClick={isPreviewPlaying ? handlePause : handlePlay}
             disabled={clips.length === 0}
+            aria-label={t(isPreviewPlaying ? "暂停" : "播放")}
+            title={t(isPreviewPlaying ? "暂停" : "播放")}
           >
             {isPreviewPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
@@ -234,6 +240,8 @@ export function SimpleTimeline() {
             variant="ghost"
             className="h-7 w-7"
             onClick={() => setIsCollapsed(true)}
+            aria-label={t("收起时间线")}
+            title={t("收起时间线")}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -245,6 +253,8 @@ export function SimpleTimeline() {
             className="h-7 w-7"
             onClick={isPreviewPlaying ? handlePause : handlePlay}
             disabled={clips.length === 0}
+            aria-label={t(isPreviewPlaying ? "暂停" : "播放")}
+            title={t(isPreviewPlaying ? "暂停" : "播放")}
           >
             {isPreviewPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
@@ -254,13 +264,15 @@ export function SimpleTimeline() {
             className="h-7 w-7"
             onClick={handleStop}
             disabled={clips.length === 0}
+            aria-label={t("停止")}
+            title={t("停止")}
           >
             <Square className="h-4 w-4" />
           </Button>
 
           {/* Clip count display */}
           <span className="text-xs text-muted-foreground">
-            {isPreviewPlaying && playlist.length > 0 ? `${currentIndex + 1}/${playlist.length}` : `${clips.length} 个片段`}
+            {isPreviewPlaying && playlist.length > 0 ? `${currentIndex + 1}/${playlist.length}` : t("{{count}} 个片段", { count: clips.length })}
           </span>
         </div>
 
@@ -271,7 +283,7 @@ export function SimpleTimeline() {
             className="h-7 w-7"
             onClick={clearTimeline}
             disabled={clips.length === 0}
-            title="清空时间线"
+            title={t("清空时间线")}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -287,7 +299,7 @@ export function SimpleTimeline() {
         {clips.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
             <Video className="h-5 w-5 mr-2 opacity-50" />
-            拖拽视频片段到这里
+            {t("拖拽视频片段到这里")}
           </div>
         ) : (
           <div
@@ -346,6 +358,8 @@ export function SimpleTimeline() {
                         removeClip(clip.id);
                       }}
                       className="absolute right-1 top-1 p-0.5 rounded bg-black/50 hover:bg-destructive text-white opacity-0 hover:opacity-100 transition-opacity"
+                      aria-label={t("删除")}
+                      title={t("删除")}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>

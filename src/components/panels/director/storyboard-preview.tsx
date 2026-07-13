@@ -24,6 +24,7 @@ import {
   CheckCircle2 
 } from "lucide-react";
 import { toast } from "sonner";
+import { t } from "@/lib/i18n/translate";
 import {
   Tooltip,
   TooltipContent,
@@ -69,7 +70,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
   // Or directly use the image as single scene when sceneCount is 1
   const handleSplit = useCallback(async () => {
     if (!storyboardImage) {
-      toast.error("没有可处理的故事板图片");
+      toast.error(t("没有可处理的故事板图片"));
       return;
     }
 
@@ -128,7 +129,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
 
         setSplitScenes([singleScene]);
         setStoryboardStatus('editing');
-        toast.success('已进入场景编辑');
+        toast.success(t("已进入场景编辑"));
         onSplitComplete?.();
         return;
       }
@@ -147,7 +148,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
       });
 
       if (splitResults.length === 0) {
-        throw new Error("切割结果为空，请检查图片是否正确");
+        throw new Error(t("切割结果为空，请检查图片是否正确"));
       }
 
       // Convert split results to SplitScene format
@@ -229,9 +230,9 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
     return (
       <div className="flex flex-col items-center justify-center py-12 space-y-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">正在生成故事板联合图...</p>
+        <p className="text-sm text-muted-foreground">{t("正在生成故事板联合图...")}</p>
         <p className="text-xs text-muted-foreground/60">
-          {storyboardConfig.sceneCount} 个场景 · {storyboardConfig.aspectRatio} · {storyboardConfig.resolution}
+          {t("{{count}} 个场景 · {{ratio}} · {{resolution}}", { count: storyboardConfig.sceneCount, ratio: storyboardConfig.aspectRatio, resolution: storyboardConfig.resolution })}
         </p>
       </div>
     );
@@ -245,14 +246,14 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
           <AlertCircle className="h-8 w-8 text-destructive" />
         </div>
         <div className="text-center space-y-1">
-          <p className="text-sm font-medium text-destructive">生成失败</p>
+          <p className="text-sm font-medium text-destructive">{t("生成失败")}</p>
           <p className="text-xs text-muted-foreground max-w-[250px]">
-            {storyboardError || splitError || "未知错误"}
+            {storyboardError || splitError || t("未知错误")}
           </p>
         </div>
         <Button variant="outline" onClick={handleRegenerate} className="mt-4">
           <RefreshCw className="h-4 w-4 mr-2" />
-          重新生成
+          {t("重新生成")}
         </Button>
       </div>
     );
@@ -265,11 +266,11 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
           <ImageIcon className="h-8 w-8 text-muted-foreground" />
         </div>
-        <p className="text-sm text-muted-foreground">暂无故事板图片</p>
+        <p className="text-sm text-muted-foreground">{t("暂无故事板图片")}</p>
         {onBack && (
           <Button variant="outline" onClick={onBack} className="mt-2">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            返回输入
+            {t("返回输入")}
           </Button>
         )}
       </div>
@@ -283,10 +284,10 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <span className="text-sm font-medium">故事板已生成</span>
+          <span className="text-sm font-medium">{t("故事板已生成")}</span>
         </div>
         <span className="text-xs text-muted-foreground">
-          {storyboardConfig.sceneCount} 场景 · {storyboardConfig.aspectRatio} · {storyboardConfig.resolution}
+          {t("{{count}} 场景 · {{ratio}} · {{resolution}}", { count: storyboardConfig.sceneCount, ratio: storyboardConfig.aspectRatio, resolution: storyboardConfig.resolution })}
         </span>
       </div>
 
@@ -294,7 +295,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
       <div className="relative rounded-lg border overflow-hidden bg-muted/30">
         <img
           src={storyboardImage}
-          alt="Storyboard contact sheet"
+          alt={t("故事板联合图")}
           className="w-full h-auto object-contain"
           style={{ maxHeight: '400px' }}
         />
@@ -303,7 +304,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
         {isSplitting && (
           <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-            <p className="text-sm text-muted-foreground">正在切割...</p>
+            <p className="text-sm text-muted-foreground">{t("正在切割...")}</p>
           </div>
         )}
       </div>
@@ -313,7 +314,7 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
         <div className="flex items-start gap-2 p-2 rounded-md bg-destructive/10 border border-destructive/20">
           <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
           <div className="text-xs text-destructive">
-            <p className="font-medium">切割失败</p>
+            <p className="font-medium">{t("切割失败")}</p>
             <p>{splitError}</p>
           </div>
         </div>
@@ -331,11 +332,11 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
                 className="flex-1"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                重新生成
+                {t("重新生成")}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>返回输入界面重新生成故事板</p>
+              <p>{t("返回输入界面重新生成故事板")}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -351,18 +352,18 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
                 {isSplitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {storyboardConfig.sceneCount === 1 ? '处理中...' : '切割中...'}
+                    {storyboardConfig.sceneCount === 1 ? t("处理中...") : t("切割中...")}
                   </>
                 ) : (
                   <>
                     <Scissors className="h-4 w-4 mr-2" />
-                    {storyboardConfig.sceneCount === 1 ? '下一步' : '切割场景'}
+                    {storyboardConfig.sceneCount === 1 ? t("下一步") : t("切割场景")}
                   </>
                 )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{storyboardConfig.sceneCount === 1 ? '直接进入场景编辑' : '按固定网格切割为独立场景'}</p>
+              <p>{storyboardConfig.sceneCount === 1 ? t("直接进入场景编辑") : t("按固定网格切割为独立场景")}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -371,8 +372,8 @@ export function StoryboardPreview({ onBack, onSplitComplete }: StoryboardPreview
       {/* Tips */}
       <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
         <p>💡 {storyboardConfig.sceneCount === 1 
-          ? '点击"下一步"直接进入场景编辑，您可以编辑场景的提示词并生成视频。'
-          : `点击"切割场景"将按 ${storyboardConfig.sceneCount} 格均匀网格切割，并自动去除边缘分隔线。切割后您可以编辑每个场景的提示词。`
+          ? t("点击“下一步”直接进入场景编辑，您可以编辑场景的提示词并生成视频。")
+          : t("点击“切割场景”将按 {{count}} 格均匀网格切割，并自动去除边缘分隔线。切割后您可以编辑每个场景的提示词。", { count: storyboardConfig.sceneCount })
         }</p>
       </div>
     </div>

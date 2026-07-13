@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { SHOT_SIZE_PRESETS, type ShotSizeType } from "@/stores/director-store";
 import { Camera } from "lucide-react";
+import { t } from "@/lib/i18n/translate";
 
 interface ShotSizeSelectorProps {
   value: ShotSizeType | null;
@@ -40,12 +41,12 @@ export function ShotSizeSelector({
       <SelectTrigger className={`h-7 text-xs ${className || ""}`}>
         <div className="flex items-center gap-1.5">
           <Camera className="h-3 w-3 text-muted-foreground" />
-          <SelectValue placeholder="景别" />
+          <SelectValue placeholder={t("景别")} />
         </div>
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="none">
-          <span className="text-muted-foreground">未设置</span>
+          <span className="text-muted-foreground">{t("未设置")}</span>
         </SelectItem>
         {SHOT_SIZE_PRESETS.map((preset) => (
           <SelectItem key={preset.id} value={preset.id}>

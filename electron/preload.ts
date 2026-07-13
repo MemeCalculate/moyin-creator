@@ -79,6 +79,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('save-file-dialog', options),
 })
 
+// Explicitly bridge the interface locale so the main process can localize native
+// dialogs and user-facing IPC errors without exposing a new arbitrary IPC channel.
+contextBridge.exposeInMainWorld('appLocale', {
+  setInterfaceLocale: (locale: 'en' | 'zh-CN') => ipcRenderer.invoke('set-interface-locale', locale),
+})
+
 contextBridge.exposeInMainWorld('appUpdater', {
   getCurrentVersion: () => ipcRenderer.invoke('app-updater-get-current-version'),
   checkForUpdates: () => ipcRenderer.invoke('app-updater-check'),

@@ -2,6 +2,8 @@
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 
+import i18n from '@/lib/i18n';
+
 import { getFeatureConfig } from '@/lib/ai/feature-router';
 import { readImageAsBase64 } from '@/lib/image-storage';
 import { retryOperation } from '@/lib/utils/retry';
@@ -117,13 +119,13 @@ export async function extractStyleTokens(
 ): Promise<StyleExtractionResult> {
   const config = getFeatureConfig('image_understanding');
   if (!config) {
-    throw new Error('请先在设置中为“图片理解”功能绑定 API 提供商');
+    throw new Error(i18n.t('请先在设置中为“图片理解”功能绑定 API 提供商'));
   }
 
   const baseUrl = config.baseUrl?.replace(/\/+$/, '');
   const model = config.model || config.models?.[0];
   if (!baseUrl || !model) {
-    throw new Error('图片理解服务缺少 Base URL 或模型配置');
+    throw new Error(i18n.t('图片理解服务缺少 Base URL 或模型配置'));
   }
 
   const contentParts: Array<{ type: string; text?: string; image_url?: { url: string } }> = [];
@@ -203,7 +205,7 @@ export async function extractStyleTokens(
     parsed = JSON.parse(cleanContent);
   } catch {
     console.error('[StyleExtractor] Failed to parse JSON:', content);
-    throw new Error('AI 返回的格式无法解析');
+    throw new Error(i18n.t('AI 返回的格式无法解析'));
   }
 
   const result: StyleExtractionResult = {

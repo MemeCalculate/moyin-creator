@@ -1,3 +1,5 @@
+
+import { useTranslation } from "react-i18next";
 // Copyright (c) 2025 hotflow2024
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
@@ -40,6 +42,7 @@ export function SaveToPropsDialog({
   imageUrl,
   prompt = '',
 }: SaveToPropsDialogProps) {
+  const { t } = useTranslation();
   const { folders, addProp, addFolder, setSelectedFolderId } =
     usePropsLibraryStore();
 
@@ -56,7 +59,7 @@ export function SaveToPropsDialog({
     setLocalFolderId(folder.id);
     setNewFolderName('');
     setNewFolderMode(false);
-    toast.success(`目录「${trimmed}」已创建`);
+    toast.success(t("目录「{{name}}」已创建", { name: trimmed }));
   };
 
   const handleSave = async () => {
@@ -77,13 +80,13 @@ export function SaveToPropsDialog({
       });
       // 同步道具库侧边栏选中状态（跳转到目标目录）
       setSelectedFolderId(selectedFolderId ?? 'all');
-      toast.success(`「${name}」已保存到道具库`);
+      toast.success(t("「{{name}}」已保存到道具库", { name }));
       onOpenChange(false);
       // 重置表单
       setPropName('');
       setLocalFolderId(null);
     } catch (err: any) {
-      toast.error(`保存失败：${err.message}`);
+      toast.error(t("保存失败：{{error}}", { error: err.message }));
     } finally {
       setSaving(false);
     }
@@ -104,7 +107,7 @@ export function SaveToPropsDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-4 w-4 text-primary" />
-            保存到道具库
+            {t("保存到道具库")}
           </DialogTitle>
         </DialogHeader>
 
@@ -114,7 +117,7 @@ export function SaveToPropsDialog({
             <div className="w-32 h-32 rounded-lg border border-border bg-muted overflow-hidden">
               <img
                 src={imageUrl}
-                alt="预览"
+                alt={t("预览")}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -123,11 +126,11 @@ export function SaveToPropsDialog({
           {/* 道具名称 */}
           <div className="space-y-1.5">
             <Label htmlFor="prop-name" className="text-xs">
-              道具名称
+              {t("道具名称")}
             </Label>
             <Input
               id="prop-name"
-              placeholder="输入道具名称（可留空自动命名）"
+              placeholder={t("输入道具名称（可留空自动命名）")}
               value={propName}
               onChange={(e) => setPropName(e.target.value)}
               onKeyDown={(e) => {
@@ -138,7 +141,7 @@ export function SaveToPropsDialog({
 
           {/* 选择目录 */}
           <div className="space-y-1.5">
-            <Label className="text-xs">保存到目录</Label>
+            <Label className="text-xs">{t("保存到目录")}</Label>
             <ScrollArea className="max-h-40 rounded-md border border-border">
               <div className="p-1.5 space-y-0.5">
                 {/* 根目录 */}
@@ -152,7 +155,7 @@ export function SaveToPropsDialog({
                   onClick={() => setLocalFolderId(null)}
                 >
                   <Package className="h-3.5 w-3.5 shrink-0" />
-                  根目录（不分类）
+                  {t("根目录（不分类）")}
                 </button>
 
                 {/* 用户目录 */}
@@ -178,7 +181,7 @@ export function SaveToPropsDialog({
                     <FolderPlus className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <Input
                       autoFocus
-                      placeholder="目录名称..."
+                      placeholder={t("目录名称...")}
                       value={newFolderName}
                       onChange={(e) => setNewFolderName(e.target.value)}
                       onKeyDown={(e) => {
@@ -196,7 +199,7 @@ export function SaveToPropsDialog({
                       onClick={handleCreateFolder}
                       disabled={!newFolderName.trim()}
                     >
-                      确认
+                      {t("确认")}
                     </Button>
                     <Button
                       size="sm"
@@ -207,7 +210,7 @@ export function SaveToPropsDialog({
                         setNewFolderName('');
                       }}
                     >
-                      取消
+                      {t("取消")}
                     </Button>
                   </div>
                 ) : (
@@ -216,7 +219,7 @@ export function SaveToPropsDialog({
                     onClick={() => setNewFolderMode(true)}
                   >
                     <FolderPlus className="h-3.5 w-3.5 shrink-0" />
-                    + 新建目录
+                    + {t("新建目录")}
                   </button>
                 )}
               </div>
@@ -226,18 +229,18 @@ export function SaveToPropsDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={saving}>
-            取消
+            {t("取消")}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                保存中...
+                {t("保存中...")}
               </>
             ) : (
               <>
                 <Package className="mr-2 h-4 w-4" />
-                保存
+                {t("保存")}
               </>
             )}
           </Button>

@@ -14,6 +14,7 @@
  * - Pose sheet
  */
 
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { type Character, type CharacterView, useCharacterLibraryStore } from "@/stores/character-library-store";
 import { generateCharacterImage as generateCharacterImageAPI } from "@/lib/ai/image-generator";
@@ -51,6 +52,7 @@ interface CharacterGeneratorProps {
 }
 
 export function CharacterGenerator({ character }: CharacterGeneratorProps) {
+  const { t } = useTranslation();
   const { 
     updateCharacter, 
     addCharacterView, 
@@ -82,18 +84,18 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
   const handleSaveDescription = () => {
     if (description.trim() !== character.description) {
       updateCharacter(character.id, { description: description.trim() });
-      toast.success("描述已保存");
+      toast.success(t("描述已保存"));
     }
   };
 
   const handleGenerateSheet = async () => {
     if (!description.trim()) {
-      toast.error("请输入角色描述");
+      toast.error(t("请输入角色描述"));
       return;
     }
 
     if (selectedElements.length === 0) {
-      toast.error("请至少选择一个内容");
+      toast.error(t("请至少选择一个内容"));
       return;
     }
 
@@ -132,11 +134,11 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
       // Show preview instead of saving directly
       setPreviewUrl(result.imageUrl);
       setGenerationStatus('completed');
-      toast.success("图片生成完成，请预览确认");
+      toast.success(t("图片生成完成，请预览确认"));
     } catch (error) {
       const err = error as Error;
       setGenerationStatus('error', err.message);
-      toast.error(`生成失败: ${err.message}`);
+      toast.error(t("生成失败: {{message}}", { message: err.message }));
     } finally {
       setGeneratingCharacter(null);
     }
@@ -147,7 +149,7 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
     if (!previewUrl) return;
 
     // Show saving status
-    toast.loading("正在保存图片到本地...", { id: 'saving-preview' });
+    toast.loading(t("正在保存图片到本地..."), { id: 'saving-preview' });
 
     try {
       // Save image to local file storage
@@ -181,10 +183,10 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
 
       setPreviewUrl(null);
       setPreviewPrompt('');
-      toast.success("角色设定图已保存到本地！", { id: 'saving-preview' });
+      toast.success(t("角色设定图已保存到本地！"), { id: 'saving-preview' });
     } catch (error) {
       console.error('Failed to save preview:', error);
-      toast.error("保存失败", { id: 'saving-preview' });
+      toast.error(t("保存失败"), { id: 'saving-preview' });
     }
   };
 
@@ -208,10 +210,10 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-sm">预览角色设定图</h3>
+          <h3 className="font-medium text-sm">{t("预览角色设定图")}</h3>
           <span className="text-xs text-amber-500 flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
-            待确认
+            {t("待确认")}
           </span>
         </div>
 
@@ -219,11 +221,11 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
         <div className="relative rounded-lg overflow-hidden border-2 border-amber-500/50 bg-muted">
           <img 
             src={previewUrl} 
-            alt={`${character.name} 角色设定预览`}
+            alt={t("{{name}} 角色设定预览", { name: character.name })}
             className="w-full h-auto"
           />
           <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-            预览
+            {t("预览")}
           </div>
         </div>
 
@@ -235,7 +237,7 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
             size="lg"
           >
             <Check className="h-4 w-4 mr-2" />
-            保存设定图
+            {t("保存设定图")}
           </Button>
           <Button 
             onClick={handleRegenerate}
@@ -243,7 +245,7 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
             size="lg"
           >
             <RotateCcw className="h-4 w-4 mr-2" />
-            重新生成
+            {t("重新生成")}
           </Button>
         </div>
 
@@ -254,13 +256,13 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
           className="w-full text-muted-foreground"
           size="sm"
         >
-          放弃并返回
+          {t("放弃并返回")}
         </Button>
 
         {/* Prompt info */}
         {previewPrompt && (
           <details className="text-xs text-muted-foreground">
-            <summary className="cursor-pointer hover:text-foreground">查看生成提示词</summary>
+            <summary className="cursor-pointer hover:text-foreground">{t("查看生成提示词")}</summary>
             <p className="mt-2 p-2 bg-muted rounded text-xs break-all">{previewPrompt}</p>
           </details>
         )}
@@ -271,11 +273,11 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-sm">生成角色设定图</h3>
+        <h3 className="font-medium text-sm">{t("生成角色设定图")}</h3>
         {isGenerating && (
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Loader2 className="h-3 w-3 animate-spin" />
-            生成中...
+            {t("生成中...")}
           </span>
         )}
       </div>
@@ -285,26 +287,26 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
         <div className="relative rounded-lg overflow-hidden border bg-muted">
           <img 
             src={existingSheet.imageUrl} 
-            alt={`${character.name} 角色设定`}
+            alt={t("{{name}} 角色设定", { name: character.name })}
             className="w-full h-auto"
           />
           <div className="absolute top-2 right-2">
             <Check className="h-5 w-5 text-green-500 bg-white rounded-full p-0.5" />
           </div>
           <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-            已保存
+            {t("已保存")}
           </div>
         </div>
       )}
 
       {/* Description editor */}
       <div className="space-y-2">
-        <Label className="text-xs">角色描述（用于AI生成）</Label>
+        <Label className="text-xs">{t("角色描述（用于AI生成）")}</Label>
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           onBlur={handleSaveDescription}
-          placeholder="详细描述角色外观，例如：一只橙色的小猫，有大大的蓝色眼睛，毛茸茸的尾巴，戴着红色铃铛项圈..."
+          placeholder={t("详细描述角色外观，例如：一只橙色的小猫，有大大的蓝色眼睛，毛茸茸的尾巴，戴着红色铃铛项圈...")}
           className="min-h-[80px] text-sm resize-none"
           disabled={isGenerating}
         />
@@ -312,7 +314,7 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
 
       {/* Sheet content selection */}
       <div className="space-y-2">
-        <Label className="text-xs">设定图内容</Label>
+        <Label className="text-xs">{t("设定图内容")}</Label>
         <div className="space-y-2">
           {SHEET_ELEMENTS.map((element) => (
             <div
@@ -331,12 +333,12 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
                 onCheckedChange={() => toggleElement(element.id)}
               />
               <div className="flex-1">
-                <span className="text-sm font-medium">{element.label}</span>
+                <span className="text-sm font-medium">{t(element.label)}</span>
                 <p className="text-xs text-muted-foreground">
-                  {element.id === 'three-view' && '正面、侧面、背面三视图结构'}
-                  {element.id === 'expressions' && '多种面部表情展示'}
-                  {element.id === 'proportions' && '身体比例、头身比参考'}
-                  {element.id === 'poses' && '各种常见动作姿势'}
+                  {element.id === 'three-view' && t("正面、侧面、背面三视图结构")}
+                  {element.id === 'expressions' && t("多种面部表情展示")}
+                  {element.id === 'proportions' && t("身体比例、头身比参考")}
+                  {element.id === 'poses' && t("各种常见动作姿势")}
                 </p>
               </div>
             </div>
@@ -354,12 +356,12 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
         {isGenerating ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            正在生成角色设定图...
+            {t("正在生成角色设定图...")}
           </>
         ) : (
           <>
             <FileImage className="h-4 w-4 mr-2" />
-            {existingSheet ? '重新生成设定图' : '生成角色设定图'}
+            {existingSheet ? t("重新生成设定图") : t("生成角色设定图")}
           </>
         )}
       </Button>
@@ -367,27 +369,27 @@ export function CharacterGenerator({ character }: CharacterGeneratorProps) {
       {/* Reference images preview */}
       {character.referenceImages && character.referenceImages.length > 0 && (
         <div className="space-y-2">
-          <Label className="text-xs">参考图片</Label>
+          <Label className="text-xs">{t("参考图片")}</Label>
           <div className="flex gap-2 flex-wrap">
             {character.referenceImages.map((img, i) => (
               <img
                 key={i}
                 src={img}
-                alt={`参考图 ${i + 1}`}
+                alt={t("参考图 {{count}}", { count: i + 1 })}
                 className="w-12 h-12 object-cover rounded border"
               />
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            AI将参考这些图片生成角色设定图
+            {t("AI将参考这些图片生成角色设定图")}
           </p>
         </div>
       )}
 
       {/* Tips */}
       <div className="text-xs text-muted-foreground space-y-1">
-        <p>💡 生成后可预览确认，满意再保存</p>
-        <p>💡 保存的角色可拖拽到 AI 导演面板使用</p>
+        <p>{t("💡 生成后可预览确认，满意再保存")}</p>
+        <p>{t("💡 保存的角色可拖拽到 AI 导演面板使用")}</p>
       </div>
     </div>
   );

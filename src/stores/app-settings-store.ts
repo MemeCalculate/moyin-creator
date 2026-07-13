@@ -5,6 +5,8 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { fileStorage } from "@/lib/indexed-db-storage";
 
+export type InterfaceLocale = "system" | "zh-CN" | "en";
+
 export interface ResourceSharingSettings {
   shareCharacters: boolean;
   shareScenes: boolean;
@@ -25,6 +27,8 @@ export interface UpdateSettings {
 }
 
 interface AppSettingsState {
+  /** Interface locale only; screenplay and prompt languages remain independent. */
+  interfaceLocale: InterfaceLocale;
   resourceSharing: ResourceSharingSettings;
   storagePaths: StoragePathSettings;
   cacheSettings: CacheSettings;
@@ -32,6 +36,7 @@ interface AppSettingsState {
 }
 
 interface AppSettingsActions {
+  setInterfaceLocale: (locale: InterfaceLocale) => void;
   setResourceSharing: (settings: Partial<ResourceSharingSettings>) => void;
   setStoragePaths: (paths: Partial<StoragePathSettings>) => void;
   setCacheSettings: (settings: Partial<CacheSettings>) => void;
@@ -39,6 +44,7 @@ interface AppSettingsActions {
 }
 
 const defaultState: AppSettingsState = {
+  interfaceLocale: "system",
   resourceSharing: {
     shareCharacters: true,
     shareScenes: true,
@@ -61,6 +67,7 @@ export const useAppSettingsStore = create<AppSettingsState & AppSettingsActions>
   persist(
     (set) => ({
       ...defaultState,
+      setInterfaceLocale: (interfaceLocale) => set({ interfaceLocale }),
       setResourceSharing: (settings) =>
         set((state) => ({
           resourceSharing: { ...state.resourceSharing, ...settings },
@@ -81,6 +88,15 @@ export const useAppSettingsStore = create<AppSettingsState & AppSettingsActions>
     {
       name: "moyin-app-settings",
       storage: createJSONStorage(() => fileStorage),
+      // Older settings files simply omit the new preference. Normalize invalid
+      // values so persisted data from any prior release remains safe to load.
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<AppSettingsState>;
+        const interfaceLocale = saved.interfaceLocale === "en" || saved.interfaceLocale === "zh-CN" || saved.interfaceLocale === "system"
+          ? saved.interfaceLocale
+          : "system";
+        return { ...current, ...saved, interfaceLocale };
+      },
     }
   )
 );

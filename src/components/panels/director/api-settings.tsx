@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { ProviderId } from "@opencut/ai-core";
 
+import { t } from "@/lib/i18n/translate";
 interface APISettingsProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -195,7 +196,7 @@ export function APISettings({ collapsed = true, onToggleCollapse }: APISettingsP
 
       {/* Concurrency Setting */}
       <div className="pt-2 border-t space-y-2">
-        <Label className="text-sm font-medium">并发设置</Label>
+        <Label className="text-sm font-medium">{t("并发设置")}</Label>
         <div className="flex items-center gap-2">
           <Input
             type="number"

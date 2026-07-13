@@ -10,6 +10,7 @@
  */
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface LocalImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -18,6 +19,7 @@ interface LocalImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 export function LocalImage({ src, fallback, className, alt, ...props }: LocalImageProps) {
+  const { t } = useTranslation();
   const [error, setError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(src);
 
@@ -44,7 +46,7 @@ export function LocalImage({ src, fallback, className, alt, ...props }: LocalIma
         )}
         style={props.style}
       >
-        图片加载失败
+        {t("图片加载失败")}
       </div>
     );
   }

@@ -17,6 +17,7 @@ import type { SplitScene } from '@/stores/director-store';
 import type { Character } from '@/stores/character-library-store';
 import type { Scene } from '@/stores/scene-store';
 import type { ShotGroup, AssetRef, AssetPurpose, SClassAspectRatio, SClassResolution, SClassDuration, EditType } from '@/stores/sclass-store';
+import { t } from "@/lib/i18n/translate";
 
 // ==================== Types ====================
 
@@ -113,7 +114,7 @@ export async function mergeToGridImage(
   imageUrls: string[],
   aspectRatio: string = '16:9',
 ): Promise<string> {
-  if (imageUrls.length === 0) throw new Error('mergeToGridImage: 无图片可合并');
+  if (imageUrls.length === 0) throw new Error(t("mergeToGridImage: 无图片可合并"));
   if (imageUrls.length === 1) {
     // 单张直接返回，无需合并
     return imageUrls[0];

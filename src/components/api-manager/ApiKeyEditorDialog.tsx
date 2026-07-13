@@ -10,6 +10,7 @@
  */
 
 import { useState, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -63,6 +64,7 @@ export function ApiKeyEditorDialog({
   onTestKey,
   providerName = "API",
 }: ApiKeyEditorDialogProps) {
+  const { t } = useTranslation();
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
 
   // Initialize keys when dialog opens
@@ -216,7 +218,7 @@ export function ApiKeyEditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>编辑 {providerName} Keys</DialogTitle>
+          <DialogTitle>{t("编辑 {{providerName}} Keys", { providerName })}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-3">
@@ -231,7 +233,7 @@ export function ApiKeyEditorDialog({
                       value={key.value}
                       onChange={(e) => updateKeyValue(key.id, e.target.value)}
                       disabled={!key.editing}
-                      placeholder="输入 API Key"
+                      placeholder={t("输入 API Key")}
                       className="font-mono text-sm"
                     />
                   </div>
@@ -253,7 +255,7 @@ export function ApiKeyEditorDialog({
                                 <Save className="h-4 w-4 text-green-500" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>保存</TooltipContent>
+                            <TooltipContent>{t("保存")}</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       ) : (
@@ -279,7 +281,7 @@ export function ApiKeyEditorDialog({
                                   <Shield className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>测试 Key</TooltipContent>
+                              <TooltipContent>{t("测试 Key")}</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
 
@@ -295,7 +297,7 @@ export function ApiKeyEditorDialog({
                                   <Pencil className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>编辑</TooltipContent>
+                              <TooltipContent>{t("编辑")}</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
 
@@ -311,7 +313,7 @@ export function ApiKeyEditorDialog({
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>删除</TooltipContent>
+                              <TooltipContent>{t("删除")}</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </>
@@ -326,7 +328,7 @@ export function ApiKeyEditorDialog({
           {/* Bottom action bar */}
           <div className="flex items-center justify-between pt-3 border-t">
             <span className="text-xs text-muted-foreground">
-              💡 支持多个 Key 轮换使用
+              {t("💡 支持多个 Key 轮换使用")}
             </span>
             <div className="flex items-center gap-2">
               {hasMultipleKeys && (
@@ -344,7 +346,7 @@ export function ApiKeyEditorDialog({
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>删除无效 Keys</TooltipContent>
+                        <TooltipContent>{t("删除无效 Keys")}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   )}
@@ -355,10 +357,10 @@ export function ApiKeyEditorDialog({
                         <TooltipTrigger asChild>
                           <Button variant="ghost" size="sm" onClick={testAllKeys}>
                             <Shield className="h-4 w-4 mr-1" />
-                            测试全部
+                            {t("测试全部")}
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>测试所有 Keys</TooltipContent>
+                        <TooltipContent>{t("测试所有 Keys")}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   )}
@@ -367,7 +369,7 @@ export function ApiKeyEditorDialog({
 
               <Button variant="outline" size="sm" onClick={addKey}>
                 <Plus className="h-4 w-4 mr-1" />
-                添加
+                {t("添加")}
               </Button>
             </div>
           </div>
@@ -375,9 +377,9 @@ export function ApiKeyEditorDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            {t("取消")}
           </Button>
-          <Button onClick={handleSave}>确认</Button>
+          <Button onClick={handleSave}>{t("确认")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -7,6 +7,8 @@
  * Handles screenplay generation, image/video creation, and media processing
  */
 
+import i18n from '@/lib/i18n';
+
 import type { 
   WorkerCommand, 
   WorkerEvent,
@@ -173,7 +175,7 @@ async function handleGenerateScreenplay(command: GenerateScreenplayCommand): Pro
     
     // Only require API key if not in mock mode
     if (!apiKey && !mockMode) {
-      throw new Error('未配置 API Key，请在设置中添加或启用 Mock 模式');
+      throw new Error(i18n.t('未配置 API Key，请在设置中添加或启用 Mock 模式'));
     }
     
     // Call the backend API with correct schema
@@ -234,7 +236,7 @@ async function generateImage(
   const provider = (config as any).imageProvider || 'memefast';
   
   if (!apiKey) {
-    throw new Error('未配置图片生成 API Key');
+    throw new Error(i18n.t('未配置图片生成 API Key'));
   }
   
   // Submit image generation task
@@ -290,7 +292,7 @@ async function generateVideo(
   const provider = (config as any).videoProvider || 'memefast';
   
   if (!apiKey) {
-    throw new Error('未配置视频生成 API Key');
+    throw new Error(i18n.t('未配置视频生成 API Key'));
   }
   
   // Submit video generation task

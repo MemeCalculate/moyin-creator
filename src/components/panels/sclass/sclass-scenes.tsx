@@ -102,6 +102,7 @@ import { getCinematographyProfile, DEFAULT_CINEMATOGRAPHY_PROFILE_ID } from "@/l
 import { buildVideoPrompt, buildEmotionDescription as buildEmotionDesc } from "@/lib/generation/prompt-builder";
 import { StylePicker } from "@/components/ui/style-picker";
 import { CinematographyProfilePicker } from "@/components/ui/cinematography-profile-picker";
+import { t } from "@/lib/i18n/translate";
 
 interface SplitScenesProps {
   onBack?: () => void;
@@ -324,7 +325,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
   // 切换摄影风格档案
   const handleCinProfileChange = useCallback((profileId: string) => {
     setCinematographyProfileId(profileId || undefined);
-    toast.success('摄影风格已更新');
+    toast.success(t("摄影风格已更新"));
   }, [setCinematographyProfileId]);
 
   // Update style
@@ -486,14 +487,14 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     const sceneIndex = splitScenes.findIndex(s => s.id === sceneId);
     const scene = splitScenes[sceneIndex];
     if (!scene || !scene.videoUrl) {
-      toast.error('请先生成视频');
+      toast.error(t("请先生成视频"));
       return;
     }
 
     // 检查是否有下一个分镜
     const nextScene = splitScenes[sceneIndex + 1];
     if (!nextScene) {
-      toast.error('这是最后一个分镜，无法插入到下一个分镜');
+      toast.error(t("这是最后一个分镜，无法插入到下一个分镜"));
       return;
     }
 
@@ -503,7 +504,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       // 提取最后一帧
       const lastFrameBase64 = await extractLastFrameFromVideo(scene.videoUrl, 0.1);
       if (!lastFrameBase64) {
-        toast.error('提取帧失败');
+        toast.error(t("提取帧失败"));
         return;
       }
       
@@ -516,7 +517,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       
     } catch (e) {
       console.error('[SplitScenes] Extract last frame error:', e);
-      toast.error('提取帧失败');
+      toast.error(t("提取帧失败"));
     } finally {
       setIsExtractingFrame(false);
     }
@@ -562,7 +563,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
   const handleStopMergedGeneration = useCallback(() => {
     mergedAbortRef.current = true;
     setIsMergedRunning(false);
-    toast.info('合并生成已停止');
+    toast.info(t("合并生成已停止"));
   }, []);
 
   // Handle angle switch click
@@ -574,7 +575,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       ? (scene.imageDataUrl || scene.imageHttpUrl) 
       : (scene.endFrameImageUrl || scene.endFrameHttpUrl);
     if (!imageUrl) {
-      toast.error(`请先生成${type === "start" ? "首帧" : "尾帧"}`);
+      toast.error(`请先生成${type === "start" ? t("首帧") : t("尾帧")}`);
       return;
     }
 
@@ -601,7 +602,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     const runninghubBaseUrl = runninghubProvider?.baseUrl?.trim();
     const runninghubAppId = runninghubProvider?.model?.[0];
     if (!runninghubKey || !runninghubBaseUrl || !runninghubAppId) {
-      toast.error("请先在设置中配置 RunningHub（API Key / Base URL / 模型AppId）");
+      toast.error(t("请先在设置中配置 RunningHub（API Key / Base URL / 模型AppId）"));
       setAngleSwitchOpen(false);
       return;
     }
@@ -613,7 +614,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       ? (scene.imageDataUrl || scene.imageHttpUrl) 
       : (scene.endFrameImageUrl || scene.endFrameHttpUrl);
     if (!originalImage) {
-      toast.error("找不到原图");
+      toast.error(t("找不到原图"));
       return;
     }
 
@@ -659,7 +660,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       setAngleSwitchOpen(false);
       setAngleSwitchResultOpen(true);
 
-      toast.success("视角切换生成完成");
+      toast.success(t("视角切换生成完成"));
     } catch (error) {
       toast.error(`视角切换失败: ${(error as Error).message}`);
     } finally {
@@ -726,7 +727,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       ? (scene.imageDataUrl || scene.imageHttpUrl)
       : (scene.endFrameImageUrl || scene.endFrameHttpUrl);
     if (!imageUrl) {
-      toast.error(`请先生成${type === "start" ? "首帧" : "尾帧"}`);
+      toast.error(`请先生成${type === "start" ? t("首帧") : t("尾帧")}`);
       return;
     }
 
@@ -745,14 +746,14 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       ? (scene.imageDataUrl || scene.imageHttpUrl) 
       : (scene.endFrameImageUrl || scene.endFrameHttpUrl);
     if (!sourceImage) {
-      toast.error("找不到原图");
+      toast.error(t("找不到原图"));
       return;
     }
 
     // Get API key - 使用服务映射配置
     const featureConfig = getFeatureConfig('character_generation');
     if (!featureConfig) {
-      toast.error('请先在设置中配置图片生成 API');
+      toast.error(t("请先在设置中配置图片生成 API"));
       setQuadGridOpen(false);
       return;
     }
@@ -760,20 +761,20 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     const keyManager = featureConfig.keyManager;
     const apiKey = keyManager.getCurrentKey() || '';
     if (!apiKey) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       setQuadGridOpen(false);
       return;
     }
     const platform = featureConfig.platform;
     const model = featureConfig.models?.[0];
     if (!model) {
-      toast.error('请先在设置中配置图片生成模型');
+      toast.error(t("请先在设置中配置图片生成模型"));
       setQuadGridOpen(false);
       return;
     }
     const imageBaseUrl = featureConfig.baseUrl?.replace(/\/+$/, '');
     if (!imageBaseUrl) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       setQuadGridOpen(false);
       return;
     }
@@ -946,7 +947,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
           }
           
           if (status === 'failed' || status === 'error') {
-            throw new Error(statusData.error || '图片生成失败');
+            throw new Error(statusData.error || t("图片生成失败"));
           }
           
           await new Promise(r => setTimeout(r, pollInterval));
@@ -954,7 +955,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       }
 
       if (!gridImageUrl) {
-        throw new Error('未获取到四宫格图片 URL');
+        throw new Error(t("未获取到四宫格图片 URL"));
       }
 
       console.log('[QuadGrid] Grid image URL:', gridImageUrl.substring(0, 80));
@@ -980,7 +981,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
           }
           resolve(results);
         };
-        img.onerror = () => reject(new Error('加载四宫格图片失败'));
+        img.onerror = () => reject(new Error(t("加载四宫格图片失败")));
         img.src = gridImageUrl!;
       });
 
@@ -1011,7 +1012,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       // 生成成功后才关闭选择对话框，打开结果对话框
       setQuadGridOpen(false);
       setQuadGridResultOpen(true);
-      toast.success('四宫格生成完成，已自动保存到素材库');
+      toast.success(t("四宫格生成完成，已自动保存到素材库"));
 
     } catch (error) {
       const err = error as Error;
@@ -1041,7 +1042,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     setQuadGridResultOpen(false);
     setQuadGridResult(null);
     setQuadGridTarget(null);
-    toast.success(`已应用到${quadGridTarget.type === "start" ? "首帧" : "尾帧"}`);
+    toast.success(`已应用到${quadGridTarget.type === "start" ? t("首帧") : t("尾帧")}`);
   }, [quadGridResult, quadGridTarget, updateSplitSceneImage, updateSplitSceneEndFrame]);
 
   // Copy quad grid image to another scene
@@ -1060,7 +1061,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       updateSplitSceneEndFrame(targetSceneId, localPath, undefined, httpUrl || undefined);
     }
 
-    toast.success(`已复制到分镜 ${targetSceneId + 1} 的${targetFrameType === "start" ? "首帧" : "尾帧"}`);
+    toast.success(`已复制到分镜 ${targetSceneId + 1} 的${targetFrameType === "start" ? t("首帧") : t("尾帧")}`);
   }, [quadGridResult, updateSplitSceneImage, updateSplitSceneEndFrame]);
 
   // Save quad grid image to library
@@ -1080,7 +1081,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       projectId: mediaProjectId,
     });
 
-    toast.success('已保存到素材库');
+    toast.success(t("已保存到素材库"));
   }, [quadGridResult, quadGridTarget, getImageFolderId, addMediaFromUrl]);
 
   // Save all quad grid images to library
@@ -1130,13 +1131,13 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     setAngleSwitchResult(null);
     setAngleSwitchTarget(null);
     setSelectedHistoryIndex(-1);
-    toast.success("视角已应用");
+    toast.success(t("视角已应用"));
   }, [angleSwitchResult, angleSwitchTarget, splitScenes, selectedHistoryIndex, updateSplitSceneImage, updateSplitSceneEndFrame]);
 
   // Handle auto-generate prompts using Gemini Vision
   const handleAutoGeneratePrompts = useCallback(async () => {
     if (!storyboardImage || splitScenes.length === 0) {
-      toast.error("无法生成提示词：缺失故事板或分镜");
+      toast.error(t("无法生成提示词：缺失故事板或分镜"));
       return;
     }
 
@@ -1149,7 +1150,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     // Note: API config is optional - if scenes have text descriptions, no API is needed
 
     setIsGeneratingPrompts(true);
-    toast.info("正在根据分镜内容生成提示词...");
+    toast.info(t("正在根据分镜内容生成提示词..."));
 
     try {
       // Get story prompt from storyboard config
@@ -1213,7 +1214,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
   const handleGenerateVideos = useCallback(async () => {
     console.warn('[DEPRECATED] handleGenerateVideos 已废弃，请使用 S级批量生成');
     if (splitScenes.length === 0) {
-      toast.error("没有可生成的分镜");
+      toast.error(t("没有可生成的分镜"));
       return;
     }
 
@@ -1225,7 +1226,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     const keyManager = featureConfig.keyManager;
     const apiKey = keyManager.getCurrentKey() || '';
     if (!apiKey) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     const provider = featureConfig.platform;
@@ -1242,7 +1243,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     );
 
     if (scenesToGenerate.length === 0) {
-      toast.info("所有分镜已生成或正在生成中");
+      toast.info(t("所有分镜已生成或正在生成中"));
       return;
     }
 
@@ -1373,7 +1374,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
               await new Promise(r => setTimeout(r, pollInterval));
             }
 
-            throw new Error('视频生成超时');
+            throw new Error(t("视频生成超时"));
           }
 
           throw new Error('Invalid API response');
@@ -1396,7 +1397,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     
     const completedCount = splitScenes.filter(s => s.videoStatus === 'completed').length;
     if (completedCount === splitScenes.length) {
-      toast.success("所有视频生成完成！");
+      toast.success(t("所有视频生成完成！"));
     }
   }, [splitScenes, storyboardConfig, getApiKey, concurrency, updateSplitSceneVideo]);
 
@@ -1433,12 +1434,12 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     const platform = featureConfig.platform;
     const model = featureConfig.models?.[0];
     if (!model) {
-      toast.error('请先在设置中配置视频生成模型');
+      toast.error(t("请先在设置中配置视频生成模型"));
       return;
     }
     const videoBaseUrl = featureConfig.baseUrl?.replace(/\/+$/, '');
     if (!videoBaseUrl) {
-      toast.error('请先在设置中配置视频生成服务映射');
+      toast.error(t("请先在设置中配置视频生成服务映射"));
       return;
     }
     
@@ -1580,7 +1581,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       
       const firstFrameConverted = await convertToHttpUrl(normalizedFirstFrame);
       if (!firstFrameConverted) {
-        throw new Error('无法获取首帧图片的 HTTP URL，请重新生成图片');
+        throw new Error(t("无法获取首帧图片的 HTTP URL，请重新生成图片"));
       }
       imageWithRoles.push({ url: firstFrameConverted, role: 'first_frame' });
       console.log('[SplitScenes] First frame HTTP URL:', firstFrameConverted.substring(0, 60));
@@ -1705,26 +1706,26 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     // 使用服务映射配置 - 不再 fallback 到硬编码
     const featureConfig = getFeatureConfig('character_generation');
     if (!featureConfig) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     
     const keyManager = featureConfig.keyManager;
     const apiKey = keyManager.getCurrentKey() || '';
     if (!apiKey) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     const platform = featureConfig.platform;
     const model = featureConfig.models?.[0];
     if (!model) {
-      toast.error('请先在设置中配置图片生成模型');
+      toast.error(t("请先在设置中配置图片生成模型"));
       return;
     }
     
     const imageBaseUrl = featureConfig.baseUrl?.replace(/\/+$/, '');
     if (!imageBaseUrl) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     
@@ -1734,7 +1735,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     const promptToUse = scene.imagePromptZh?.trim() || scene.imagePrompt?.trim() 
       || scene.videoPromptZh?.trim() || scene.videoPrompt?.trim() || '';
     if (!promptToUse) {
-      toast.warning("请先填写首帧提示词后再生成图片");
+      toast.warning(t("请先填写首帧提示词后再生成图片"));
       return;
     }
 
@@ -1862,7 +1863,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
 
           if (!statusResponse.ok) {
             if (statusResponse.status === 404) {
-              throw new Error('任务不存在');
+              throw new Error(t("任务不存在"));
             }
             throw new Error(`Failed to check task status: ${statusResponse.status}`);
           }
@@ -1880,7 +1881,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
             }
             imageUrl = imageUrl || normalizeUrlValue(statusData.output_url) || normalizeUrlValue(statusData.result_url) || normalizeUrlValue(statusData.url);
 
-            if (!imageUrl) throw new Error('任务完成但没有图片 URL');
+            if (!imageUrl) throw new Error(t("任务完成但没有图片 URL"));
             
             // 持久化到本地 + 图床
             const persistResult = await persistSceneImage(imageUrl, sceneId, 'first');
@@ -1899,7 +1900,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
 
           await new Promise(r => setTimeout(r, pollInterval));
         }
-        throw new Error('图片生成超时');
+        throw new Error(t("图片生成超时"));
       }
 
       throw new Error('Invalid API response: no image URL or task ID');
@@ -2009,32 +2010,32 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
 
   const handleMergedGenerate = useCallback(async (mode: 'first'|'last'|'both', strategy: 'cluster'|'minimal'|'none' = 'cluster', exemplar: boolean = true) => {
     if (splitScenes.length === 0) {
-      toast.error('没有可生成的分镜');
+      toast.error(t("没有可生成的分镜"));
       return;
     }
 
     // 获取图像生成能力 - 使用服务映射配置
     const featureConfig = getFeatureConfig('character_generation');
     if (!featureConfig) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     
     const keyManager = featureConfig.keyManager;
     const apiKey = keyManager.getCurrentKey() || '';
     if (!apiKey) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     const platform = featureConfig.platform;
     const model = featureConfig.models?.[0];
     if (!model) {
-      toast.error('请先在设置中配置图片生成模型');
+      toast.error(t("请先在设置中配置图片生成模型"));
       return;
     }
     const imageBaseUrl = featureConfig.baseUrl?.replace(/\/+$/, '');
     if (!imageBaseUrl) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     
@@ -2076,7 +2077,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
 
     // 检查是否有需要生成的
     if (tasks.length === 0) {
-      toast.info('所有分镜已生成完成，无需重复生成');
+      toast.info(t("所有分镜已生成完成，无需重复生成"));
       setIsMergedRunning(false);
       return;
     }
@@ -2214,7 +2215,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
           }
           resolve(results);
         };
-        img.onerror = (e) => reject(new Error('加载九宫格图片失败'));
+        img.onerror = (e) => reject(new Error(t("加载九宫格图片失败")));
         img.src = gridImageUrl;
       });
     };
@@ -2435,7 +2436,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
         if (taskId) {
           throw new Error(`九宫格生成超时（任务 ${taskId} 在 3 分钟内未完成），API 服务可能繁忙，请稍后重试`);
         }
-        throw new Error('未获取到九宫格图片 URL，请检查 API 响应');
+        throw new Error(t("未获取到九宫格图片 URL，请检查 API 响应"));
       }
       
       console.log('[MergedGen] Grid image URL:', gridImageUrl.substring(0, 80));
@@ -2521,7 +2522,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     for (let p = 0; p < taskPages.length; p++) {
       if (mergedAbortRef.current) {
         console.log('[MergedGen] 用户停止合并生成');
-        toast.info('合并生成已停止');
+        toast.info(t("合并生成已停止"));
         setIsMergedRunning(false);
         return;
       }
@@ -2587,7 +2588,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     const totalPages = taskPages.length;
     if (!mergedAbortRef.current) {
       if (succeededCount === totalPages) {
-        toast.success('九宫格合并生成全部完成！');
+        toast.success(t("九宫格合并生成全部完成！"));
       } else if (succeededCount > 0) {
         toast.warning(`合并生成部分完成：${succeededCount}/${totalPages} 页成功，${totalPages - succeededCount} 页失败`);
       } else {
@@ -2617,20 +2618,20 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     // 使用服务映射配置
     const featureConfig = getFeatureConfig('character_generation');
     if (!featureConfig) {
-      throw new Error('请先在设置中配置图片生成服务映射');
+      throw new Error(t("请先在设置中配置图片生成服务映射"));
     }
     const platform = featureConfig.platform;
     const model = featureConfig.models?.[0];
     if (!model) {
-      throw new Error('请先在设置中配置图片生成模型');
+      throw new Error(t("请先在设置中配置图片生成模型"));
     }
     const apiKeyToUse = apiKey || featureConfig.keyManager.getCurrentKey() || '';
     if (!apiKeyToUse) {
-      throw new Error('请先在设置中配置图片生成服务映射');
+      throw new Error(t("请先在设置中配置图片生成服务映射"));
     }
     const imageBaseUrl = featureConfig.baseUrl?.replace(/\/+$/, '');
     if (!imageBaseUrl) {
-      throw new Error('请先在设置中配置图片生成服务映射');
+      throw new Error(t("请先在设置中配置图片生成服务映射"));
     }
 
     // Call image generation API with smart routing
@@ -2690,7 +2691,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       }
     }
 
-    if (!directUrl) throw new Error('任务完成但没有图片 URL');
+    if (!directUrl) throw new Error(t("任务完成但没有图片 URL"));
 
     const frameType = isEndFrame ? 'end' as const : 'first' as const;
     const persistResult = await persistSceneImage(directUrl, sceneId, frameType);
@@ -2713,31 +2714,31 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     // Must have end frame prompt
     const promptToUse = scene.endFramePromptZh?.trim() || scene.endFramePrompt?.trim() || '';
     if (!promptToUse) {
-      toast.warning("请先填写尾帧提示词后再生成");
+      toast.warning(t("请先填写尾帧提示词后再生成"));
       return;
     }
 
     // 使用服务映射配置
     const featureConfig = getFeatureConfig('character_generation');
     if (!featureConfig) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     const keyManager = featureConfig.keyManager;
     const apiKey = keyManager.getCurrentKey() || '';
     if (!apiKey) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     const platform = featureConfig.platform;
     const model = featureConfig.models?.[0];
     if (!model) {
-      toast.error('请先在设置中配置图片生成模型');
+      toast.error(t("请先在设置中配置图片生成模型"));
       return;
     }
     const imageBaseUrl = featureConfig.baseUrl?.replace(/\/+$/, '');
     if (!imageBaseUrl) {
-      toast.error('请先在设置中配置图片生成服务映射');
+      toast.error(t("请先在设置中配置图片生成服务映射"));
       return;
     }
     
@@ -2870,7 +2871,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
           });
 
           if (!statusResponse.ok) {
-            if (statusResponse.status === 404) throw new Error('任务不存在');
+            if (statusResponse.status === 404) throw new Error(t("任务不存在"));
             throw new Error(`Failed to check task status: ${statusResponse.status}`);
           }
 
@@ -2886,7 +2887,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
             }
             imageUrl = imageUrl || normalizeUrlValue(statusData.output_url) || normalizeUrlValue(statusData.url);
 
-            if (!imageUrl) throw new Error('任务完成但没有图片 URL');
+            if (!imageUrl) throw new Error(t("任务完成但没有图片 URL"));
             
             // 持久化到本地 + 图床
             const persistResult = await persistSceneImage(imageUrl, sceneId, 'end');
@@ -2913,7 +2914,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
 
           await new Promise(r => setTimeout(r, pollInterval));
         }
-        throw new Error('尾帧生成超时');
+        throw new Error(t("尾帧生成超时"));
       }
 
       throw new Error('Invalid API response');
@@ -2936,7 +2937,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
     try {
       if (type === 'video') {
         if (!scene.videoUrl) {
-          toast.error("没有可保存的视频");
+          toast.error(t("没有可保存的视频"));
           return;
         }
         const folderId = getVideoFolderId();
@@ -2953,7 +2954,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
         toast.success(`分镜 ${scene.id + 1} 视频已保存到素材库`);
       } else {
         if (!scene.imageDataUrl) {
-          toast.error("没有可保存的图片");
+          toast.error(t("没有可保存的图片"));
           return;
         }
         const folderId = getImageFolderId();
@@ -2980,11 +2981,11 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
           <ImageIcon className="h-8 w-8 text-muted-foreground" />
         </div>
-        <p className="text-sm text-muted-foreground">暂无切割的分镜</p>
+        <p className="text-sm text-muted-foreground">{t("暂无切割的分镜")}</p>
         {onBack && (
           <Button variant="outline" onClick={onBack} className="mt-2">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            返回
+            {t("返回")}
           </Button>
         )}
       </div>
@@ -3002,14 +3003,14 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent h-9 px-4"
             >
               <Film className="h-3 w-3 mr-1" />
-              分镜编辑
+              {t("分镜编辑")}
             </TabsTrigger>
             <TabsTrigger 
               value="trailer" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent h-9 px-4"
             >
               <Clapperboard className="h-3 w-3 mr-1" />
-              预告片 {trailerScenes.length > 0 ? `(${trailerScenes.length})` : ''}
+              {t("预告片 {{count}}", { count: trailerScenes.length })}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -3021,21 +3022,21 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
           {trailerScenes.length === 0 ? (
             <div className="text-center text-muted-foreground text-sm py-8">
               <Clapperboard className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>预告片功能</p>
-              <p className="text-xs mt-1">请在左侧「剧本」面板中的「预告片」标签页生成预告片</p>
-              <p className="text-xs mt-1">挑选的分镜将在此显示并可进行图片/视频生成</p>
+              <p>{t("预告片功能")}</p>
+              <p className="text-xs mt-1">{t("请在左侧「剧本」面板中的「预告片」标签页生成预告片")}</p>
+              <p className="text-xs mt-1">{t("挑选的分镜将在此显示并可进行图片/视频生成")}</p>
             </div>
           ) : (
             <>
               {/* Header - 与分镜编辑一致 */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">预告片分镜</span>
+                  <span className="text-sm font-medium">{t("预告片分镜")}</span>
                   <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                    {trailerScenes.length} 个分镜
+                    {t("{{count}} 个分镜", { count: trailerScenes.length })}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    预计 {trailerScenes.reduce((sum, s) => sum + (s.duration || 5), 0)} 秒
+                    {t("预计 {{duration}} 秒", { duration: trailerScenes.reduce((sum, s) => sum + (s.duration || 5), 0) })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -3049,18 +3050,18 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                         disabled={isGenerating}
                       >
                         <Trash2 className="h-3 w-3 mr-1" />
-                        清空分镜
+                        {t("清空分镜")}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>确认清空预告片分镜</AlertDialogTitle>
+                        <AlertDialogTitle>{t("确认清空预告片分镜")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          这将删除所有 {trailerScenes.length} 个预告片分镜（包括已生成的图片和视频）。此操作不可撤销。
+                          {t("这将删除所有 {{count}} 个预告片分镜（包括已生成的图片和视频）。此操作不可撤销。", { count: trailerScenes.length })}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>取消</AlertDialogCancel>
+                        <AlertDialogCancel>{t("取消")}</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => {
                             // 删除所有预告片分镜
@@ -3069,11 +3070,11 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                             });
                             // 清空预告片配置
                             clearTrailer();
-                            toast.success(`已清空 ${trailerScenes.length} 个预告片分镜`);
+                            toast.success(t("已清空 {{count}} 个预告片分镜", { count: trailerScenes.length }));
                           }}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                          确认清空
+                          {t("确认清空")}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -3084,7 +3085,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
               {/* Global style and aspect ratio config - 与分镜编辑一致 */}
               <div className="flex flex-wrap items-center gap-3 p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">视觉风格:</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{t("视觉风格:")}</span>
                   <StylePicker
                     value={currentStyleId}
                     onChange={handleStyleChange}
@@ -3092,7 +3093,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">画面比例:</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{t("画面比例:")}</span>
                   <div className="flex rounded-md border overflow-hidden">
                     <button
                       onClick={() => handleAspectRatioChange('16:9')}
@@ -3104,7 +3105,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                       )}
                     >
                       <Monitor className="h-3.5 w-3.5" />
-                      横屏
+                      {t("横屏")}
                     </button>
                     <button
                       onClick={() => handleAspectRatioChange('9:16')}
@@ -3116,7 +3117,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                       )}
                     >
                       <Smartphone className="h-3.5 w-3.5" />
-                      竖屏
+                      {t("竖屏")}
                     </button>
                   </div>
                 </div>
@@ -3125,16 +3126,16 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                   value={storyboardConfig.resolution || '2K'}
                   onValueChange={(v: '1K' | '2K' | '4K') => {
                     setStoryboardConfig({ resolution: v });
-                    toast.success(`图片分辨率已切换为 ${v}`);
+                    toast.success(t("图片分辨率已切换为 {{resolution}}", { resolution: v }));
                   }}
                 >
                   <SelectTrigger className="w-[130px] h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1K" className="text-xs">标准 (1K)</SelectItem>
-                    <SelectItem value="2K" className="text-xs">高清 (2K)</SelectItem>
-                    <SelectItem value="4K" className="text-xs">超清 (4K)</SelectItem>
+                    <SelectItem value="1K" className="text-xs">{t("标准 (1K)")}</SelectItem>
+                    <SelectItem value="2K" className="text-xs">{t("高清 (2K)")}</SelectItem>
+                    <SelectItem value="4K" className="text-xs">{t("超清 (4K)")}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -3143,16 +3144,16 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                   value={storyboardConfig.videoResolution || '480p'}
                   onValueChange={(v: '480p' | '720p' | '1080p') => {
                     setStoryboardConfig({ videoResolution: v });
-                    toast.success(`视频分辨率已切换为 ${v}`);
+                    toast.success(t("视频分辨率已切换为 {{resolution}}", { resolution: v }));
                   }}
                 >
                   <SelectTrigger className="w-[140px] h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="480p" className="text-xs">标准 (480P)</SelectItem>
-                    <SelectItem value="720p" className="text-xs">高清 (720P)</SelectItem>
-                    <SelectItem value="1080p" className="text-xs">高品质 (1080P)</SelectItem>
+                    <SelectItem value="480p" className="text-xs">{t("标准 (480P)")}</SelectItem>
+                    <SelectItem value="720p" className="text-xs">{t("高清 (720P)")}</SelectItem>
+                    <SelectItem value="1080p" className="text-xs">{t("高品质 (1080P)")}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -3211,7 +3212,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                       <Button
                         onClick={() => {
                           // 仅为预告片分镜生成视频
-                          toast.info(`开始生成 ${trailerScenes.length} 个预告片视频...`);
+                          toast.info(t("开始生成 {{count}} 个预告片视频...", { count: trailerScenes.length }));
                           // 循环调用单个生成
                           trailerScenes.forEach(scene => {
                             if (scene.imageDataUrl && scene.videoStatus !== 'completed') {
@@ -3226,18 +3227,18 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                         {isGenerating ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            生成中...
+                            {t("生成中...")}
                           </>
                         ) : (
                           <>
                             <Play className="h-4 w-4 mr-2" />
-                            生成预告片视频 ({trailerScenes.length})
+                            {t("生成预告片视频 ({{count}})", { count: trailerScenes.length })}
                           </>
                         )}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>为预告片分镜生成视频</p>
+                      <p>{t("为预告片分镜生成视频")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -3245,7 +3246,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
 
               {/* Tips */}
               <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
-                <p>💡 预告片分镜与主分镜共享数据，修改会同步。点击每个分镜下方的文字区域可编辑提示词。</p>
+                <p>{t("💡 预告片分镜与主分镜共享数据，修改会同步。点击每个分镜下方的文字区域可编辑提示词。")}</p>
               </div>
             </>
           )}
@@ -3258,9 +3259,9 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">分镜编辑</span>
+          <span className="text-sm font-medium">{t("分镜编辑")}</span>
           <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-            {splitScenes.length} 个分镜
+            {t("{{count}} 个分镜", { count: splitScenes.length })}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -3271,7 +3272,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
             className="h-7 px-2 text-xs"
           >
             <ArrowLeft className="h-3 w-3 mr-1" />
-            重新生成
+            {t("重新生成")}
           </Button>
         </div>
       </div>
@@ -3280,7 +3281,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       <div className="flex flex-wrap items-center gap-3 p-3 rounded-lg bg-muted/30 border">
         {/* Visual Style Selector */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground whitespace-nowrap">视觉风格:</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">{t("视觉风格:")}</span>
           <StylePicker
             value={currentStyleId}
             onChange={handleStyleChange}
@@ -3290,7 +3291,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
 
         {/* Cinematography Profile Selector */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground whitespace-nowrap">摄影风格:</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">{t("摄影风格:")}</span>
           <CinematographyProfilePicker
             value={currentCinProfileId}
             onChange={handleCinProfileChange}
@@ -3301,7 +3302,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
 
         {/* Aspect Ratio Selector — S级 6 种画幅比 */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground whitespace-nowrap">画幅比:</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">{t("画幅比:")}</span>
           <Select
             value={storyboardConfig.aspectRatio || '16:9'}
             onValueChange={(v: string) => handleAspectRatioChange(v as SClassAspectRatio)}
@@ -3324,16 +3325,16 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
           value={storyboardConfig.resolution || '2K'}
           onValueChange={(v: '1K' | '2K' | '4K') => {
             setStoryboardConfig({ resolution: v });
-            toast.success(`图片分辨率已切换为 ${v}`);
+            toast.success(t("图片分辨率已切换为 {{resolution}}", { resolution: v }));
           }}
         >
           <SelectTrigger className="w-[130px] h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1K" className="text-xs">标准 (1K)</SelectItem>
-            <SelectItem value="2K" className="text-xs">高清 (2K)</SelectItem>
-            <SelectItem value="4K" className="text-xs">超清 (4K)</SelectItem>
+            <SelectItem value="1K" className="text-xs">{t("标准 (1K)")}</SelectItem>
+            <SelectItem value="2K" className="text-xs">{t("高清 (2K)")}</SelectItem>
+            <SelectItem value="4K" className="text-xs">{t("超清 (4K)")}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -3342,22 +3343,22 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
           value={storyboardConfig.videoResolution || '480p'}
           onValueChange={(v: '480p' | '720p' | '1080p') => {
             setStoryboardConfig({ videoResolution: v });
-            toast.success(`视频分辨率已切换为 ${v}`);
+            toast.success(t("视频分辨率已切换为 {{resolution}}", { resolution: v }));
           }}
         >
           <SelectTrigger className="w-[140px] h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="480p" className="text-xs">标准 (480P)</SelectItem>
-            <SelectItem value="720p" className="text-xs">高清 (720P)</SelectItem>
-            <SelectItem value="1080p" className="text-xs">高品质 (1080P)</SelectItem>
+            <SelectItem value="480p" className="text-xs">{t("标准 (480P)")}</SelectItem>
+            <SelectItem value="720p" className="text-xs">{t("高清 (720P)")}</SelectItem>
+            <SelectItem value="1080p" className="text-xs">{t("高品质 (1080P)")}</SelectItem>
           </SelectContent>
         </Select>
 
         {/* Image generation mode toggle */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground whitespace-nowrap">图片生成方式:</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">{t("图片生成方式:")}</span>
           <div className="flex rounded-md border overflow-hidden">
             <button
               onClick={() => setImageGenMode('single')}
@@ -3365,14 +3366,14 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                 "px-3 py-1.5 text-xs",
                 imageGenMode === 'single' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
               )}
-            >单图生成</button>
+            >{t("单图生成")}</button>
             <button
               onClick={() => setImageGenMode('merged')}
               className={cn(
                 "px-3 py-1.5 text-xs border-l",
                 imageGenMode === 'merged' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
               )}
-            >合并生成</button>
+            >{t("合并生成")}</button>
           </div>
         </div>
 
@@ -3385,8 +3386,8 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       {/* Row 1.5: Seedance 2.0 音频/运镜提示（实际控制复用每个分镜的 per-scene 音频开关） */}
       <div className="flex flex-wrap items-center gap-3 p-2 rounded-lg bg-muted/20 border">
         <Music className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-xs text-muted-foreground">音频/运镜: 复用每个分镜的独立开关（对白 / 音效 / 环境声 / 运镜）自动聚合</span>
-        <span className="text-xs text-muted-foreground/60">时长上限 15s · Seedance 2.0</span>
+        <span className="text-xs text-muted-foreground">{t("音频/运镜: 复用每个分镜的独立开关（对白 / 音效 / 环境声 / 运镜）自动聚合")}</span>
+        <span className="text-xs text-muted-foreground/60">{t("时长上限 15s · Seedance 2.0")}</span>
       </div>
 
       {/* Row 2: 合并生成选项（仅在合并模式下显示） */}
@@ -3394,7 +3395,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
         <div className="flex flex-wrap items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
           {/* 首/尾帧模式 */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">首/尾帧:</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{t("首/尾帧:")}</span>
             <div className="flex rounded-md border overflow-hidden">
               <button
                 onClick={() => setFrameMode('first')}
@@ -3402,42 +3403,42 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                   "px-3 py-1.5 text-xs",
                   frameMode === 'first' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
                 )}
-              >仅首帧</button>
+              >{t("仅首帧")}</button>
               <button
                 onClick={() => setFrameMode('last')}
                 className={cn(
                   "px-3 py-1.5 text-xs border-l",
                   frameMode === 'last' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
                 )}
-              >仅尾帧</button>
+              >{t("仅尾帧")}</button>
               <button
                 onClick={() => setFrameMode('both')}
                 className={cn(
                   "px-3 py-1.5 text-xs border-l",
                   frameMode === 'both' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
                 )}
-              >首+尾</button>
+              >{t("首+尾")}</button>
             </div>
           </div>
 
           {/* 参考图策略 */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">参考图策略:</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{t("参考图策略:")}</span>
             <Select value={refStrategy} onValueChange={v => setRefStrategy(v as any)}>
               <SelectTrigger className="w-[120px] h-8 text-xs">
-                <SelectValue placeholder="选择策略" />
+                <SelectValue placeholder={t("选择策略")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cluster" className="text-xs">Cluster（聚类去重）</SelectItem>
-                <SelectItem value="minimal" className="text-xs">Minimal（单参考）</SelectItem>
-                <SelectItem value="none" className="text-xs">None（无参考）</SelectItem>
+                <SelectItem value="cluster" className="text-xs">{t("Cluster（聚类去重）")}</SelectItem>
+                <SelectItem value="minimal" className="text-xs">{t("Minimal（单参考）")}</SelectItem>
+                <SelectItem value="none" className="text-xs">{t("None（无参考）")}</SelectItem>
               </SelectContent>
             </Select>
             <button
               onClick={() => setUseExemplar(!useExemplar)}
               className={cn("px-2 py-1 text-xs rounded border", useExemplar ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted')}
-              title="同组格引用已生成的范例成片作为锚点"
-            >范例锚图 {useExemplar ? '开' : '关'}</button>
+              title={t("同组格引用已生成的范例成片作为锚点")}
+            >{t("范例锚图 {{state}}", { state: useExemplar ? t("开") : t("关") })}</button>
           </div>
 
           {/* 执行合并生成 - 突出显示 */}
@@ -3450,7 +3451,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                 handleMergedGenerate(frameMode, refStrategy, useExemplar);
               }}
             >
-              {isMergedRunning ? (<><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />合并生成中...</>) : (<><Sparkles className="h-3.5 w-3.5 mr-1.5" />执行合并生成</>)}
+              {isMergedRunning ? (<><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />{t("合并生成中...")}</>) : (<><Sparkles className="h-3.5 w-3.5 mr-1.5" />{t("执行合并生成")}</>)}
             </Button>
             {isMergedRunning && (
               <Button
@@ -3458,7 +3459,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                 className="h-8 px-3 text-xs"
                 onClick={handleStopMergedGeneration}
               >
-                <Square className="h-3.5 w-3.5 mr-1" />停止
+                <Square className="h-3.5 w-3.5 mr-1" />{t("停止")}
               </Button>
             )}
           </div>
@@ -3470,14 +3471,14 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
         <div className="flex items-start gap-2 p-2 rounded-md bg-yellow-500/10 border border-yellow-500/20">
           <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
           <div className="text-xs text-yellow-600 dark:text-yellow-400">
-            <p>部分分镜缺少提示词，点击分镜下方的文字区域可编辑。</p>
+            <p>{t("部分分镜缺少提示词，点击分镜下方的文字区域可编辑。")}</p>
           </div>
         </div>
       )}
 
       {/* ========== S级视频生成模式切换 ========== */}
       <div className="flex items-center gap-2 pb-2">
-        <span className="text-xs text-muted-foreground">视频生成模式:</span>
+        <span className="text-xs text-muted-foreground">{t("视频生成模式:")}</span>
         <div className="flex rounded-md border overflow-hidden">
           <button
             onClick={() => setSclassGenMode('group')}
@@ -3485,14 +3486,14 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
               "px-3 py-1.5 text-xs",
               sclassGenMode === 'group' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
             )}
-          >分组生成 ({shotGroups.length} 组)</button>
+          >{t("分组生成 ({{count}} 组)", { count: shotGroups.length })}</button>
           <button
             onClick={() => setSclassGenMode('single')}
             className={cn(
               "px-3 py-1.5 text-xs border-l",
               sclassGenMode === 'single' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
             )}
-          >单镜生成 ({splitScenes.length} 镜)</button>
+          >{t("单镜生成 ({{count}} 镜)", { count: splitScenes.length })}</button>
         </div>
         {sclassGenMode === 'group' && (
           <div className="ml-auto flex items-center gap-1.5">
@@ -3502,17 +3503,17 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
               className="h-7 px-2 text-xs"
               disabled={shotGroups.length === 0 || shotGroups.some(g => g.calibrationStatus === 'calibrating')}
               onClick={async () => {
-                toast.info('开始批量 AI 校准...');
+                toast.info(t("开始批量 AI 校准..."));
                 const { success, total } = await runBatchCalibration(splitScenes, allCharacters, sceneLibrary);
                 if (total === 0) {
-                  toast.info('没有需要校准的组');
+                  toast.info(t("没有需要校准的组"));
                 } else {
-                  toast.success(`批量校准完成：${success}/${total} 组成功`);
+                  toast.success(t("批量校准完成：{{success}}/{{total}} 组成功", { success, total }));
                 }
               }}
             >
               <Sparkles className="h-3 w-3 mr-1" />
-              批量校准
+              {t("批量校准")}
             </Button>
             <Button
               variant="outline"
@@ -3522,9 +3523,9 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                 const groups = autoGroupScenes(splitScenes);
                 const named = groups.map((g, idx) => ({ ...g, name: generateGroupName(g, splitScenes, idx) }));
                 setShotGroups(named);
-                toast.success(`已重新分组：${named.length} 组`);
+                toast.success(t("已重新分组：{{count}} 组", { count: named.length }));
               }}
-            >重新分组</Button>
+            >{t("重新分组")}</Button>
           </div>
         )}
       </div>
@@ -3551,8 +3552,8 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                     ?.sceneIds.map(id => sceneMap.get(id)).filter(Boolean) as SplitScene[] || [];
                   runCalibration(groupId, groupScenes, allCharacters, sceneLibrary)
                     .then(ok => {
-                      if (ok) toast.success('AI 校准完成');
-                      else toast.error('AI 校准失败');
+                      if (ok) toast.success(t("AI 校准完成"));
+                      else toast.error(t("AI 校准失败"));
                     });
                 }}
                 onGenerateGroupVideo={(groupId) => {
@@ -3704,16 +3705,16 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         {batchProgress
-                          ? `生成中 (${batchProgress.completed}/${batchProgress.total})...`
-                          : '生成中...'
+                          ? t("生成中 ({{completed}}/{{total}})...", { completed: batchProgress.completed, total: batchProgress.total })
+                          : t("生成中...")
                         }
                       </>
                     ) : (
                       <>
                         <Play className="h-4 w-4 mr-2" />
                         {sclassGenMode === 'group'
-                          ? `Seedance 2.0 组级生成 (${groupsNeedGen}/${shotGroups.length} 组)`
-                          : `生成视频 (${scenesNeedVideo}/${splitScenes.length})`
+                          ? t("Seedance 2.0 组级生成 ({{current}}/{{total}} 组)", { current: groupsNeedGen, total: shotGroups.length })
+                          : t("生成视频 ({{current}}/{{total}})", { current: scenesNeedVideo, total: splitScenes.length })
                         }
                       </>
                     )}
@@ -3721,11 +3722,11 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                 </TooltipTrigger>
                 <TooltipContent>
                   {noImages ? (
-                    <p>请先为分镜生成图片，再生成视频</p>
+                    <p>{t("请先为分镜生成图片，再生成视频")}</p>
                   ) : sclassGenMode === 'group' ? (
-                    <p>{groupsNeedGen} 个组待生成，每组合并多镜头 + @引用 调用 Seedance 2.0，逐组尾帧传递</p>
+                    <p>{t("{{count}} 个组待生成，每组合并多镜头 + @引用 调用 Seedance 2.0，逐组尾帧传递", { count: groupsNeedGen })}</p>
                   ) : (
-                    <p>{scenesWithImages} 个分镜已有图片，{scenesNeedVideo} 个待生成视频</p>
+                    <p>{t("{{images}} 个分镜已有图片，{{videos}} 个待生成视频", { images: scenesWithImages, videos: scenesNeedVideo })}</p>
                   )}
                 </TooltipContent>
               </Tooltip>
@@ -3737,7 +3738,7 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
                 onClick={abortSClassGeneration}
               >
                 <Square className="h-4 w-4 mr-2" />
-                停止
+                {t("停止")}
               </Button>
             )}
           </div>
@@ -3747,9 +3748,9 @@ export function SClassScenes({ onBack, onGenerateVideos }: SplitScenesProps) {
       {/* Tips */}
       <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
         {sclassGenMode === 'group' ? (
-          <p>💡 分组模式：每组 2~4 个镜头合并为一个视频，总时长 ≤15s。点击「重新分组」可重新自动分配。</p>
+          <p>{t("💡 分组模式：每组 2~4 个镜头合并为一个视频，总时长 ≤15s。点击「重新分组」可重新自动分配。")}</p>
         ) : (
-          <p>💡 单镜模式：每个镜头独立生成一个视频。点击分镜下方的文字区域可编辑提示词。</p>
+          <p>{t("💡 单镜模式：每个镜头独立生成一个视频。点击分镜下方的文字区域可编辑提示词。")}</p>
         )}
       </div>
       </>

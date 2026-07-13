@@ -13,6 +13,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
   HORIZONTAL_DIRECTIONS,
@@ -70,6 +71,7 @@ export function AngleController({
   isLoading = false,
   compact = false,
 }: AngleControllerProps) {
+  const { t } = useTranslation();
   // 状态管理
   const [direction, setDirection] = useState<HorizontalDirection>(initialDirection);
   const [elevation, setElevation] = useState<ElevationAngle>(initialElevation);
@@ -360,7 +362,7 @@ export function AngleController({
                   <img
                     src={previewUrl}
                     className={cn("w-full h-full object-fill", isLoading && "opacity-50 blur-sm")}
-                    alt="preview"
+                    alt={t("预览图")}
                     onLoad={(e) => {
                       const img = e.currentTarget;
                       if (img.naturalWidth && img.naturalHeight) {
@@ -481,7 +483,7 @@ export function AngleController({
       
       {!compact && (
         <div className="text-[9px] text-zinc-500 font-mono">
-          [拖拽] 旋转 · [滚轮] 缩放
+          {t("[拖拽] 旋转 · [滚轮] 缩放")}
         </div>
       )}
     </div>

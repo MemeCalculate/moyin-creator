@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, X, RotateCw, Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export interface AngleSwitchResult {
   originalImage: string;
@@ -54,6 +55,7 @@ export function AngleSwitchResultDialog({
   onRegenerate,
   onPreviewInCenter,
 }: AngleSwitchResultDialogProps) {
+  const { t } = useTranslation();
   if (!result) return null;
 
   const currentImage = selectedHistoryIndex >= 0 && history[selectedHistoryIndex]
@@ -88,9 +90,9 @@ export function AngleSwitchResultDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="text-sm">视角切换 - 选择结果</DialogTitle>
+          <DialogTitle className="text-sm">{t("视角切换 - 选择结果")}</DialogTitle>
           <DialogDescription className="sr-only">
-            对比原图和生成结果，选择并应用新视角
+            {t("对比原图和生成结果，选择并应用新视角")}
           </DialogDescription>
         </DialogHeader>
 
@@ -99,11 +101,11 @@ export function AngleSwitchResultDialog({
           <div className="grid grid-cols-2 gap-3">
             {/* 原图 */}
             <div>
-              <div className="text-xs text-muted-foreground mb-1">原图</div>
+              <div className="text-xs text-muted-foreground mb-1">{t("原图")}</div>
               <div className="aspect-video bg-muted rounded overflow-hidden border-2 border-border">
                 <img
                   src={result.originalImage}
-                  alt="原图"
+                  alt={t("原图")}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -111,11 +113,11 @@ export function AngleSwitchResultDialog({
 
             {/* 当前选中 */}
             <div>
-              <div className="text-xs text-primary mb-1">当前选中</div>
+              <div className="text-xs text-primary mb-1">{t("当前选中")}</div>
               <div className="aspect-video bg-muted rounded overflow-hidden border-2 border-primary">
                 <img
                   src={currentImage}
-                  alt="当前选中"
+                  alt={t("当前选中")}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -126,7 +128,7 @@ export function AngleSwitchResultDialog({
           {/* 历史记录 */}
           {history.length > 0 && (
             <div>
-              <div className="text-xs text-muted-foreground mb-2">历史记录 ({history.length}张)</div>
+              <div className="text-xs text-muted-foreground mb-2">{t("历史记录 ({{count}}张)", { count: history.length })}</div>
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {history.map((item, index) => (
                   <button
@@ -157,19 +159,19 @@ export function AngleSwitchResultDialog({
             onClick={() => handleDownload(result.newImage, `angle-switch-${Date.now()}.png`)}
           >
             <Download className="h-4 w-4 mr-2" />
-            下载
+            {t("下载")}
           </Button>
           <Button variant="outline" onClick={onRegenerate}>
             <RotateCw className="h-4 w-4 mr-2" />
-            重新生成
+            {t("重新生成")}
           </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             <X className="h-4 w-4 mr-2" />
-            取消
+            {t("取消")}
           </Button>
           <Button onClick={onApply}>
             <Check className="h-4 w-4 mr-2" />
-            应用
+            {t("应用")}
           </Button>
         </DialogFooter>
       </DialogContent>

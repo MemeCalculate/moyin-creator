@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { delay, RATE_LIMITS } from "@/lib/utils/rate-limiter";
 import type { Shot } from "@/types/script";
+import { t } from "@/lib/i18n/translate";
 
 interface ShotListPanelProps {
   onGenerateImage?: (shot: Shot, type: "start" | "end") => Promise<string>;
@@ -83,7 +84,7 @@ export function ShotListPanel({ onGenerateImage }: ShotListPanelProps) {
   // Batch generate
   const handleBatchGenerate = async () => {
     if (!onGenerateImage) {
-      toast.error("图片生成服务未配置");
+      toast.error(t("图片生成服务未配置"));
       return;
     }
 
@@ -93,7 +94,7 @@ export function ShotListPanel({ onGenerateImage }: ShotListPanelProps) {
 
     if (shotsToProcess.length === 0) return;
 
-    if (allStartFramesGenerated && !confirm("确定要重新生成所有首帧吗？")) {
+    if (allStartFramesGenerated && !confirm(t("确定要重新生成所有首帧吗？"))) {
       return;
     }
 
@@ -136,7 +137,7 @@ export function ShotListPanel({ onGenerateImage }: ShotListPanelProps) {
     }
 
     setBatchProgress({ isVisible: false, current: 0, total: 0 });
-    toast.success("批量生成完成");
+    toast.success(t("批量生成完成"));
   };
 
   // Get scene name
@@ -149,11 +150,11 @@ export function ShotListPanel({ onGenerateImage }: ShotListPanelProps) {
     return (
       <div className="h-full flex flex-col">
         <div className="p-3 border-b border-border">
-          <h3 className="font-medium text-sm">镜头列表</h3>
+          <h3 className="font-medium text-sm">{t("镜头列表")}</h3>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-4">
           <AlertCircle className="w-10 h-10 mb-3 opacity-30" />
-          <p className="text-sm text-center">暂无镜头</p>
+          <p className="text-sm text-center">{t("暂无镜头")}</p>
           <p className="text-xs text-center mt-1 opacity-60">
             请先在剧本阶段生成分镜
           </p>
@@ -169,13 +170,13 @@ export function ShotListPanel({ onGenerateImage }: ShotListPanelProps) {
         current={batchProgress.current}
         total={batchProgress.total}
         message={batchProgress.message}
-        title="批量生成首帧"
+        title={t("批量生成首帧")}
       />
 
       {/* Header */}
       <div className="p-3 border-b border-border space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-sm">镜头列表</h3>
+          <h3 className="font-medium text-sm">{t("镜头列表")}</h3>
           <div className="flex items-center gap-1">
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}

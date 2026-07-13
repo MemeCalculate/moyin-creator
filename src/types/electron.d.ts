@@ -50,6 +50,9 @@ declare global {
         filters: { name: string; extensions: string[] }[];
       }) => Promise<{ success: boolean; filePath?: string; canceled?: boolean; error?: string }>;
     };
+    appLocale?: {
+      setInterfaceLocale: (locale: "en" | "zh-CN") => Promise<void>;
+    };
     appUpdater?: {
       getCurrentVersion: () => Promise<string>;
       checkForUpdates: () => Promise<UpdateCheckResult>;

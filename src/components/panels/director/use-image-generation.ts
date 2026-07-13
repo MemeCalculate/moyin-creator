@@ -6,6 +6,7 @@ import { getFeatureConfig } from "@/lib/ai/feature-router";
 import { imageUrlToBase64, submitGridImageRequest } from "@/lib/ai/image-generator";
 import { readImageAsBase64 } from "@/lib/image-storage";
 import type { SplitScene, ShotSizeType } from "@/stores/director-store";
+import { t } from "@/lib/i18n/translate";
 
 // Helper to normalize URL (handle array format)
 export function normalizeUrl(url: unknown): string | undefined {
@@ -97,20 +98,20 @@ export async function callImageGenerationApi(
 ): Promise<{ imageUrl: string; httpUrl: string }> {
   const featureConfig = getImageApiConfig();
   if (!featureConfig) {
-    throw new Error('请先在设置中配置图片生成服务映射');
+    throw new Error(t("请先在设置中配置图片生成服务映射"));
   }
   const platform = featureConfig.platform;
   const model = featureConfig.models?.[0];
   if (!model) {
-    throw new Error('请先在设置中配置图片生成模型');
+    throw new Error(t("请先在设置中配置图片生成模型"));
   }
   const apiKeyToUse = apiKey || featureConfig.keyManager?.getCurrentKey?.() || '';
   if (!apiKeyToUse) {
-    throw new Error('请先在设置中配置图片生成服务映射');
+    throw new Error(t("请先在设置中配置图片生成服务映射"));
   }
   const imageBaseUrl = featureConfig.baseUrl?.replace(/\/+$/, '');
   if (!imageBaseUrl) {
-    throw new Error('请先在设置中配置图片生成服务映射');
+    throw new Error(t("请先在设置中配置图片生成服务映射"));
   }
   // Call image generation API with smart routing (auto-selects chat/completions or images/generations)
   const imageKeyManager = featureConfig.keyManager;
@@ -143,7 +144,7 @@ export async function callImageGenerationApi(
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       // 检查外部中止信号
-      if (signal?.aborted) throw new Error('用户已取消');
+      if (signal?.aborted) throw new Error(t("用户已取消"));
 
       const progress = Math.min(Math.floor((attempt / maxAttempts) * 100), 99);
       onProgress?.(progress);
@@ -161,7 +162,7 @@ export async function callImageGenerationApi(
       });
 
       if (!statusResponse.ok) {
-        if (statusResponse.status === 404) throw new Error('任务不存在');
+        if (statusResponse.status === 404) throw new Error(t("任务不存在"));
         throw new Error(`Failed to check task status: ${statusResponse.status}`);
       }
 
@@ -177,7 +178,7 @@ export async function callImageGenerationApi(
         }
         imageUrl = imageUrl || normalizeUrl(statusData.output_url) || normalizeUrl(statusData.result_url) || normalizeUrl(statusData.url);
 
-        if (!imageUrl) throw new Error('任务完成但没有图片 URL');
+        if (!imageUrl) throw new Error(t("任务完成但没有图片 URL"));
         
         const httpUrl = imageUrl;
         let finalImageUrl = imageUrl;
@@ -196,10 +197,10 @@ export async function callImageGenerationApi(
 
       await new Promise<void>((resolve, reject) => {
         const tid = setTimeout(resolve, pollInterval);
-        signal?.addEventListener('abort', () => { clearTimeout(tid); reject(new Error('用户已取消')); }, { once: true });
+        signal?.addEventListener('abort', () => { clearTimeout(tid); reject(new Error(t("用户已取消"))); }, { once: true });
       });
     }
-    throw new Error('图片生成超时');
+    throw new Error(t("图片生成超时"));
   }
 
   throw new Error('Invalid API response: no image URL or task ID');
@@ -316,7 +317,7 @@ export async function sliceGridImage(gridImageUrl: string, count: number): Promi
       }
       resolve(results);
     };
-    img.onerror = () => reject(new Error('加载九宫格图片失败'));
+    img.onerror = () => reject(new Error(t("加载九宫格图片失败")));
     img.src = gridImageUrl;
   });
 }

@@ -50,6 +50,7 @@ import { generateAngleSwitch } from "@/lib/ai/runninghub-client";
 import { getAngleLabel, type HorizontalDirection, type ElevationAngle, type ShotSize } from "@/lib/ai/runninghub-angles";
 import { useAPIConfigStore } from "@/stores/api-config-store";
 import { parseApiKeys } from "@/lib/api-key-manager";
+import { t } from "@/lib/i18n/translate";
 
 interface ShotPropertiesPanelProps {
   onGenerateImage?: (shot: Shot, type: "start" | "end") => Promise<string>;
@@ -123,7 +124,7 @@ export function ShotPropertiesPanel({
       : endKf?.imageUrl;
 
     if (!imageUrl) {
-      toast.error(`请先生成${type === "start" ? "起始帧" : "结束帧"}`);
+      toast.error(`请先生成${type === "start" ? t("起始帧") : t("结束帧")}`);
       return;
     }
 
@@ -148,7 +149,7 @@ export function ShotPropertiesPanel({
     const appId = runninghubProvider?.model?.[0];
 
     if (!apiKey || !baseUrl || !appId) {
-      toast.error("请先在设置中配置 RunningHub（API Key / Base URL / 模型AppId）");
+      toast.error(t("请先在设置中配置 RunningHub（API Key / Base URL / 模型AppId）"));
       setAngleSwitchOpen(false);
       return;
     }
@@ -158,7 +159,7 @@ export function ShotPropertiesPanel({
       : endKf?.imageUrl;
 
     if (!originalImage) {
-      toast.error("找不到原图");
+      toast.error(t("找不到原图"));
       return;
     }
 
@@ -189,7 +190,7 @@ export function ShotPropertiesPanel({
       setAngleSwitchOpen(false);
       setAngleSwitchResultOpen(true);
 
-      toast.success("视角切换生成完成");
+      toast.success(t("视角切换生成完成"));
     } catch (error) {
       toast.error(`视角切换失败: ${(error as Error).message}`);
     } finally {
@@ -230,7 +231,7 @@ export function ShotPropertiesPanel({
 
     setAngleSwitchResultOpen(false);
     setAngleSwitchResult(null);
-    toast.success("视角已应用");
+    toast.success(t("视角已应用"));
   };
 
   // Preview in center panel
@@ -259,7 +260,7 @@ export function ShotPropertiesPanel({
   // Handle image generation
   const handleGenerateImage = async (type: "start" | "end") => {
     if (!selectedShot || !onGenerateImage) {
-      toast.error("无法生成图片");
+      toast.error(t("无法生成图片"));
       return;
     }
 
@@ -295,7 +296,7 @@ export function ShotPropertiesPanel({
         name: `镜头 ${shotIndex + 1} - ${type === "start" ? "起始帧" : "结束帧"}`,
       });
 
-      toast.success(`${type === "start" ? "起始帧" : "结束帧"}生成完成`);
+      toast.success(`${type === "start" ? t("起始帧") : t("结束帧")}生成完成`);
     } catch (error) {
       toast.error(`生成失败: ${(error as Error).message}`);
     } finally {
@@ -306,13 +307,13 @@ export function ShotPropertiesPanel({
   // Handle video generation
   const handleGenerateVideo = async () => {
     if (!selectedShot || !onGenerateVideo) {
-      toast.error("无法生成视频");
+      toast.error(t("无法生成视频"));
       return;
     }
 
     const startImage = startKf?.imageUrl || selectedShot.imageUrl;
     if (!startImage) {
-      toast.error("请先生成起始帧");
+      toast.error(t("请先生成起始帧"));
       return;
     }
 
@@ -334,7 +335,7 @@ export function ShotPropertiesPanel({
         name: `镜头 ${shotIndex + 1} - 视频`,
       });
 
-      toast.success("视频生成完成");
+      toast.success(t("视频生成完成"));
     } catch (error) {
       toast.error(`视频生成失败: ${(error as Error).message}`);
     } finally {
@@ -376,12 +377,12 @@ export function ShotPropertiesPanel({
     return (
       <div className="h-full flex flex-col bg-panel">
         <div className="p-3 border-b border-border">
-          <h3 className="font-medium text-sm">属性</h3>
+          <h3 className="font-medium text-sm">{t("属性")}</h3>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-4">
           <Camera className="w-10 h-10 mb-3 opacity-30" />
-          <p className="text-sm text-center">选择一个镜头</p>
-          <p className="text-xs text-center mt-1 opacity-60">查看和编辑镜头属性</p>
+          <p className="text-sm text-center">{t("选择一个镜头")}</p>
+          <p className="text-xs text-center mt-1 opacity-60">{t("查看和编辑镜头属性")}</p>
         </div>
       </div>
     );
@@ -392,7 +393,7 @@ export function ShotPropertiesPanel({
       {/* Header */}
       <div className="p-3 border-b border-border">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-sm">属性</h3>
+          <h3 className="font-medium text-sm">{t("属性")}</h3>
           <span className="text-xs text-muted-foreground font-mono">
             #{String(shotIndex + 1).padStart(2, "0")}
           </span>
@@ -406,7 +407,7 @@ export function ShotPropertiesPanel({
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin className="w-3 h-3" />
-                <span>场景</span>
+                <span>{t("场景")}</span>
               </div>
               <div className="p-2 rounded-lg bg-muted/50 space-y-1">
                 <div className="flex items-center justify-between">
@@ -427,7 +428,7 @@ export function ShotPropertiesPanel({
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Film className="w-3 h-3" />
-              <span>镜头信息</span>
+              <span>{t("镜头信息")}</span>
             </div>
             <div className="p-2 rounded-lg bg-muted/50 space-y-2">
               {/* Shot size, camera movement, duration */}
@@ -451,7 +452,7 @@ export function ShotPropertiesPanel({
                 <div className="space-y-1">
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                     <Eye className="w-2.5 h-2.5" />
-                    <span>视觉描述</span>
+                    <span>{t("视觉描述")}</span>
                   </div>
                   <p className="text-xs leading-relaxed bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-violet-200 dark:border-violet-800 rounded p-2 text-violet-800 dark:text-violet-200">
                     {selectedShot.visualDescription}
@@ -477,12 +478,12 @@ export function ShotPropertiesPanel({
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Volume2 className="w-3 h-3" />
-                <span>音频设计</span>
+                <span>{t("音频设计")}</span>
               </div>
               <div className="p-2 rounded-lg bg-muted/50 space-y-1.5">
                 {selectedShot.ambientSound && (
                   <div className="flex gap-1.5 text-xs">
-                    <span className="text-muted-foreground shrink-0">环境声:</span>
+                    <span className="text-muted-foreground shrink-0">{t("环境声:")}</span>
                     <span className="text-green-700 dark:text-green-300">{selectedShot.ambientSound}</span>
                   </div>
                 )}
@@ -504,7 +505,7 @@ export function ShotPropertiesPanel({
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <User className="w-3 h-3" />
-                <span>角色造型</span>
+                <span>{t("角色造型")}</span>
               </div>
               <div className="space-y-1.5">
                 {characters.map((char) => (
@@ -531,7 +532,7 @@ export function ShotPropertiesPanel({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="default">默认</SelectItem>
+                          <SelectItem value="default">{t("默认")}</SelectItem>
                           {char.variations.map((v) => (
                             <SelectItem key={v.id} value={v.id}>
                               {v.name}
@@ -540,7 +541,7 @@ export function ShotPropertiesPanel({
                         </SelectContent>
                       </Select>
                     ) : (
-                      <span className="text-[10px] text-muted-foreground">默认</span>
+                      <span className="text-[10px] text-muted-foreground">{t("默认")}</span>
                     )}
                   </div>
                 ))}
@@ -552,7 +553,7 @@ export function ShotPropertiesPanel({
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ImageIcon className="w-3 h-3" />
-              <span>关键帧</span>
+              <span>{t("关键帧")}</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -583,7 +584,7 @@ export function ShotPropertiesPanel({
                 </div>
                 <div className="p-1.5 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px]">起始帧</span>
+                    <span className="text-[10px]">{t("起始帧")}</span>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -629,7 +630,7 @@ export function ShotPropertiesPanel({
                     <img src={endKf!.imageUrl} className="w-full h-full object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[9px] text-muted-foreground/50">可选</span>
+                      <span className="text-[9px] text-muted-foreground/50">{t("可选")}</span>
                     </div>
                   )}
                   {processingType === "end" && (
@@ -640,7 +641,7 @@ export function ShotPropertiesPanel({
                 </div>
                 <div className="p-1.5 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px]">结束帧</span>
+                    <span className="text-[10px]">{t("结束帧")}</span>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -679,7 +680,7 @@ export function ShotPropertiesPanel({
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Video className="w-3 h-3" />
-              <span>视频</span>
+              <span>{t("视频")}</span>
             </div>
 
             <div

@@ -9,6 +9,7 @@
  */
 
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +55,7 @@ export function AngleSwitchDialog({
   sameSceneShotsCount = 0,
   isGenerating = false,
 }: AngleSwitchDialogProps) {
+  const { t } = useTranslation();
   const [currentAngle, setCurrentAngle] = useState<{
     direction: HorizontalDirection;
     elevation: ElevationAngle;
@@ -91,10 +93,10 @@ export function AngleSwitchDialog({
       <DialogContent className="max-w-sm p-4 bg-zinc-900 border-zinc-800">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-sm text-white">
-            视角切换 - {frameType === "start" ? "首帧" : "尾帧"}
+            {t("视角切换 - {{frame}}", { frame: t(frameType === "start" ? "首帧" : "尾帧") })}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            通过3D球面控制器选择目标视角，拖拽旋转、滚轮缩放
+            {t("通过3D球面控制器选择目标视角，拖拽旋转、滚轮缩放")}
           </DialogDescription>
         </DialogHeader>
 
@@ -116,7 +118,7 @@ export function AngleSwitchDialog({
               disabled={isGenerating}
               className="flex-1 h-8 text-xs bg-transparent border-zinc-700 hover:bg-zinc-800 text-white"
             >
-              取消
+              {t("取消")}
             </Button>
             <Button
               size="sm"
@@ -125,9 +127,9 @@ export function AngleSwitchDialog({
               className="flex-1 h-8 text-xs bg-lime-500 hover:bg-lime-600 text-black"
             >
               {isGenerating ? (
-                <><Loader2 className="h-3 w-3 mr-1 animate-spin" />生成中</>
+                <><Loader2 className="h-3 w-3 mr-1 animate-spin" />{t("生成中")}</>
               ) : (
-                "生成"
+                t("生成")
               )}
             </Button>
           </div>

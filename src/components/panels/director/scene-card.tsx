@@ -30,6 +30,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n/translate";
 import {
   Popover,
   PopoverContent,
@@ -241,7 +242,7 @@ export function SceneCard({ scene, progress, isPreview, showImage, onRetryImage,
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" onClick={(e) => e.stopPropagation()}>
                 <div className="space-y-2">
-                  <div className="text-xs font-medium text-muted-foreground">选择情绪标签</div>
+                  <div className="text-xs font-medium text-muted-foreground">{t("选择情绪标签")}</div>
                   <div className="flex flex-wrap gap-1">
                     {MOOD_PRESETS.map((preset) => (
                       <Badge
@@ -318,7 +319,7 @@ export function SceneCard({ scene, progress, isPreview, showImage, onRetryImage,
               variant="ghost"
               className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
               onClick={handleDelete}
-              title="删除场景"
+              title={t("删除场景")}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
@@ -336,7 +337,7 @@ export function SceneCard({ scene, progress, isPreview, showImage, onRetryImage,
             onKeyDown={handleNarrationKeyDown}
             onBlur={handleNarrationSave}
             className="min-h-[60px] text-sm resize-none"
-            placeholder="输入场景旁白..."
+            placeholder={t("输入场景旁白...")}
           />
           <div className="flex justify-end gap-1 mt-1">
             <Button
@@ -366,7 +367,7 @@ export function SceneCard({ scene, progress, isPreview, showImage, onRetryImage,
             isPreview && !progress && "cursor-text hover:bg-muted/50 rounded px-1 -mx-1"
           )}
           onDoubleClick={handleNarrationDoubleClick}
-          title={isPreview && !progress ? "双击编辑" : undefined}
+          title={isPreview && !progress ? t("双击编辑") : undefined}
         >
           {scene.narration}
         </p>
@@ -431,15 +432,15 @@ export function SceneCard({ scene, progress, isPreview, showImage, onRetryImage,
       {isSelected && (
         <div className="mt-3 pt-3 border-t space-y-2">
           <div>
-            <label className="text-xs font-medium text-muted-foreground">镜头</label>
+            <label className="text-xs font-medium text-muted-foreground">{t("镜头")}</label>
             <p className="text-xs">{scene.camera}</p>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">视觉描述</label>
+            <label className="text-xs font-medium text-muted-foreground">{t("视觉描述")}</label>
             <p className="text-xs line-clamp-3">{scene.visualContent}</p>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">动作</label>
+            <label className="text-xs font-medium text-muted-foreground">{t("动作")}</label>
             <p className="text-xs line-clamp-2">{scene.action}</p>
           </div>
         </div>

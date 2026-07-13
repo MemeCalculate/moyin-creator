@@ -14,6 +14,7 @@ import { Check, User, Users } from "lucide-react";
 import { useCharacterLibraryStore } from "@/stores/character-library-store";
 import { useAppSettingsStore } from "@/stores/app-settings-store";
 import { useProjectStore } from "@/stores/project-store";
+import { t } from "@/lib/i18n/translate";
 import {
   Popover,
   PopoverContent,
@@ -82,12 +83,12 @@ export function CharacterSelector({
           {validSelectedCount > 0 ? (
             <span>已选 {validSelectedCount} 个</span>
           ) : (
-            <span>角色库</span>
+            <span>{t("角色库")}</span>
           )}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-2" align="start">
-        <p className="text-sm font-medium mb-2">选择角色</p>
+        <p className="text-sm font-medium mb-2">{t("选择角色")}</p>
         {visibleCharacters.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-4">
             角色库为空，请先创建角色
@@ -142,7 +143,7 @@ export function CharacterSelector({
                             <User className="h-3 w-3" />
                           </div>
                         )}
-                        <span className="flex-1 text-[11px] truncate">基础定妆照</span>
+                        <span className="flex-1 text-[11px] truncate">{t("基础定妆照")}</span>
                         {!selectedVarId && <Check className="h-3 w-3 text-primary shrink-0" />}
                       </button>
                       {/* 变体列表 */}

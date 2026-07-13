@@ -48,6 +48,14 @@
 基础设置教程：https://www.bilibili.com/video/BV1FsZDBHExJ/?vd_source=802462c0708e775ce81f95b2e486f175
 
 
+## 界面语言
+
+在 **设置 → 界面 → 界面语言** 中选择“跟随系统”、“简体中文”或“English”。该偏好独立保存并即时生效，并会同步用于原生文件/目录对话框和主进程提示；它不会改变项目剧本语言、AI 提示词或 AI 输出语言。
+
+### 贡献者：添加语言
+
+渲染器翻译资源位于 `src/lib/i18n/locales/`，使用语义化的 `namespace.key` 键（例如 `settings.interfaceLanguage`）；原生 Electron 对话框和 IPC 文案位于 `electron/i18n.ts`。新增语言时复制 `en.json`，保持所有叶子键和对象形状一致，在 `src/lib/i18n/index.ts` 和 `electron/i18n.ts` 注册 locale，并运行 `npm run validate:localization`。不要将剧本、提示词、模型/API 标识或协议字段与界面语言绑定。
+
 ## 功能特性
 
 ### ⭐ S级板块 — Seedance 2.0 多模态创作 SkyReels-V4 多模态创作

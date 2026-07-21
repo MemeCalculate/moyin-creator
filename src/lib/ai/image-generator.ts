@@ -37,6 +37,121 @@ const getRootBaseUrl = (baseUrl: string): string => {
   return baseUrl.replace(/\/+$/, '').replace(/\/v\d+$/, '');
 };
 
+const isAtlasCloudBaseUrl = (baseUrl: string): boolean => {
+  try {
+    return /(^|\.)atlascloud\.ai$/i.test(new URL(getRootBaseUrl(baseUrl)).hostname);
+  } catch {
+    return false;
+  }
+};
+
+function getAtlasImageSize(aspectRatio: string): string {
+  const dims = ASPECT_RATIO_DIMS[aspectRatio] || ASPECT_RATIO_DIMS['1:1'];
+  if (dims.width === dims.height) return '1024x1024';
+  return dims.width > dims.height ? '1536x1024' : '1024x1536';
+}
+
+function extractAtlasOutputUrl(data: any): string | undefined {
+  const payload = data?.data ?? data;
+  const outputs = payload?.outputs ?? payload?.output;
+  if (Array.isArray(outputs) && typeof outputs[0] === 'string') return outputs[0];
+  if (typeof outputs === 'string') return outputs;
+  return payload?.url || payload?.output_url || payload?.result_url;
+}
+
+async function pollAtlasCloudImageTask(
+  rootBase: string,
+  apiKey: string,
+  taskId: string,
+): Promise<string> {
+  for (let attempt = 0; attempt < 120; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const response = await fetch(`${rootBase}/api/v1/model/result/${taskId}`, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Cache-Control': 'no-cache',
+      },
+    });
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('Atlas Cloud image task not found');
+      continue;
+    }
+
+    const data = await response.json();
+    const status = String(data?.data?.status || data?.status || '').toLowerCase();
+    if (status === 'completed' || status === 'succeeded' || status === 'success') {
+      const outputUrl = extractAtlasOutputUrl(data);
+      if (!outputUrl) throw new Error('Atlas Cloud image task completed without an output URL');
+      return outputUrl;
+    }
+    if (status === 'failed' || status === 'error') {
+      const error = data?.data?.error || data?.error || data?.message || 'Atlas Cloud image generation failed';
+      throw new Error(typeof error === 'string' ? error : JSON.stringify(error));
+    }
+  }
+
+  throw new Error('Atlas Cloud image generation timed out');
+}
+
+async function submitAtlasCloudImageTask(params: {
+  prompt: string;
+  aspectRatio: string;
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  referenceImages?: string[];
+  keyManager?: { getCurrentKey?: () => string | null; handleError?: (status: number, errorText?: string) => boolean };
+}): Promise<{ taskId?: string; imageUrl?: string }> {
+  const rootBase = getRootBaseUrl(params.baseUrl);
+  const requestBody: Record<string, unknown> = {
+    model: params.model,
+    prompt: params.prompt,
+    size: getAtlasImageSize(params.aspectRatio),
+  };
+
+  if (params.referenceImages && params.referenceImages.length > 0) {
+    requestBody.images = params.referenceImages;
+  }
+
+  const currentApiKey = params.keyManager?.getCurrentKey?.() || params.apiKey;
+  const response = await fetch(`${rootBase}/api/v1/model/generateImage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${currentApiKey}`,
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    params.keyManager?.handleError?.(response.status, errorText);
+    let errorMessage = `Atlas Cloud image API error: ${response.status}`;
+    try {
+      const errorJson = JSON.parse(errorText);
+      errorMessage = errorJson.error?.message || errorJson.message || errorJson.msg || errorMessage;
+    } catch {
+      if (errorText && errorText.length < 200) errorMessage = errorText;
+    }
+    const error = new Error(errorMessage) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  const data = await response.json();
+  const directUrl = extractAtlasOutputUrl(data);
+  if (directUrl) return { imageUrl: directUrl };
+
+  const taskId = (data?.data?.id || data?.id || data?.data?.task_id || data?.task_id)?.toString();
+  if (!taskId) throw new Error('Atlas Cloud image API returned no task ID');
+
+  return {
+    taskId,
+    imageUrl: await pollAtlasCloudImageTask(rootBase, currentApiKey, taskId),
+  };
+}
+
 /**
  * 图片端点路径映射（端点类型 → 提交/轮询 URL 路径）
  * 仅用于需要自定义路径的端点类型，其余走默认 /v1/images/generations
@@ -184,6 +299,19 @@ async function generateImage(
     resolution,
     promptPreview: params.prompt.substring(0, 100) + '...',
   });
+
+  if (isAtlasCloudBaseUrl(baseUrl)) {
+    const result = await submitAtlasCloudImageTask({
+      prompt: params.prompt,
+      aspectRatio,
+      apiKey,
+      baseUrl,
+      model,
+      referenceImages: params.referenceImages,
+      keyManager: featureConfig.keyManager,
+    });
+    if (result.imageUrl) return { imageUrl: result.imageUrl, taskId: result.taskId };
+  }
 
   // Gemini 等模型通过 chat completions 生图
   if (apiFormat === 'openai_chat') {
@@ -796,6 +924,18 @@ export async function submitGridImageRequest(params: {
   const endpointTypes = useAPIConfigStore.getState().modelEndpointTypes[model];
   const apiFormat = resolveImageApiFormat(endpointTypes, model);
   console.log('[GridImageAPI] format:', apiFormat, 'model:', model);
+
+  if (isAtlasCloudBaseUrl(normalizedBase)) {
+    return submitAtlasCloudImageTask({
+      prompt,
+      aspectRatio,
+      apiKey,
+      baseUrl: normalizedBase,
+      model,
+      referenceImages,
+      keyManager,
+    });
+  }
 
   if (apiFormat === 'openai_chat') {
     // Gemini 等模型通过 chat completions 生图

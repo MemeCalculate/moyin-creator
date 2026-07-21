@@ -157,6 +157,14 @@ function getRootBaseUrl(baseUrl: string): string {
   return normalized.replace(/\/v\d+$/, '');
 }
 
+function isAtlasCloudBaseUrl(baseUrl: string): boolean {
+  try {
+    return /(^|\.)atlascloud\.ai$/i.test(new URL(getRootBaseUrl(baseUrl)).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function pickFeatureConfig(feature: AIFeature, requestedModel?: string): FeatureConfig | null {
   const all = getAllFeatureConfigs(feature);
   if (all.length === 0) return null;
@@ -363,6 +371,9 @@ async function _generateFreedomImageInner(
     endpointTypes,
     prompt: params.prompt.slice(0, 50),
   });
+  if (isAtlasCloudBaseUrl(normalizedBase)) {
+    return await generateViaAtlasCloudImage(params, model, apiKey, normalizedBase);
+  }
   if (route === 'midjourney') {
     return await generateViaMidjourneyEndpoint(params, model, apiKey, normalizedBase);
   }
@@ -601,6 +612,122 @@ function toHttpError(prefix: string, status: number, body: string): Error & { st
   const err = new Error(`${prefix}: ${status} ${body}`) as Error & { status: number };
   err.status = status;
   return err;
+}
+
+function toAtlasImageSize(aspectRatio?: string): string {
+  if (aspectRatio === '16:9' || aspectRatio === '4:3') return '1536x1024';
+  if (aspectRatio === '9:16' || aspectRatio === '3:4') return '1024x1536';
+  return '1024x1024';
+}
+
+function extractAtlasOutputUrl(data: any): string | null {
+  const payload = data?.data ?? data;
+  const outputs = payload?.outputs ?? payload?.output;
+  if (Array.isArray(outputs) && typeof outputs[0] === 'string') return outputs[0];
+  if (typeof outputs === 'string') return outputs;
+  return extractImageUrl(payload) || extractVideoUrl(payload);
+}
+
+async function generateViaAtlasCloudImage(
+  params: FreedomImageParams,
+  model: string,
+  apiKey: string,
+  baseUrl: string,
+): Promise<GenerationResult> {
+  const rootBase = getRootBaseUrl(baseUrl);
+  const body: Record<string, any> = {
+    model,
+    prompt: params.prompt,
+    size: toAtlasImageSize(params.aspectRatio),
+  };
+  if (params.negativePrompt) body.negative_prompt = params.negativePrompt;
+  if (params.extraParams?.images) body.images = params.extraParams.images;
+  if (params.extraParams) {
+    for (const [key, value] of Object.entries(params.extraParams)) {
+      if (key !== 'images') body[key] = value;
+    }
+  }
+
+  const submitResp = await fetch(`${rootBase}/api/v1/model/generateImage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!submitResp.ok) {
+    throw toHttpError('Atlas Cloud image submit failed', submitResp.status, await submitResp.text());
+  }
+
+  const submitData = await submitResp.json();
+  const directUrl = extractAtlasOutputUrl(submitData);
+  const taskId = submitData.data?.id || submitData.id || submitData.data?.task_id || submitData.task_id;
+  if (directUrl) {
+    const mediaId = saveToMediaLibrary(directUrl, params.prompt, 'ai-image');
+    return { url: directUrl, taskId: taskId ? String(taskId) : undefined, mediaId };
+  }
+  if (!taskId) throw new Error('Atlas Cloud 图片接口返回空任务 ID');
+
+  const imageUrl = await pollForResult(
+    `${rootBase}/api/v1/model/result/${taskId}`,
+    apiKey,
+    IMAGE_POLL_INTERVAL,
+    IMAGE_POLL_MAX_ATTEMPTS,
+  );
+  if (!imageUrl) throw new Error('Atlas Cloud 图片任务完成但没有图片 URL');
+
+  const mediaId = saveToMediaLibrary(imageUrl, params.prompt, 'ai-image');
+  return { url: imageUrl, taskId: String(taskId), mediaId };
+}
+
+async function generateVideoViaAtlasCloud(
+  params: FreedomVideoParams,
+  model: string,
+  apiKey: string,
+  baseUrl: string,
+): Promise<GenerationResult> {
+  const rootBase = getRootBaseUrl(baseUrl);
+  const grouped = groupVideoUploadFiles(params.uploadFiles);
+  const primaryFile = grouped.single || grouped.first;
+  const body: Record<string, any> = {
+    model,
+    prompt: params.prompt,
+    duration: params.duration || 5,
+    resolution: params.resolution || '720p',
+    ratio: params.aspectRatio || 'adaptive',
+    generate_audio: true,
+  };
+
+  if (primaryFile) body.image = await toUploadHttpUrl(primaryFile);
+  if (grouped.last) body.last_image = await toUploadHttpUrl(grouped.last);
+
+  const submitResp = await fetch(`${rootBase}/api/v1/model/generateVideo`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!submitResp.ok) {
+    throw toHttpError('Atlas Cloud video submit failed', submitResp.status, await submitResp.text());
+  }
+
+  const submitData = await submitResp.json();
+  const directUrl = extractAtlasOutputUrl(submitData);
+  const taskId = submitData.data?.id || submitData.id || submitData.data?.task_id || submitData.task_id;
+  if (directUrl) return { url: directUrl, taskId: taskId ? String(taskId) : undefined };
+  if (!taskId) throw new Error('Atlas Cloud 视频接口返回空任务 ID');
+
+  const videoUrl = await pollForResult(
+    `${rootBase}/api/v1/model/prediction/${taskId}`,
+    apiKey,
+    VIDEO_POLL_INTERVAL,
+    VIDEO_POLL_MAX_ATTEMPTS,
+  );
+  if (!videoUrl) throw new Error('Atlas Cloud 视频任务完成但没有视频 URL');
+  return { url: videoUrl, taskId: String(taskId) };
 }
 
 function buildMidjourneyPrompt(params: FreedomImageParams): string {
@@ -877,25 +1004,29 @@ async function _generateFreedomVideoInner(
   });
 
   let result: GenerationResult;
-  switch (route) {
-    case 'openai_official':
-      result = await generateVideoViaOpenAIOfficial(params, model, apiKey, baseUrl);
-      break;
-    case 'volc':
-      result = await generateVideoViaVolc(params, model, apiKey, baseUrl);
-      break;
-    case 'wan':
-      result = await generateVideoViaWan(params, model, apiKey, baseUrl);
-      break;
-    case 'kling':
-      result = await generateVideoViaKling(params, model, apiKey, baseUrl);
-      break;
-    case 'replicate':
-      result = await generateVideoViaReplicate(params, model, apiKey, baseUrl);
-      break;
-    default:
-      result = await generateVideoViaUnified(params, model, apiKey, baseUrl);
-      break;
+  if (isAtlasCloudBaseUrl(baseUrl)) {
+    result = await generateVideoViaAtlasCloud(params, model, apiKey, baseUrl);
+  } else {
+    switch (route) {
+      case 'openai_official':
+        result = await generateVideoViaOpenAIOfficial(params, model, apiKey, baseUrl);
+        break;
+      case 'volc':
+        result = await generateVideoViaVolc(params, model, apiKey, baseUrl);
+        break;
+      case 'wan':
+        result = await generateVideoViaWan(params, model, apiKey, baseUrl);
+        break;
+      case 'kling':
+        result = await generateVideoViaKling(params, model, apiKey, baseUrl);
+        break;
+      case 'replicate':
+        result = await generateVideoViaReplicate(params, model, apiKey, baseUrl);
+        break;
+      default:
+        result = await generateVideoViaUnified(params, model, apiKey, baseUrl);
+        break;
+    }
   }
 
   const mediaId = saveToMediaLibrary(result.url, params.prompt, 'ai-video');
@@ -1617,16 +1748,16 @@ async function pollForResult(
       if (!response.ok) continue;
 
       const data = await response.json();
-      const status = (data.status || data.state || '').toLowerCase();
+      const status = String(data.status || data.state || data.data?.status || '').toLowerCase();
 
       // Check completion - triple status normalization from Higgsfield
       if (status === 'completed' || status === 'succeeded' || status === 'success') {
-        return extractImageUrl(data) || extractVideoUrl(data);
+        return extractImageUrl(data) || extractVideoUrl(data) || extractImageUrl(data.data) || extractVideoUrl(data.data);
       }
 
       // Check failure
       if (status === 'failed' || status === 'error' || status === 'cancelled') {
-        throw new Error(`Generation failed: ${data.error || data.message || status}`);
+        throw new Error(`Generation failed: ${data.data?.error || data.error || data.message || status}`);
       }
 
       // Still processing

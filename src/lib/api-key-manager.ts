@@ -58,6 +58,19 @@ export const DEFAULT_PROVIDERS: Omit<IProvider, 'id' | 'apiKey'>[] = [
     capabilities: ['text', 'vision', 'image_generation', 'video_generation'],
   },
   {
+    platform: 'atlascloud',
+    name: 'Atlas Cloud',
+    baseUrl: 'https://api.atlascloud.ai',
+    model: [
+      'qwen/qwen3.5-flash',
+      'deepseek-ai/deepseek-v4-pro',
+      'openai/gpt-image-2/text-to-image',
+      'openai/gpt-image-2/edit',
+      'bytedance/seedance-2.0/image-to-video',
+    ],
+    capabilities: ['text', 'vision', 'image_generation', 'video_generation'],
+  },
+  {
     platform: 'runninghub',
     name: 'RunningHub',
     baseUrl: 'https://www.runninghub.cn/openapi/v2',
@@ -81,6 +94,7 @@ export function classifyModelByName(modelName: string): ModelCapability[] {
     'cogvideo', 'hunyuan-video', 'minimax-video', 'hailuo', 'pika',
     'gen-3', 'gen3', 'mochi', 'ltx',
   ];
+  if (name.includes('/image-to-video') || name.includes('/text-to-video')) return ['video_generation'];
   // 精确匹配：grok-video 类
   if (/grok[- ]?video/.test(name)) return ['video_generation'];
   if (videoPatterns.some(p => name.includes(p))) return ['video_generation'];
@@ -91,6 +105,7 @@ export function classifyModelByName(modelName: string): ModelCapability[] {
     'gpt-image', 'ideogram', 'sd3', 'stable-diffusion', 'sdxl',
     'playground', 'recraft', 'kolors', 'seedream',
   ];
+  if (name.includes('/text-to-image') || name.includes('/image-to-image') || name.includes('/edit')) return ['image_generation'];
   if (imageGenPatterns.some(p => name.includes(p))) return ['image_generation'];
   // "xxx-image-preview" 类（如 gemini-3-pro-image-preview）
   if (/image[- ]?preview/.test(name)) return ['image_generation'];

@@ -43,6 +43,7 @@ export const BRAND_REGISTRY: Record<string, BrandInfo> = {
   runway:       { displayName: 'Runway',               color: '#333333' },
   ideogram:     { displayName: 'Ideogram',             color: '#333333' },
   suno:         { displayName: 'Suno',                 color: '#333333' },
+  atlascloud:   { displayName: 'Atlas Cloud',          color: '#2563EB' },
   other:        { displayName: '其他',                  color: '#6B7280' },
 };
 
@@ -51,6 +52,9 @@ export const BRAND_REGISTRY: Record<string, BrandInfo> = {
  * 顺序重要：更具体的模式应放在前面
  */
 const BRAND_PATTERNS: Array<{ pattern: RegExp; brand: string }> = [
+  // Atlas Cloud model IDs use provider/model/task slugs.
+  { pattern: /^(openai\/gpt-image-2|bytedance\/seedance-2\.0|qwen\/qwen3\.5|deepseek-ai\/deepseek-v4)/i, brand: 'atlascloud' },
+
   // OpenAI 系列
   { pattern: /^(gpt-|o[1-9]|dall-e|dalle|chatgpt|sora|codex)/i,       brand: 'openai' },
   { pattern: /^gpt[-_]?image/i,                                         brand: 'openai' },

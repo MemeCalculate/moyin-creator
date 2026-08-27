@@ -469,6 +469,9 @@ export async function callVideoGenerationApi(
     const currentApiKey = keyManager?.getCurrentKey?.() || apiKey;
     const keyHint = currentApiKey ? `${currentApiKey.substring(0, 8)}…` : '(none)';
     console.log(`[VideoGen] Using key: ${keyHint}, format: ${format}`);
+    if (isAtlasCloudBaseUrl(videoBaseUrl)) {
+      return callAtlasCloudVideoApi(currentApiKey, prompt, videoBaseUrl, model, aspectRatio, processedImages, videoResolution, duration, onProgress, keyManager, signal);
+    }
     switch (format) {
       case 'openai_official':
         return callOpenAIOfficialVideoApi(currentApiKey, prompt, videoBaseUrl, model, aspectRatio, duration, videoResolution, onProgress, keyManager, signal);
@@ -529,6 +532,107 @@ function extractVideoUrl(data: Record<string, any>): string | null {
     data.result_url ||
     data.response?.url;  // doubao, jimeng, grok, wan2.6
   return (url ? normalizeUrl(url) : undefined) ?? null;
+}
+
+function isAtlasCloudBaseUrl(baseUrl: string): boolean {
+  const rootBase = baseUrl.replace(/\/+$/, '').replace(/\/v\d+$/, '');
+  try {
+    return /(^|\.)atlascloud\.ai$/i.test(new URL(rootBase).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function extractAtlasOutputUrl(data: Record<string, any>): string | null {
+  const payload = data.data ?? data;
+  const outputs = payload.outputs ?? payload.output;
+  if (Array.isArray(outputs) && typeof outputs[0] === 'string') return outputs[0];
+  if (typeof outputs === 'string') return outputs;
+  return extractVideoUrl(payload);
+}
+
+async function callAtlasCloudVideoApi(
+  apiKey: string,
+  prompt: string,
+  baseUrl: string,
+  model: string,
+  aspectRatio: string,
+  imageWithRoles: Array<{ url: string; role: 'first_frame' | 'last_frame' }>,
+  videoResolution?: string,
+  duration?: number,
+  onProgress?: (progress: number) => void,
+  keyManager?: { handleError: (status: number, errorText?: string) => boolean },
+  signal?: AbortSignal,
+): Promise<string> {
+  const rootBase = baseUrl.replace(/\/+$/, '').replace(/\/v\d+$/, '');
+  const firstFrame = imageWithRoles.find(img => img.role === 'first_frame');
+  const lastFrame = imageWithRoles.find(img => img.role === 'last_frame');
+  const body: Record<string, unknown> = {
+    model,
+    prompt,
+    duration: duration || 5,
+    resolution: videoResolution || '720p',
+    ratio: aspectRatio || 'adaptive',
+    generate_audio: true,
+  };
+
+  if (firstFrame?.url) body.image = firstFrame.url;
+  if (lastFrame?.url) body.last_image = lastFrame.url;
+
+  const submitResp = await fetch(`${rootBase}/api/v1/model/generateVideo`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!submitResp.ok) {
+    const errorText = await submitResp.text();
+    handleVideoSubmitError(submitResp.status, errorText, keyManager);
+  }
+
+  const submitData = await submitResp.json();
+  const directUrl = extractAtlasOutputUrl(submitData);
+  if (directUrl) return directUrl;
+
+  const taskId = (
+    submitData.data?.id ||
+    submitData.id ||
+    submitData.data?.task_id ||
+    submitData.task_id
+  )?.toString();
+  if (!taskId) throw new Error('Atlas Cloud 视频接口返回空任务 ID');
+
+  for (let attempt = 0; attempt < 180; attempt++) {
+    onProgress?.(Math.min(20 + Math.floor((attempt / 180) * 80), 99));
+    await sleepOrAbort(5000, signal);
+
+    const pollResp = await fetch(`${rootBase}/api/v1/model/prediction/${taskId}`, {
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      signal,
+    });
+    if (!pollResp.ok) continue;
+
+    const pollData = await pollResp.json();
+    const status = String(pollData.status || pollData.state || pollData.data?.status || '').toLowerCase();
+    if (status === 'completed' || status === 'succeeded' || status === 'success') {
+      const videoUrl = extractAtlasOutputUrl(pollData);
+      if (!videoUrl) throw new Error('Atlas Cloud 视频任务完成但没有视频 URL');
+      return videoUrl;
+    }
+    if (status === 'failed' || status === 'error' || status === 'cancelled') {
+      const errorMsg = pollData.data?.error || pollData.error?.message || pollData.error || pollData.message || 'Atlas Cloud 视频生成失败';
+      throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+    }
+  }
+
+  throw new Error('Atlas Cloud 视频生成超时');
 }
 
 async function callUnifiedVideoApi(

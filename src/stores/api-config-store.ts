@@ -17,7 +17,6 @@ import {
   parseApiKeys,
   maskApiKey as maskKey,
   updateProviderKeys,
-  classifyModelByName,
 } from '@/lib/api-key-manager';
 import { injectDiscoveryCache, type DiscoveredModelLimits } from '@/lib/ai/model-registry';
 
@@ -487,6 +486,7 @@ export interface APIConfigStatus {
 const PROVIDER_INFO: Record<ProviderId, { name: string; services: ServiceType[] }> = {
   memefast: { name: '魔因API', services: ['chat', 'image', 'video', 'vision'] },
   runninghub: { name: 'RunningHub', services: ['image', 'vision'] },
+  atlascloud: { name: 'Atlas Cloud', services: ['chat', 'image', 'video', 'vision'] },
   openai: { name: 'OpenAI', services: [] },
   custom: { name: 'Custom', services: [] },
 };
@@ -599,10 +599,28 @@ export const useAPIConfigStore = create<APIConfigStore>()(
           // 用 Set 收集所有 key 的模型，自动去重
           const allModelIds = new Set<string>();
           const isMemefast = provider.platform === 'memefast';
+          const providerBaseRoot = baseUrl.replace(/\/v\d+$/, '');
+          const isAtlasCloud =
+            provider.platform === 'atlascloud' ||
+            (() => {
+              try {
+                return new URL(providerBaseRoot).hostname.toLowerCase().endsWith('atlascloud.ai');
+              } catch {
+                return false;
+              }
+            })();
           const memefastTypes: Record<string, string> = {};
           const memefastTags: Record<string, string[]> = {};
           const memefastEndpoints: Record<string, string[]> = {};
           const memefastEnableGroups: Record<string, string[]> = {};
+          const atlasTypes: Record<string, string> = {};
+          const atlasTags: Record<string, string[]> = {};
+          const atlasEndpoints: Record<string, string[]> = {};
+          const atlasTypeMap: Record<string, string> = {
+            Text: '文本',
+            Image: '图像',
+            Video: '音视频',
+          };
 
           if (isMemefast) {
             // MemeFast: /api/pricing_new 获取全量元数据（公开接口）
@@ -679,6 +697,48 @@ export const useAPIConfigStore = create<APIConfigStore>()(
                 console.warn(`[APIConfig] MemeFast key#${ki + 1} /v1/models failed:`, e);
               }
             }
+          } else if (isAtlasCloud) {
+            const response = await fetch(`${providerBaseRoot}/api/v1/models`, {
+              headers: { 'Accept': 'application/json' },
+            });
+            if (!response.ok) {
+              return { success: false, count: 0, error: `Atlas Cloud models API 返回 ${response.status}` };
+            }
+
+            const json = await response.json();
+            const data: Array<{ id?: string; model?: string; type?: string; tags?: string[]; categories?: string[] }> = json.data || json.models || json;
+            if (!Array.isArray(data) || data.length === 0) {
+              return { success: false, count: 0, error: 'Atlas Cloud 响应格式异常' };
+            }
+
+            for (const m of data) {
+              const id = m.model || m.id;
+              if (typeof id !== 'string' || id.length === 0) continue;
+              allModelIds.add(id);
+              if (m.type) {
+                atlasTypes[id] = atlasTypeMap[m.type] || m.type;
+              }
+
+              const tags = Array.isArray(m.tags) ? m.tags : m.categories;
+              const normalizedTags = Array.isArray(tags) ? [...tags] : [];
+
+              if (m.type === 'Image') {
+                atlasEndpoints[id] = ['image_generation'];
+                normalizedTags.push('图片');
+              } else if (m.type === 'Video') {
+                atlasEndpoints[id] = ['video_generation'];
+                normalizedTags.push('视频');
+              } else if (m.type === 'Text') {
+                atlasEndpoints[id] = ['chat'];
+                normalizedTags.push('对话');
+              }
+
+              if (normalizedTags.length > 0) {
+                atlasTags[id] = Array.from(new Set(normalizedTags));
+              }
+            }
+
+            console.log(`[APIConfig] Fetched ${allModelIds.size} models from Atlas Cloud`);
           } else {
             // Standard OpenAI-compatible: 遍历每个 key 查 /v1/models，合并去重
             const modelsUrl = /\/v\d+$/.test(baseUrl)
@@ -764,6 +824,23 @@ export const useAPIConfigStore = create<APIConfigStore>()(
               },
             }));
             console.log(`[APIConfig] Stored MemeFast metadata: ${Object.keys(memefastTypes).length} types, ${Object.keys(memefastTags).length} tags`);
+          } else if (isAtlasCloud) {
+            const providerOwnedModels = new Set([...(provider.model || []), ...modelIds]);
+            set((state) => ({
+              modelTypes: {
+                ...omitRecordKeys(state.modelTypes, providerOwnedModels),
+                ...atlasTypes,
+              },
+              modelTags: {
+                ...omitRecordKeys(state.modelTags, providerOwnedModels),
+                ...atlasTags,
+              },
+              modelEndpointTypes: {
+                ...omitRecordKeys(state.modelEndpointTypes, providerOwnedModels),
+                ...atlasEndpoints,
+              },
+            }));
+            console.log(`[APIConfig] Stored Atlas Cloud metadata: ${Object.keys(atlasTypes).length} types, ${Object.keys(atlasTags).length} tags`);
           }
 
           // Replace provider model list with merged & deduped data

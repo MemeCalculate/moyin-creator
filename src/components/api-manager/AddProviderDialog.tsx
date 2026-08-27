@@ -75,6 +75,20 @@ const PLATFORM_PRESETS: Array<{
     models: ["2009613632530812930"],
   },
   {
+    platform: "atlascloud",
+    name: "Atlas Cloud",
+    baseUrl: "https://api.atlascloud.ai",
+    description: "OpenAI 兼容 LLM + Atlas Media API 图片/视频生成",
+    services: ["对话", "图片生成", "视频生成", "图片理解"],
+    models: [
+      "qwen/qwen3.5-flash",
+      "deepseek-ai/deepseek-v4-pro",
+      "openai/gpt-image-2/text-to-image",
+      "openai/gpt-image-2/edit",
+      "bytedance/seedance-2.0/image-to-video",
+    ],
+  },
+  {
     platform: "custom",
     name: "自定义",
     baseUrl: "",

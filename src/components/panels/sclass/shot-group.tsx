@@ -48,6 +48,7 @@ import type { Scene } from "@/stores/scene-store";
 import type { ShotGroup } from "@/stores/sclass-store";
 import { recalcGroupDuration } from "./auto-grouping";
 import { GroupRefManager } from "./group-ref-manager";
+import { t } from "@/lib/i18n/translate";
 
 // ==================== Types ====================
 
@@ -113,9 +114,9 @@ export function ShotGroupCard({
   const handleCopyPrompt = useCallback(() => {
     if (!group.lastPrompt) return;
     navigator.clipboard.writeText(group.lastPrompt).then(() => {
-      toast.success('提示词已复制到剪贴板');
+      toast.success(t("提示词已复制到剪贴板"));
     }).catch(() => {
-      toast.error('复制失败');
+      toast.error(t("复制失败"));
     });
   }, [group.lastPrompt]);
 
@@ -131,8 +132,8 @@ export function ShotGroupCard({
   const isCompleted = group.videoStatus === "completed";
   const isFailed = group.videoStatus === "failed";
   const hasImages = scenes.some((s) => s.imageDataUrl || s.imageHttpUrl);
-  const isCalibrating = group.calibrationStatus === 'calibrating';
-  const isCalibrated = group.calibrationStatus === 'done';
+  const is校准中 = group.calibrationStatus === 'calibrating';
+  const is已校准 = group.calibrationStatus === 'done';
   const isCalibrationFailed = group.calibrationStatus === 'failed';
   const isExtendChild = group.generationType === 'extend';
   const isEditChild = group.generationType === 'edit';
@@ -178,16 +179,16 @@ export function ShotGroupCard({
           <Layers className="h-3.5 w-3.5 text-primary shrink-0" />
           <span className="text-sm font-medium truncate">{group.name}</span>
           {isExtendChild && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full shrink-0">延长</span>
+            <span className="text-[10px] px-1.5 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full shrink-0">{t("延长")}</span>
           )}
           {isEditChild && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full shrink-0">编辑</span>
+            <span className="text-[10px] px-1.5 py-0.5 bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full shrink-0">{t("编辑")}</span>
           )}
         </div>
 
         {/* 镜头数 */}
         <span className="text-xs text-muted-foreground shrink-0">
-          {group.sceneIds.length} 镜头
+          {t("{{count}} 个镜头", { count: group.sceneIds.length })}
         </span>
 
         {/* 时长标签 */}
@@ -210,10 +211,10 @@ export function ShotGroupCard({
             </TooltipTrigger>
             <TooltipContent>
               {isOverBudget ? (
-                <p>总时长超出 15s 限制！请减少镜头或缩短单镜时长。</p>
+                <p>{t("总时长超出 15s 限制！请减少镜头或缩短单镜时长。")}</p>
               ) : (
                 <p>
-                  组内 {group.sceneIds.length} 个镜头，总时长 {actualDuration}
+                  {t("组内 {{count}} 个镜头，总时长 {{duration}}", { count: group.sceneIds.length, duration: actualDuration })}
                   s
                 </p>
               )}
@@ -254,27 +255,27 @@ export function ShotGroupCard({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={isCalibrated ? "outline" : "ghost"}
+                  variant={is已校准 ? "outline" : "ghost"}
                   size="sm"
                   className={cn(
                     "h-7 px-2 text-xs",
-                    isCalibrated && "border-purple-500/50 text-purple-600 dark:text-purple-400",
+                    is已校准 && "border-purple-500/50 text-purple-600 dark:text-purple-400",
                   )}
-                  disabled={isCalibrating || isGenerating}
+                  disabled={is校准中 || isGenerating}
                   onClick={() => onCalibrateGroup?.(group.id)}
                 >
-                  {isCalibrating ? (
+                  {is校准中 ? (
                     <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                   ) : (
                     <Sparkles className="h-3 w-3 mr-1" />
                   )}
-                  {isCalibrating ? '校准中' : isCalibrated ? '已校准' : 'AI校准'}
+                  {is校准中 ? t('校准中') : is已校准 ? t('已校准') : t('AI校准')}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {isCalibrated
-                  ? <p>已完成 AI 校准，点击重新校准</p>
-                  : <p>AI 分析组内镜头，生成叙事弧线、过渡设计、优化 prompt</p>
+                {is已校准
+                  ? <p>{t("已完成 AI 校准，点击重新校准")}</p>
+                  : <p>{t("AI 分析组内镜头，生成叙事弧线、过渡设计、优化 prompt")}</p>
                 }
               </TooltipContent>
             </Tooltip>
@@ -321,7 +322,7 @@ export function ShotGroupCard({
                       延长
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>基于当前视频继续延长，可向后或向前拓展</TooltipContent>
+                  <TooltipContent>{t("基于当前视频继续延长，可向后或向前拓展")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <TooltipProvider>
@@ -338,7 +339,7 @@ export function ShotGroupCard({
                       编辑
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>对当前视频进行剧情编辑、角色替换、属性修改等</TooltipContent>
+                  <TooltipContent>{t("对当前视频进行剧情编辑、角色替换、属性修改等")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </>
@@ -396,29 +397,29 @@ export function ShotGroupCard({
           </span>
           {isOverBudget && (
             <span className="text-[10px] text-red-500 font-medium">
-              超出 {actualDuration - 15}s
+              {t("超出 {{duration}} 秒", { duration: actualDuration - 15 })}
             </span>
           )}
         </div>
       </div>
 
       {/* ========== AI 校准结果预览 ========== */}
-      {(isCalibrated || isCalibrationFailed) && (
+      {(is已校准 || isCalibrationFailed) && (
         <div className="px-3 py-2 border-t bg-purple-500/5 space-y-1.5">
-          {isCalibrated && group.narrativeArc && (
+          {is已校准 && group.narrativeArc && (
             <div className="flex items-start gap-1.5">
               <Sparkles className="h-3 w-3 text-purple-500 mt-0.5 shrink-0" />
               <div>
-                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">叙事弧线</span>
+                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">{t("叙事弧线")}</span>
                 <p className="text-xs text-muted-foreground mt-0.5">{group.narrativeArc}</p>
               </div>
             </div>
           )}
-          {isCalibrated && group.transitions && group.transitions.length > 0 && (
+          {is已校准 && group.transitions && group.transitions.length > 0 && (
             <div className="flex items-start gap-1.5">
               <ChevronRight className="h-3 w-3 text-purple-400 mt-0.5 shrink-0" />
               <div>
-                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">过渡设计</span>
+                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">{t("过渡设计")}</span>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {group.transitions.map((t, i) => `${i + 1}→${i + 2}: ${t}`).join('；')}
                 </p>
@@ -428,7 +429,7 @@ export function ShotGroupCard({
           {isCalibrationFailed && group.calibrationError && (
             <div className="flex items-start gap-1.5">
               <AlertCircle className="h-3 w-3 text-red-500 mt-0.5 shrink-0" />
-              <span className="text-xs text-red-500">校准失败：{group.calibrationError}</span>
+              <span className="text-xs text-red-500">{t("校准失败：{{error}}", { error: group.calibrationError })}</span>
             </div>
           )}
         </div>
@@ -442,7 +443,7 @@ export function ShotGroupCard({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <ImageIcon className="h-3.5 w-3.5 text-blue-500" />
-                <span className="text-xs text-blue-600 dark:text-blue-400">格子图</span>
+                <span className="text-xs text-blue-600 dark:text-blue-400">{t("格子图")}</span>
                 <div className="ml-auto flex items-center gap-1">
                   <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setGridPreviewOpen(!gridPreviewOpen)}>
                     <ZoomIn className="h-3 w-3" />
@@ -470,7 +471,7 @@ export function ShotGroupCard({
             <div>
               <div className="flex items-center gap-2">
                 <Copy className="h-3.5 w-3.5 text-orange-500" />
-                <span className="text-xs text-orange-600 dark:text-orange-400">生成 Prompt</span>
+                <span className="text-xs text-orange-600 dark:text-orange-400">{t("生成 Prompt")}</span>
                 <Button variant="ghost" size="sm" className="h-6 px-2 ml-auto text-xs" onClick={handleCopyPrompt}>
                   <Copy className="h-3 w-3 mr-1" />
                   复制
@@ -487,7 +488,7 @@ export function ShotGroupCard({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Film className="h-3.5 w-3.5 text-green-500" />
-                <span className="text-xs text-green-600 dark:text-green-400">视频已生成</span>
+                <span className="text-xs text-green-600 dark:text-green-400">{t("视频已生成")}</span>
               </div>
               <video
                 src={group.videoUrl}

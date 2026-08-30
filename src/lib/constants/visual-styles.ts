@@ -1,6 +1,8 @@
 // Copyright (c) 2025 hotflow2024
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
+import i18n from 'i18next';
+
 /**
  * Visual Style Presets - 视觉风格预设
  * 
@@ -545,6 +547,73 @@ const STYLES_STOP_MOTION: StylePreset[] = [
 ];
 
 // ============================================================
+// 本地化显示文本
+// ============================================================
+
+interface StyleDisplayText {
+  name: string;
+  description: string;
+}
+
+const ENGLISH_STYLE_DISPLAY_TEXT: Record<string, StyleDisplayText> = {
+  '3d_xuanhuan': { name: '3D Chinese Fantasy', description: 'Chinese fantasy and immortal-hero style with lavish Unreal Engine rendering and luminous effects.' },
+  '3d_american': { name: 'American 3D', description: 'Disney/Pixar-inspired American 3D animation with vibrant colors and charming characters.' },
+  '3d_q_version': { name: '3D Chibi', description: 'Blind-box designer-toy style with chibi 3D forms, C4D rendering, and soft lighting.' },
+  '3d_realistic': { name: 'Realistic 3D', description: 'Photorealistic 3D with cinematic lighting, 8K resolution, and rich texture detail.' },
+  '3d_block': { name: '3D Low Poly', description: 'Minimalist low-poly art with geometric facets and clean forms.' },
+  '3d_voxel': { name: '3D Voxel World', description: 'Minecraft-inspired voxel art with a distinctly blocky feel.' },
+  '3d_mobile': { name: '3D Mobile Game', description: 'Stylized 3D mobile-game visuals rendered in Unity.' },
+  '3d_render_2d': { name: '3D Rendered as 2D', description: '2.5D toon rendering in a Genshin Impact-inspired style.' },
+  'jp_3d_render_2d': { name: 'Japanese 3D Rendered as 2D', description: 'Japanese 2.5D anime rendering inspired by Guilty Gear, with vivid colors.' },
+  '2d_animation': { name: '2D Animation', description: 'Standard Japanese 2D animation style.' },
+  '2d_movie': { name: '2D Film', description: 'Animated-film quality inspired by Makoto Shinkai, with detailed backgrounds.' },
+  '2d_fantasy': { name: '2D Fantasy Animation', description: 'Fantasy animation set in a magical world with dreamlike colors.' },
+  '2d_retro': { name: '2D Retro Animation', description: '1990s retro cel animation with a lo-fi aesthetic.' },
+  '2d_american': { name: 'American 2D Animation', description: 'Cartoon Network-inspired American cartoon with bold lines.' },
+  '2d_ghibli': { name: '2D Ghibli Animation', description: 'Studio Ghibli-inspired visuals with watercolor backgrounds and fresh natural scenery.' },
+  '2d_retro_girl': { name: '2D Retro Shoujo', description: '1980s shoujo manga style with sparkling eyes and pastel colors.' },
+  '2d_korean': { name: 'Korean 2D Animation', description: 'Polished Korean webtoon style with detailed digital coloring.' },
+  '2d_shonen': { name: '2D Shonen Animation', description: 'High-energy shonen manga with dynamic poses, speed lines, and strong contrast.' },
+  '2d_akira': { name: '2D Akira Toriyama', description: 'Akira Toriyama and Dragon Ball-inspired style.' },
+  '2d_doraemon': { name: '2D Doraemon', description: 'Doraemon and Fujiko F. Fujio-inspired style.' },
+  '2d_fujimoto': { name: '2D Tatsuki Fujimoto', description: 'Tatsuki Fujimoto and Chainsaw Man-inspired style with loose lines and cinematic composition.' },
+  '2d_mob': { name: '2D Mob Psycho 100', description: 'Mob Psycho 100-inspired urban supernatural style with psychedelic colors.' },
+  '2d_jojo': { name: '2D JoJo Style', description: 'JoJo-inspired style with Hirohiko Araki linework and heavy shadows.' },
+  '2d_detective': { name: '2D Japanese Detective', description: 'Detective Conan and Gosho Aoyama-inspired style.' },
+  '2d_slamdunk': { name: '2D Slam Dunk', description: 'Slam Dunk and Takehiko Inoue-inspired style with realistic proportions.' },
+  '2d_astroboy': { name: '2D Osamu Tezuka', description: 'Osamu Tezuka and Astro Boy-inspired style with classic rounded lines.' },
+  '2d_deathnote': { name: '2D Death Note', description: 'Death Note and Takeshi Obata-inspired gothic, dark atmosphere.' },
+  '2d_thick_line': { name: '2D Bold Lines', description: 'Bold outlines, graffiti style, and street-art energy.' },
+  '2d_rubberhose': { name: '2D Rubber Hose Animation', description: '1930s rubber-hose cartoon animation inspired by Cuphead.' },
+  '2d_q_version': { name: '2D Chibi', description: 'Cute chibi-style 2D art.' },
+  '2d_pixel': { name: '2D Pixel Art', description: '8-bit and 16-bit retro game pixel art.' },
+  '2d_gongbi': { name: '2D Gongbi Painting', description: 'Traditional Chinese gongbi painting with meticulous brushwork.' },
+  '2d_stick': { name: '2D Stick Figure', description: 'Minimalist hand-drawn stick figures and doodles.' },
+  '2d_watercolor': { name: '2D Watercolor', description: 'Artistic watercolor painting using wet-on-wet technique.' },
+  '2d_simple_line': { name: '2D Simple Line Art', description: 'Simple clean line art on a white background.' },
+  '2d_comic': { name: '2D American Comic', description: 'American comic-book style with halftones, inspired by Marvel and DC.' },
+  '2d_shoujo': { name: '2D Shoujo Manga', description: 'Traditional shoujo manga with delicate lines and floral backgrounds.' },
+  '2d_horror': { name: '2D Eerie Horror', description: 'Junji Ito-inspired horror manga with spirals and grotesque imagery.' },
+  'real_movie': { name: 'Live-Action Film', description: 'Cinematic film still with a filmic look and color grading.' },
+  'real_costume': { name: 'Live-Action Period Drama', description: 'Chinese historical drama with hanfu and period photography.' },
+  'real_hk_retro': { name: 'Live-Action Retro Hong Kong Film', description: 'Retro Hong Kong cinema inspired by Wong Kar-wai, with neon and 1990s atmosphere.' },
+  'real_wuxia': { name: 'Live-Action Retro Wuxia', description: 'Vintage wuxia film inspired by Shaw Brothers productions.' },
+  'real_bloom': { name: 'Realistic Bloom', description: 'Dreamy backlighting with beautiful bloom and lens flare.' },
+  'stop_motion': { name: 'Stop Motion', description: 'A general stop-motion animation style.' },
+  'figure_stop_motion': { name: 'Figure Stop Motion', description: 'PVC figure texture and toy photography.' },
+  'clay_stop_motion': { name: 'Clay Stop Motion', description: 'Clay and plasticine texture with visible fingerprint details.' },
+  'lego_stop_motion': { name: 'Brick Stop Motion', description: 'LEGO brick style with a plastic texture.' },
+  'felt_stop_motion': { name: 'Felt Stop Motion', description: 'Soft, cute wool-felt texture.' },
+};
+
+const ENGLISH_CATEGORY_LABELS: Record<StyleCategory, string> = {
+  '3d': '3D Styles',
+  '2d': '2D Animation',
+  'real': 'Live Action',
+  'stop_motion': 'Stop Motion',
+};
+
+// ============================================================
 // 导出
 // ============================================================
 
@@ -583,6 +652,31 @@ export const STYLE_CATEGORIES: { id: StyleCategory; name: string; styles: readon
   { id: 'real', name: '真人风格', styles: STYLES_REAL },
   { id: 'stop_motion', name: '定格动画', styles: STYLES_STOP_MOTION },
 ];
+
+function isEnglishLocale(language: string): boolean {
+  return language.toLowerCase().startsWith('en');
+}
+
+function resolveStyle(style: StylePreset | string): StylePreset | undefined {
+  return typeof style === 'string' ? _findStyle(style) : style;
+}
+
+export function getStyleDisplayName(style: StylePreset | string, language = i18n.language): string {
+  const preset = resolveStyle(style);
+  if (!preset) return typeof style === 'string' ? style : style.name;
+  return isEnglishLocale(language) ? ENGLISH_STYLE_DISPLAY_TEXT[preset.id]?.name ?? preset.name : preset.name;
+}
+
+export function getStyleDisplayDescription(style: StylePreset | string, language = i18n.language): string {
+  const preset = resolveStyle(style);
+  if (!preset) return typeof style === 'string' ? style : style.description;
+  return isEnglishLocale(language) ? ENGLISH_STYLE_DISPLAY_TEXT[preset.id]?.description ?? preset.description : preset.description;
+}
+
+export function getStyleCategoryLabel(category: StyleCategory, language = i18n.language): string {
+  const categoryInfo = STYLE_CATEGORIES.find((item) => item.id === category);
+  return isEnglishLocale(language) ? ENGLISH_CATEGORY_LABELS[category] : categoryInfo?.name ?? category;
+}
 
 /** 根据 ID 获取风格（内置 + 自定义） */
 export function getStyleById(styleId: string): StylePreset | undefined {

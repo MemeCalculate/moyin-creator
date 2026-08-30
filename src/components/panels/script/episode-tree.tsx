@@ -9,6 +9,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { ScriptData, ScriptCharacter, ScriptScene, Episode, Shot, CompletionStatus, ProjectBackground, EpisodeRawScript, CalibrationStrictness, FilteredCharacterRecord } from "@/types/script";
 import { getShotCompletionStatus, calculateProgress } from "@/lib/script/shot-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -214,6 +215,7 @@ export function EpisodeTree({
   onConfirmCalibration,
   onCancelCalibration,
 }: EpisodeTreeProps) {
+  const { t } = useTranslation();
   const [expandedEpisodes, setExpandedEpisodes] = useState<Set<string>>(new Set(["default"]));
   const [expandedScenes, setExpandedScenes] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<FilterType>("all");
@@ -632,7 +634,7 @@ export function EpisodeTree({
   if (!scriptData) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-        解析剧本后显示结构
+        {t("解析剧本后显示结构")}
       </div>
     );
   }
@@ -692,7 +694,7 @@ export function EpisodeTree({
                   className="h-6 text-xs px-2"
                   onClick={() => setFilter(f)}
                 >
-                  {f === "all" ? "全部" : f === "pending" ? "未完成" : "已完成"}
+                  {f === "all" ? t("全部") : f === "pending" ? t("未完成") : t("已完成")}
                 </Button>
               ))}
             </div>
@@ -707,9 +709,9 @@ export function EpisodeTree({
                 disabled={sceneCalibrationStatus === 'calibrating'}
               >
                 {sceneCalibrationStatus === 'calibrating' ? (
-                  <><Loader2 className="h-3 w-3 mr-1 animate-spin" />校准中...</>
+                  <><Loader2 className="h-3 w-3 mr-1 animate-spin" />{t('校准中...')}</>
                 ) : (
-                  <><Wand2 className="h-3 w-3 mr-1" />AI场景校准</>
+                  <><Wand2 className="h-3 w-3 mr-1" />{t('AI场景校准')}</>
                 )}
               </Button>
             )}
@@ -720,11 +722,11 @@ export function EpisodeTree({
                 className="h-6 text-xs px-2"
                 onClick={onRegenerateAllShots}
               >
-                <RefreshCw className="h-3 w-3 mr-1" />更新全部
+                <RefreshCw className="h-3 w-3 mr-1" />{t('更新全部')}
               </Button>
             )}
             <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={handleAddEpisode}>
-              <Plus className="h-3 w-3 mr-1" />新建集
+              <Plus className="h-3 w-3 mr-1" />{t('新建集')}
             </Button>
           </div>
         </div>
@@ -736,7 +738,7 @@ export function EpisodeTree({
           {/* 预告片设置区 */}
           <div className="p-3 border-b space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">预告片时长</Label>
+              <Label className="text-sm font-medium">{t('预告片时长')}</Label>
               <div className="flex gap-1">
                 {([10, 30, 60] as TrailerDuration[]).map((d) => (
                   <Button
@@ -760,9 +762,9 @@ export function EpisodeTree({
                 disabled={!trailerApiOptions || trailerGenerating || shots.length === 0 || trailerConfig?.status === 'generating'}
               >
                 {trailerGenerating || trailerConfig?.status === 'generating' ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />AI 分析中...</>
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('AI 分析中...')}</>
                 ) : (
-                  <><Sparkles className="h-4 w-4 mr-2" />AI 智能挑选分镜</>
+                  <><Sparkles className="h-4 w-4 mr-2" />{t('AI 智能挑选分镜')}</>
                 )}
               </Button>
               {trailerConfig?.shotIds && trailerConfig.shotIds.length > 0 && (
@@ -777,10 +779,10 @@ export function EpisodeTree({
               )}
             </div>
             {!trailerApiOptions && (
-              <p className="text-xs text-amber-500">请先在设置中配置 AI API 密钥</p>
+              <p className="text-xs text-amber-500">{t('请先在设置中配置 AI API 密钥')}</p>
             )}
             {shots.length === 0 && (
-              <p className="text-xs text-amber-500">请先生成分镜</p>
+              <p className="text-xs text-amber-500">{t('请先生成分镜')}</p>
             )}
           </div>
 
@@ -795,7 +797,7 @@ export function EpisodeTree({
               {trailerShots.length > 0 ? (
                 <>
                   <div className="text-xs text-muted-foreground mb-2">
-                    已选择 {trailerShots.length} 个分镜，预计时长 {trailerShots.reduce((sum, s) => sum + (s.duration || 5), 0)} 秒
+                    {t('已选择 {{count}} 个分镜，预计时长 {{duration}} 秒', { count: trailerShots.length, duration: trailerShots.reduce((sum, s) => sum + (s.duration || 5), 0) })}
                   </div>
                   {trailerShots.map((shot, index) => {
                     const calibrationStatus = singleShotCalibrationStatus?.[shot.id] || 'idle';
@@ -830,7 +832,7 @@ export function EpisodeTree({
                                 onCalibrateSingleShot(shot.id);
                               }}
                               disabled={calibrationStatus === 'calibrating'}
-                              title="AI 校准分镜"
+                              title={t('AI 校准分镜')}
                             >
                               {calibrationStatus === 'calibrating' ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -860,8 +862,8 @@ export function EpisodeTree({
               ) : (
                 <div className="text-center text-muted-foreground text-sm py-8">
                   <Clapperboard className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>选择时长后点击「AI 智能挑选分镜」</p>
-                  <p className="text-xs mt-1">AI 将根据叙事功能和情感张力自动挑选</p>
+                  <p>{t('选择时长后点击「AI 智能挑选分镜」')}</p>
+                  <p className="text-xs mt-1">{t('AI 将根据叙事功能和情感张力自动挑选')}</p>
                 </div>
               )}
             </div>
@@ -930,11 +932,11 @@ export function EpisodeTree({
                           disabled={episodeGenerationStatus?.[episode.index] === 'generating'}
                         >
                           {episodeGenerationStatus?.[episode.index] === 'generating' ? (
-                            <><Loader2 className="h-3 w-3 mr-2 animate-spin" />生成中...</>
+                            <><Loader2 className="h-3 w-3 mr-2 animate-spin" />{t('生成中...')}</>
                           ) : episodeGenerationStatus?.[episode.index] === 'completed' ? (
-                            <><RefreshCw className="h-3 w-3 mr-2" />更新分镜</>
+                            <><RefreshCw className="h-3 w-3 mr-2" />{t('更新分镜')}</>
                           ) : (
-                            <><Wand2 className="h-3 w-3 mr-2" />生成分镜</>
+                            <><Wand2 className="h-3 w-3 mr-2" />{t('生成分镜')}</>
                           )}
                         </DropdownMenuItem>
                       )}
@@ -942,7 +944,7 @@ export function EpisodeTree({
                         <DropdownMenuItem
                           onClick={() => onCalibrateShots(episode.index)}
                         >
-                          <Wand2 className="h-3 w-3 mr-2" />AI校准分镜
+                          <Wand2 className="h-3 w-3 mr-2" />{t('AI校准分镜')}
                         </DropdownMenuItem>
                       )}
                       {onCalibrateEpisodeScenes && (
@@ -951,20 +953,20 @@ export function EpisodeTree({
                           disabled={sceneCalibrationStatus === 'calibrating'}
                         >
                           {sceneCalibrationStatus === 'calibrating' ? (
-                            <><Loader2 className="h-3 w-3 mr-2 animate-spin" />校准中...</>
+                            <><Loader2 className="h-3 w-3 mr-2 animate-spin" />{t('校准中...')}</>
                           ) : (
-                            <><MapPin className="h-3 w-3 mr-2" />校准本集场景</>
+                            <><MapPin className="h-3 w-3 mr-2" />{t('校准本集场景')}</>
                           )}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={() => handleAddScene(episode.id)}>
-                        <Plus className="h-3 w-3 mr-2" />新建场景
+                        <Plus className="h-3 w-3 mr-2" />{t('新建场景')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleEditEpisode(episode)}>
-                        <Pencil className="h-3 w-3 mr-2" />编辑
+                        <Pencil className="h-3 w-3 mr-2" />{t('编辑')}
                       </DropdownMenuItem>
                       <DropdownMenuItem className="text-destructive" onClick={() => handleDelete("episode", episode.id, episode.title)}>
-                        <Trash2 className="h-3 w-3 mr-2" />删除
+                        <Trash2 className="h-3 w-3 mr-2" />{t('删除')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -1032,14 +1034,14 @@ export function EpisodeTree({
                                   <DropdownMenuItem
                                     onClick={() => onCalibrateScenesShots(scene.id)}
                                   >
-                                    <Wand2 className="h-3 w-3 mr-2" />AI校准分镜
+                                    <Wand2 className="h-3 w-3 mr-2" />{t('AI校准分镜')}
                                   </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem onClick={() => handleEditScene(scene)}>
-                                  <Pencil className="h-3 w-3 mr-2" />编辑
+                                  <Pencil className="h-3 w-3 mr-2" />{t('编辑')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className="text-destructive" onClick={() => handleDelete("scene", scene.id, scene.name || scene.location)}>
-                                  <Trash2 className="h-3 w-3 mr-2" />删除
+                                  <Trash2 className="h-3 w-3 mr-2" />{t('删除')}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -1145,10 +1147,10 @@ export function EpisodeTree({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleEditCharacter(char)}>
-                      <Pencil className="h-3 w-3 mr-2" />编辑
+                      <Pencil className="h-3 w-3 mr-2" />{t('编辑')}
                     </DropdownMenuItem>
                     <DropdownMenuItem className="text-destructive" onClick={() => handleDelete("character", char.id, char.name)}>
-                      <Trash2 className="h-3 w-3 mr-2" />删除
+                      <Trash2 className="h-3 w-3 mr-2" />{t('删除')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -1183,26 +1185,26 @@ export function EpisodeTree({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={onCalibrateCharacters}>
-                              <Wand2 className="h-3 w-3 mr-2" />AI角色校准
+                              <Wand2 className="h-3 w-3 mr-2" />{t('AI角色校准')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuSub>
                               <DropdownMenuSubTrigger className="text-xs">
-                                <Wand2 className="h-3 w-3 mr-2" />校准严格度
+                                <Wand2 className="h-3 w-3 mr-2" />{t('校准严格度')}
                               </DropdownMenuSubTrigger>
                               <DropdownMenuSubContent>
                                 <DropdownMenuRadioGroup
                                   value={calibrationStrictness || 'normal'}
                                   onValueChange={(v) => onCalibrationStrictnessChange?.(v as CalibrationStrictness)}
                                 >
-                                  <DropdownMenuRadioItem value="strict" className="text-xs">严格</DropdownMenuRadioItem>
-                                  <DropdownMenuRadioItem value="normal" className="text-xs">标准</DropdownMenuRadioItem>
-                                  <DropdownMenuRadioItem value="loose" className="text-xs">宽松</DropdownMenuRadioItem>
+                                  <DropdownMenuRadioItem value="strict" className="text-xs">{t('严格')}</DropdownMenuRadioItem>
+                                  <DropdownMenuRadioItem value="normal" className="text-xs">{t('标准')}</DropdownMenuRadioItem>
+                                  <DropdownMenuRadioItem value="loose" className="text-xs">{t('宽松')}</DropdownMenuRadioItem>
                                 </DropdownMenuRadioGroup>
                               </DropdownMenuSubContent>
                             </DropdownMenuSub>
                             <DropdownMenuItem onClick={() => setFilteredCharsDialogOpen(true)}>
-                              <Filter className="h-3 w-3 mr-2" />查看被过滤角色
+                              <Filter className="h-3 w-3 mr-2" />{t('查看被过滤角色')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -1230,7 +1232,7 @@ export function EpisodeTree({
                         ) : (
                           <ChevronRight className="h-3 w-3" />
                         )}
-                        <span>群演配角 ({extraCharacters.length})</span>
+                        <span>{t('群演配角 ({{count}})', { count: extraCharacters.length })}</span>
                       </div>
                     </button>
                     {extrasExpanded && (
@@ -1255,17 +1257,17 @@ export function EpisodeTree({
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>标题</Label>
+              <Label>{t('标题')}</Label>
               <Input value={formData.title || ""} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label>描述</Label>
+              <Label>{t('描述')}</Label>
               <Input value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEpisodeDialogOpen(false)}>取消</Button>
-            <Button onClick={handleSaveEpisode}>保存</Button>
+            <Button variant="outline" onClick={() => setEpisodeDialogOpen(false)}>{t('取消')}</Button>
+            <Button onClick={handleSaveEpisode}>{t('保存')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1283,9 +1285,9 @@ export function EpisodeTree({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {editingItem?.type === "scene" ? (
-                <><Pencil className="h-4 w-4" />编辑场景</>
+                <><Pencil className="h-4 w-4" />{t('编辑场景')}</>
               ) : (
-                <><Sparkles className="h-4 w-4 text-primary" />AI 智能添加场景</>
+                <><Sparkles className="h-4 w-4 text-primary" />{t('AI 智能添加场景')}</>
               )}
             </DialogTitle>
           </DialogHeader>
@@ -1294,24 +1296,24 @@ export function EpisodeTree({
           {editingItem?.type === "scene" ? (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>场景名称</Label>
+                <Label>{t('场景名称')}</Label>
                 <Input value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>地点</Label>
+                <Label>{t('地点')}</Label>
                 <Input value={formData.location || ""} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>时间</Label>
-                <Input value={formData.time || ""} onChange={(e) => setFormData({ ...formData, time: e.target.value })} placeholder="如：白天、夜晚、黄昏" />
+                <Label>{t('时间')}</Label>
+                <Input value={formData.time || ""} onChange={(e) => setFormData({ ...formData, time: e.target.value })} placeholder={t('如：白天、夜晚、黄昏')} />
               </div>
               <div className="space-y-2">
-                <Label>氛围</Label>
+                <Label>{t('氛围')}</Label>
                 <Input value={formData.atmosphere || ""} onChange={(e) => setFormData({ ...formData, atmosphere: e.target.value })} />
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setSceneDialogOpen(false)}>取消</Button>
-                <Button onClick={handleSaveScene}>保存</Button>
+                <Button variant="outline" onClick={() => setSceneDialogOpen(false)}>{t('取消')}</Button>
+                <Button onClick={handleSaveScene}>{t('保存')}</Button>
               </DialogFooter>
             </div>
           ) : (
@@ -1320,16 +1322,16 @@ export function EpisodeTree({
               {/* AI 输入区 */}
               <div className="space-y-2">
                 <Label className="text-sm text-muted-foreground">
-                  描述你需要的场景，例如：
+                  {t('描述你需要的场景，例如：')}
                 </Label>
                 <div className="text-xs text-muted-foreground space-y-1 pl-2">
-                  <p>• “缺第5集的张家客厅这个场景”</p>
-                  <p>• “添加医院走廊这个地点”</p>
-                  <p>• “需要公司会议室”</p>
+                  <p>{t('• “缺第5集的张家客厅这个场景”')}</p>
+                  <p>{t('• “添加医院走廊这个地点”')}</p>
+                  <p>{t('• “需要公司会议室”')}</p>
                 </div>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="输入场景名或描述..."
+                    placeholder={t('输入场景名或描述...')}
                     value={sceneAiQuery}
                     onChange={(e) => setSceneAiQuery(e.target.value)}
                     onKeyDown={(e) => {
@@ -1353,7 +1355,7 @@ export function EpisodeTree({
                   </Button>
                 </div>
                 {!onAIFindScene && (
-                  <p className="text-xs text-amber-500">请先导入剧本以启用 AI 查找</p>
+                  <p className="text-xs text-amber-500">{t('请先导入剧本以启用 AI 查找')}</p>
                 )}
               </div>
 
@@ -1377,31 +1379,31 @@ export function EpisodeTree({
                     <div className="space-y-2 pl-6">
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <span className="text-muted-foreground">场景名：</span>
+                          <span className="text-muted-foreground">{t('场景名：')}</span>
                           <span className="font-medium">{sceneAiResult.scene.name || sceneAiResult.scene.location}</span>
                         </div>
                         {sceneAiResult.scene.time && (
                           <div>
-                            <span className="text-muted-foreground">时间：</span>
+                            <span className="text-muted-foreground">{t('时间：')}</span>
                             <span>{sceneAiResult.scene.time}</span>
                           </div>
                         )}
                         {sceneAiResult.scene.atmosphere && (
                           <div className="col-span-2">
-                            <span className="text-muted-foreground">氛围：</span>
+                            <span className="text-muted-foreground">{t('氛围：')}</span>
                             <span>{sceneAiResult.scene.atmosphere}</span>
                           </div>
                         )}
                       </div>
                       {sceneAiResult.scene.location && sceneAiResult.scene.location !== sceneAiResult.scene.name && (
                         <div className="text-sm">
-                          <span className="text-muted-foreground">地点详情：</span>
+                          <span className="text-muted-foreground">{t('地点详情：')}</span>
                           <p className="text-xs mt-1 text-muted-foreground">{sceneAiResult.scene.location}</p>
                         </div>
                       )}
                       {sceneAiResult.scene.visualPrompt && (
                         <div className="text-sm">
-                          <span className="text-muted-foreground">视觉描述：</span>
+                          <span className="text-muted-foreground">{t('视觉描述：')}</span>
                           <p className="text-xs mt-1 text-muted-foreground">{sceneAiResult.scene.visualPrompt}</p>
                         </div>
                       )}
@@ -1420,7 +1422,7 @@ export function EpisodeTree({
               {/* 操作按钮 */}
               <DialogFooter className="gap-2">
                 <Button variant="outline" onClick={() => setSceneDialogOpen(false)}>
-                  取消
+                  {t('取消')}
                 </Button>
                 {sceneAiResult?.scene ? (
                   <Button onClick={handleConfirmAIScene} className="gap-1">
@@ -1452,9 +1454,9 @@ export function EpisodeTree({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {editingItem?.type === "character" ? (
-                <><Pencil className="h-4 w-4" />编辑角色</>
+                <><Pencil className="h-4 w-4" />{t('编辑角色')}</>
               ) : (
-                <><Sparkles className="h-4 w-4 text-primary" />AI 智能添加角色</>
+                <><Sparkles className="h-4 w-4 text-primary" />{t('AI 智能添加角色')}</>
               )}
             </DialogTitle>
           </DialogHeader>
@@ -1463,24 +1465,24 @@ export function EpisodeTree({
           {editingItem?.type === "character" ? (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>角色名</Label>
+                <Label>{t('角色名')}</Label>
                 <Input value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>性别</Label>
+                <Label>{t('性别')}</Label>
                 <Input value={formData.gender || ""} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>年龄</Label>
+                <Label>{t('年龄')}</Label>
                 <Input value={formData.age || ""} onChange={(e) => setFormData({ ...formData, age: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>性格</Label>
+                <Label>{t('性格')}</Label>
                 <Input value={formData.personality || ""} onChange={(e) => setFormData({ ...formData, personality: e.target.value })} />
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setCharacterDialogOpen(false)}>取消</Button>
-                <Button onClick={handleSaveCharacter}>保存</Button>
+                <Button variant="outline" onClick={() => setCharacterDialogOpen(false)}>{t('取消')}</Button>
+                <Button onClick={handleSaveCharacter}>{t('保存')}</Button>
               </DialogFooter>
             </div>
           ) : (
@@ -1489,16 +1491,16 @@ export function EpisodeTree({
               {/* AI 输入区 */}
               <div className="space-y-2">
                 <Label className="text-sm text-muted-foreground">
-                  描述你需要的角色，例如：
+                  {t('描述你需要的角色，例如：')}
                 </Label>
                 <div className="text-xs text-muted-foreground space-y-1 pl-2">
-                  <p>• “缺第10集的王大哥这个角色”</p>
-                  <p>• “添加张小宝这个人”</p>
-                  <p>• “需要刀疑哥”</p>
+                  <p>{t('• “缺第10集的王大哥这个角色”')}</p>
+                  <p>{t('• “添加张小宝这个人”')}</p>
+                  <p>{t('• “需要刀疑哥”')}</p>
                 </div>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="输入角色名或描述..."
+                    placeholder={t('输入角色名或描述...')}
                     value={aiQuery}
                     onChange={(e) => setAiQuery(e.target.value)}
                     onKeyDown={(e) => {
@@ -1522,7 +1524,7 @@ export function EpisodeTree({
                   </Button>
                 </div>
                 {!onAIFindCharacter && (
-                  <p className="text-xs text-amber-500">请先导入剧本以启用 AI 查找</p>
+                  <p className="text-xs text-amber-500">{t('请先导入剧本以启用 AI 查找')}</p>
                 )}
               </div>
 
@@ -1546,37 +1548,37 @@ export function EpisodeTree({
                     <div className="space-y-2 pl-6">
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <span className="text-muted-foreground">角色名：</span>
+                          <span className="text-muted-foreground">{t('角色名：')}</span>
                           <span className="font-medium">{aiResult.character.name}</span>
                         </div>
                         {aiResult.character.gender && (
                           <div>
-                            <span className="text-muted-foreground">性别：</span>
+                            <span className="text-muted-foreground">{t('性别：')}</span>
                             <span>{aiResult.character.gender}</span>
                           </div>
                         )}
                         {aiResult.character.age && (
                           <div>
-                            <span className="text-muted-foreground">年龄：</span>
+                            <span className="text-muted-foreground">{t('年龄：')}</span>
                             <span>{aiResult.character.age}</span>
                           </div>
                         )}
                         {aiResult.character.personality && (
                           <div>
-                            <span className="text-muted-foreground">性格：</span>
+                            <span className="text-muted-foreground">{t('性格：')}</span>
                             <span>{aiResult.character.personality}</span>
                           </div>
                         )}
                       </div>
                       {aiResult.character.role && (
                         <div className="text-sm">
-                          <span className="text-muted-foreground">角色简介：</span>
+                          <span className="text-muted-foreground">{t('角色简介：')}</span>
                           <p className="text-xs mt-1 text-muted-foreground">{aiResult.character.role}</p>
                         </div>
                       )}
                       {aiResult.character.visualPromptZh && (
                         <div className="text-sm">
-                          <span className="text-muted-foreground">视觉描述：</span>
+                          <span className="text-muted-foreground">{t('视觉描述：')}</span>
                           <p className="text-xs mt-1 text-muted-foreground">{aiResult.character.visualPromptZh}</p>
                         </div>
                       )}
@@ -1588,7 +1590,7 @@ export function EpisodeTree({
               {/* 操作按钮 */}
               <DialogFooter className="gap-2">
                 <Button variant="outline" onClick={() => setCharacterDialogOpen(false)}>
-                  取消
+                  {t('取消')}
                 </Button>
                 {aiResult?.character ? (
                   <Button onClick={handleConfirmAICharacter} className="gap-1">
@@ -1611,16 +1613,16 @@ export function EpisodeTree({
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogTitle>{t('确认删除')}</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除「{deleteItem?.name}」吗？此操作不可撤销。
-              {deleteItem?.type === "episode" && "\n删除集将同时删除其下所有场景和分镜。"}
-              {deleteItem?.type === "scene" && "\n删除场景将同时删除其下所有分镜。"}
+              {t('确定要删除「{{name}}」吗？此操作不可撤销。', { name: deleteItem?.name })}
+              {deleteItem?.type === "episode" && t('\n删除集将同时删除其下所有场景和分镜。')}
+              {deleteItem?.type === "scene" && t('\n删除场景将同时删除其下所有分镜。')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">删除</AlertDialogAction>
+            <AlertDialogCancel>{t('取消')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">{t('删除')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1631,14 +1633,14 @@ export function EpisodeTree({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Wand2 className="h-4 w-4" />
-              角色校准结果确认
+              {t('角色校准结果确认')}
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 py-2">
             {/* 保留角色列表 */}
             <div>
-              <h4 className="text-sm font-medium mb-2">保留角色 ({localKeptCharacters.length})</h4>
+              <h4 className="text-sm font-medium mb-2">{t('保留角色 ({{count}})', { count: localKeptCharacters.length })}</h4>
               <div className="space-y-1 max-h-48 overflow-y-auto border rounded-md p-2">
                 {localKeptCharacters.map(char => {
                   const importance = char.tags?.find(t => ['protagonist', 'supporting', 'minor', 'extra'].includes(t));
@@ -1648,7 +1650,7 @@ export function EpisodeTree({
                       <div className="flex items-center gap-2">
                         <span>{char.name}</span>
                         {importance && (
-                          <span className="text-muted-foreground text-[10px]">({labels[importance] || importance})</span>
+                          <span className="text-muted-foreground text-[10px]">({t(labels[importance] || importance)})</span>
                         )}
                       </div>
                       <Button
@@ -1666,7 +1668,7 @@ export function EpisodeTree({
             {/* 被过滤角色列表 */}
             {localFilteredCharacters.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">被过滤角色 ({localFilteredCharacters.length})</h4>
+                <h4 className="text-sm font-medium mb-2">{t('被过滤角色 ({{count}})', { count: localFilteredCharacters.length })}</h4>
                 <div className="space-y-1 max-h-32 overflow-y-auto border rounded-md p-2">
                   {localFilteredCharacters.map((fc, i) => (
                     <div key={`${fc.name}_${i}`} className="flex items-center justify-between px-2 py-1 rounded hover:bg-muted text-xs">
@@ -1688,11 +1690,11 @@ export function EpisodeTree({
           </div>
           
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={onCancelCalibration}>取消</Button>
+            <Button variant="outline" onClick={onCancelCalibration}>{t('取消')}</Button>
             {localFilteredCharacters.length > 0 && (
-              <Button variant="secondary" onClick={handleRestoreAllAndConfirm}>全部保留</Button>
+              <Button variant="secondary" onClick={handleRestoreAllAndConfirm}>{t('全部保留')}</Button>
             )}
-            <Button onClick={handleConfirmCalibrationLocal}>确认</Button>
+            <Button onClick={handleConfirmCalibrationLocal}>{t('确认')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1701,7 +1703,7 @@ export function EpisodeTree({
       <Dialog open={filteredCharsDialogOpen} onOpenChange={setFilteredCharsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>被过滤的角色</DialogTitle>
+            <DialogTitle>{t('被过滤的角色')}</DialogTitle>
           </DialogHeader>
           <div className="py-2">
             {(lastFilteredCharacters && lastFilteredCharacters.length > 0) ? (
@@ -1718,17 +1720,17 @@ export function EpisodeTree({
                         onRestoreFilteredCharacter?.(fc.name);
                       }}
                     >
-                      恢复
+                      {t('恢复')}
                     </Button>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">没有被过滤的角色</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t('没有被过滤的角色')}</p>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFilteredCharsDialogOpen(false)}>关闭</Button>
+            <Button variant="outline" onClick={() => setFilteredCharsDialogOpen(false)}>{t('关闭')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

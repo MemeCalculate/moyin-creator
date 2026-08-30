@@ -10,6 +10,7 @@
  */
 
 import { useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { Shot, ScriptScene, ScriptData } from "@/types/script";
 import { cn } from "@/lib/utils";
 import { Camera, MapPin, Clock, MessageSquare, Film } from "lucide-react";
@@ -32,6 +33,7 @@ export function ShotBreakdown({
   onShotClick,
   selectedShotId,
 }: ShotBreakdownProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Group shots by scene
@@ -54,8 +56,8 @@ export function ShotBreakdown({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Film className="w-12 h-12 text-zinc-700 mb-4" />
-        <p className="text-sm text-zinc-500">暂无分镜</p>
-        <p className="text-xs text-zinc-600 mt-1">解析剧本后点击"生成分镜列表"</p>
+        <p className="text-sm text-zinc-500">{t("暂无分镜")}</p>
+        <p className="text-xs text-zinc-600 mt-1">{t("解析剧本后点击“生成分镜列表”")}</p>
       </div>
     );
   }
@@ -101,14 +103,14 @@ export function ShotBreakdown({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-mono text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">
-                    场景 {groupIdx + 1}
+                    {t("场景 {{number}}", { number: groupIdx + 1 })}
                   </span>
                   <span className="text-sm font-medium text-white">
                     {group.scene.name || group.scene.location}
                   </span>
                 </div>
                 <span className="text-[10px] text-zinc-500 font-mono">
-                  {group.shots.length} shots
+                  {t("{{count}} 个镜头", { count: group.shots.length })}
                 </span>
               </div>
               <div className="flex items-center gap-3 mt-1 text-[10px] text-zinc-500">
@@ -136,6 +138,7 @@ export function ShotBreakdown({
                   shot={shot}
                   isSelected={selectedShotId === shot.id}
                   onClick={() => onShotClick?.(shot)}
+                  t={t}
                 />
               ))}
             </div>
@@ -150,9 +153,10 @@ interface ShotRowProps {
   shot: Shot;
   isSelected: boolean;
   onClick: () => void;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }
 
-function ShotRow({ shot, isSelected, onClick }: ShotRowProps) {
+function ShotRow({ shot, isSelected, onClick, t }: ShotRowProps) {
   return (
     <button
       onClick={onClick}
@@ -167,7 +171,7 @@ function ShotRow({ shot, isSelected, onClick }: ShotRowProps) {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-zinc-300">
-            镜头 {shot.index}
+            {t("镜头 {{number}}", { number: shot.index })}
           </span>
           {shot.shotSize && (
             <span className="text-[10px] font-mono text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
@@ -185,10 +189,10 @@ function ShotRow({ shot, isSelected, onClick }: ShotRowProps) {
         {/* Status indicators */}
         <div className="flex items-center gap-1">
           {shot.imageUrl && (
-            <span className="w-2 h-2 rounded-full bg-green-500" title="图片已生成" />
+            <span className="w-2 h-2 rounded-full bg-green-500" title={t("图片已生成")} />
           )}
           {shot.videoUrl && (
-            <span className="w-2 h-2 rounded-full bg-blue-500" title="视频已生成" />
+            <span className="w-2 h-2 rounded-full bg-blue-500" title={t("视频已生成")} />
           )}
         </div>
       </div>

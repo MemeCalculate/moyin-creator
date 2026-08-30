@@ -4,13 +4,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
+import { initializeLocalization } from './lib/i18n'
 import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+async function bootstrap() {
+  // Settings are file-backed in Electron, so hydrate the saved locale before mounting React.
+  await initializeLocalization()
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  )
+}
+
+void bootstrap()
 
 // Use contextBridge (only available in Electron)
 if (window.ipcRenderer) {

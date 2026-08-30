@@ -11,6 +11,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Wind, Check, X } from "lucide-react";
+import { t } from "@/lib/i18n/translate";
 
 interface AmbientSoundInputProps {
   value: string;
@@ -23,7 +24,7 @@ export function AmbientSoundInput({
   value,
   onChange,
   disabled,
-  placeholder = "如：森林鸟鸣、城市喧嚣...",
+  placeholder = t("如：森林鸟鸣、城市喧嚣..."),
 }: AmbientSoundInputProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);

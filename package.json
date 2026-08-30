@@ -33,6 +33,7 @@
     "build:mac:universal": "node ./scripts/build-desktop.mjs --mac --universal",
     "build:linux": "node ./scripts/build-desktop.mjs --linux",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "validate:localization": "node ./scripts/validate-localization.mjs",
     "preview": "electron-vite preview"
   },
   "dependencies": {
@@ -52,6 +53,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "embla-carousel-react": "^8.6.0",
+    "i18next": "^26.3.6",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.562.0",
     "mediabunny": "^1.37.0",
@@ -63,6 +65,7 @@
     "react-day-picker": "^9.14.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.71.2",
+    "react-i18next": "^17.0.9",
     "react-phone-number-input": "^3.4.16",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^3.7.0",
@@ -94,5 +97,8 @@
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.6"
   },
-  "main": "out/main/index.cjs"
+  "main": "out/main/index.cjs",
+  "allowScripts": {
+    "electron@30.5.1": true
+  }
 }

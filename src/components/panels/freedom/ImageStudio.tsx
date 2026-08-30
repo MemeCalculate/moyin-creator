@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { useState, useMemo, useCallback } from 'react';
 import { ImageIcon, Loader2, Download, Save, Sparkles, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,7 @@ import {
 } from '@/lib/freedom/model-registry';
 
 export function ImageStudio() {
+  const { t } = useTranslation();
   const [saveToPropsOpen, setSaveToPropsOpen] = useState(false);
 
   const {
@@ -56,7 +59,7 @@ export function ImageStudio() {
 
   const handleGenerate = useCallback(async () => {
     if (!imagePrompt.trim()) {
-      toast.error('请输入描述文字');
+      toast.error(t("请输入描述文字"));
       return;
     }
 
@@ -86,9 +89,9 @@ export function ImageStudio() {
         type: 'image',
       });
 
-      toast.success('图片生成成功！已保存到素材库');
+      toast.success(t("图片生成成功！已保存到素材库"));
     } catch (err: any) {
-      toast.error(`生成失败: ${err.message}`);
+      toast.error(t("生成失败: {{error}}", { error: err.message }));
     } finally {
       setImageGenerating(false);
     }
@@ -106,7 +109,7 @@ export function ImageStudio() {
           <div className="p-4 space-y-5">
             {/* Model Selection */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">模型选择</Label>
+              <Label className="text-sm font-medium">{t("模型选择")}</Label>
               <ModelSelector
                 type="image"
                 value={selectedImageModel}
@@ -121,7 +124,7 @@ export function ImageStudio() {
 
             {/* Aspect Ratio */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">宽高比</Label>
+              <Label className="text-sm font-medium">{t("宽高比")}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {aspectRatios.map((ratio) => (
                   <Button
@@ -140,10 +143,10 @@ export function ImageStudio() {
             {/* Resolution (conditional) */}
             {hasResolution && (
               <div className="space-y-2">
-                <Label className="text-sm font-medium">分辨率</Label>
+                <Label className="text-sm font-medium">{t("分辨率")}</Label>
                 <Select value={imageResolution} onValueChange={setImageResolution}>
                   <SelectTrigger className="h-9">
-                    <SelectValue placeholder="选择分辨率" />
+                    <SelectValue placeholder={t("选择分辨率")} />
                   </SelectTrigger>
                   <SelectContent>
                     {resolutions.map((r) => (
@@ -158,7 +161,7 @@ export function ImageStudio() {
             {hasMidjourneyParams && (
               <>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">速度</Label>
+                  <Label className="text-sm font-medium">{t("速度")}</Label>
                   <Select
                     value={imageExtraParams.speed || 'fast'}
                     onValueChange={(v) => updateExtraParam('speed', v)}
@@ -167,15 +170,15 @@ export function ImageStudio() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="relaxed">Relaxed</SelectItem>
-                      <SelectItem value="fast">Fast</SelectItem>
-                      <SelectItem value="turbo">Turbo</SelectItem>
+                      <SelectItem value="relaxed">{t("宽松")}</SelectItem>
+                      <SelectItem value="fast">{t("快速")}</SelectItem>
+                      <SelectItem value="turbo">{t("极速")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <Label className="text-sm">Stylization</Label>
+                    <Label className="text-sm">{t("风格化")}</Label>
                     <span className="text-xs text-muted-foreground">{imageExtraParams.stylization || 1}</span>
                   </div>
                   <Slider
@@ -186,7 +189,7 @@ export function ImageStudio() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <Label className="text-sm">Weirdness</Label>
+                    <Label className="text-sm">{t("怪诞度")}</Label>
                     <span className="text-xs text-muted-foreground">{imageExtraParams.weirdness || 1}</span>
                   </div>
                   <Slider
@@ -202,31 +205,31 @@ export function ImageStudio() {
             {hasIdeogramParams && (
               <>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">渲染速度</Label>
+                  <Label className="text-sm font-medium">{t("渲染速度")}</Label>
                   <Select
                     value={imageExtraParams.render_speed || 'Balanced'}
                     onValueChange={(v) => updateExtraParam('render_speed', v)}
                   >
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Turbo">Turbo</SelectItem>
-                      <SelectItem value="Balanced">Balanced</SelectItem>
-                      <SelectItem value="Quality">Quality</SelectItem>
+                      <SelectItem value="Turbo">{t("极速")}</SelectItem>
+                      <SelectItem value="Balanced">{t("均衡")}</SelectItem>
+                      <SelectItem value="Quality">{t("质量")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">风格</Label>
+                  <Label className="text-sm font-medium">{t("风格")}</Label>
                   <Select
                     value={imageExtraParams.style || 'Auto'}
                     onValueChange={(v) => updateExtraParam('style', v)}
                   >
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Auto">Auto</SelectItem>
-                      <SelectItem value="General">General</SelectItem>
-                      <SelectItem value="Realistic">Realistic</SelectItem>
-                      <SelectItem value="Design">Design</SelectItem>
+                      <SelectItem value="Auto">{t("自动")}</SelectItem>
+                      <SelectItem value="General">{t("通用")}</SelectItem>
+                      <SelectItem value="Realistic">{t("写实")}</SelectItem>
+                      <SelectItem value="Design">{t("设计")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -235,9 +238,9 @@ export function ImageStudio() {
 
             {/* Prompt Input */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">描述文字</Label>
+              <Label className="text-sm font-medium">{t("描述文字")}</Label>
               <Textarea
-                placeholder="描述你想生成的图片..."
+                placeholder={t("描述你想生成的图片...")}
                 value={imagePrompt}
                 onChange={(e) => setImagePrompt(e.target.value)}
                 className="min-h-[120px] resize-none"
@@ -251,9 +254,9 @@ export function ImageStudio() {
               disabled={imageGenerating || !imagePrompt.trim()}
             >
               {imageGenerating ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 生成中...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("生成中...")}</>
               ) : (
-                <><Sparkles className="mr-2 h-4 w-4" /> 生成图片</>
+                <><Sparkles className="mr-2 h-4 w-4" />{t("生成图片")}</>
               )}
             </Button>
           </div>
@@ -265,22 +268,22 @@ export function ImageStudio() {
         {imageGenerating ? (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">图片生成中，请稍候...</p>
+            <p className="text-sm text-muted-foreground">{t("图片生成中，请稍候...")}</p>
           </div>
         ) : imageResult ? (
           <div className="max-w-full max-h-full relative group">
             <img
               src={imageResult}
-              alt="Generated"
+              alt={t("生成结果")}
               className="max-w-full max-h-[calc(100vh-200px)] rounded-lg shadow-lg object-contain"
             />
             <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
               <Button size="sm" variant="secondary" onClick={() => setSaveToPropsOpen(true)}>
-                <Archive className="h-4 w-4 mr-1" /> 保存到道具库
+                <Archive className="h-4 w-4 mr-1" /> {t("保存到道具库")}
               </Button>
               <Button size="sm" variant="secondary" asChild>
                 <a href={imageResult} download target="_blank" rel="noopener">
-                  <Download className="h-4 w-4 mr-1" /> 下载
+                  <Download className="h-4 w-4 mr-1" /> {t("下载")}
                 </a>
               </Button>
             </div>
@@ -288,8 +291,8 @@ export function ImageStudio() {
         ) : (
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <ImageIcon className="h-16 w-16 opacity-20" />
-            <p className="text-lg font-medium">图片工作室</p>
-            <p className="text-sm">选择模型，输入描述，生成你想要的图片</p>
+            <p className="text-lg font-medium">{t("图片工作室")}</p>
+            <p className="text-sm">{t("选择模型，输入描述，生成你想要的图片")}</p>
           </div>
         )}
       </div>

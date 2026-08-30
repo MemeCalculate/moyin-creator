@@ -9,6 +9,7 @@
  */
 
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Progress } from "@/components/ui/progress";
 
 interface BatchProgressOverlayProps {
@@ -29,8 +30,9 @@ export function BatchProgressOverlay({
   current,
   total,
   message,
-  title = "批量生成中",
+  title,
 }: BatchProgressOverlayProps) {
+  const { t } = useTranslation();
   if (!isVisible) return null;
 
   const progress = total > 0 ? Math.round((current / total) * 100) : 0;
@@ -44,7 +46,7 @@ export function BatchProgressOverlay({
             <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">{title}</h3>
+            <h3 className="text-lg font-bold text-white">{title ?? t("batchProgress.title")}</h3>
             <p className="text-xs text-zinc-500 font-mono">
               {current} / {total}
             </p>
@@ -57,7 +59,7 @@ export function BatchProgressOverlay({
           <div className="flex justify-between text-[10px] text-zinc-500 font-mono">
             <span>{progress}%</span>
             <span>
-              {current} of {total} completed
+              {t("batchProgress.completed", { current, total })}
             </span>
           </div>
         </div>
@@ -69,7 +71,7 @@ export function BatchProgressOverlay({
 
         {/* Warning */}
         <p className="mt-6 text-[10px] text-zinc-600 text-center">
-          请勿关闭窗口或刷新页面
+          {t("batchProgress.doNotClose")}
         </p>
       </div>
     </div>

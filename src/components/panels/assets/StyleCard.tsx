@@ -8,6 +8,7 @@
  * 默认风格和自定义风格共用
  */
 
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { LocalImage } from "@/components/ui/local-image";
 import type { StyleCategory } from "@/lib/constants/visual-styles";
@@ -48,6 +49,7 @@ export function StyleCard({
   onClick,
   onDoubleClick,
 }: StyleCardProps) {
+  const { t } = useTranslation();
   // 自定义风格用第一张参考图
   const customImage = isCustom ? referenceImages?.[0] : undefined;
 
@@ -76,17 +78,17 @@ export function StyleCard({
             "w-full h-full flex flex-col items-center justify-center",
             CATEGORY_COLORS[category] || 'bg-muted/30'
           )}>
-            <div className="text-lg font-bold">{CATEGORY_LABELS[category] || category}</div>
+            <div className="text-lg font-bold">{t(CATEGORY_LABELS[category] || category)}</div>
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-            无参考图
+            {t("无参考图")}
           </div>
         )}
         {/* 自定义标记 */}
         {isCustom && (
           <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] bg-primary/80 text-primary-foreground">
-            自定义
+            {t("自定义")}
           </div>
         )}
       </div>

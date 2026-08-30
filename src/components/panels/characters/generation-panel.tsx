@@ -8,6 +8,7 @@
  * Character generation controls: style, views, description, reference images
  */
 
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { useCharacterLibraryStore, type Character } from "@/stores/character-library-store";
 import { useProjectStore } from "@/stores/project-store";
@@ -82,6 +83,7 @@ interface GenerationPanelProps {
 }
 
 export function GenerationPanel({ selectedCharacter, onCharacterCreated }: GenerationPanelProps) {
+  const { t } = useTranslation();
   const { 
     addCharacter, 
     updateCharacter,
@@ -329,15 +331,15 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
   // 创建新角色并生成图片（始终新建，不会覆盖已有角色）
   const handleCreateAndGenerate = async () => {
     if (!name.trim()) {
-      toast.error("请输入角色名称");
+      toast.error(t("请输入角色名称"));
       return;
     }
     if (!description.trim()) {
-      toast.error("请输入角色描述");
+      toast.error(t("请输入角色描述"));
       return;
     }
     if (selectedElements.length === 0) {
-      toast.error("请至少选择一个生成内容");
+      toast.error(t("请至少选择一个生成内容"));
       return;
     }
 
@@ -423,11 +425,11 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
       setPreviewUrl(result.imageUrl);
       setPreviewCharacterId(targetId);
       setGenerationStatus('completed');
-      toast.success("图片生成完成，请预览确认");
+      toast.success(t("图片生成完成，请预览确认"));
     } catch (error) {
       const err = error as Error;
       setGenerationStatus('error', err.message);
-      toast.error(`生成失败: ${err.message}`);
+      toast.error(t("生成失败: {{message}}", { message: err.message }));
     } finally {
       setGeneratingCharacter(null);
     }
@@ -436,7 +438,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
   const handleSavePreview = async () => {
     if (!previewUrl || !previewCharacterId) return;
 
-    toast.loading("正在保存图片到本地...", { id: 'saving-preview' });
+    toast.loading(t("正在保存图片到本地..."), { id: 'saving-preview' });
     
     try {
       // Save image to local storage
@@ -468,10 +470,10 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
 
       setPreviewUrl(null);
       setPreviewCharacterId(null);
-      toast.success("角色设定图已保存到本地！", { id: 'saving-preview' });
+      toast.success(t("角色设定图已保存到本地！"), { id: 'saving-preview' });
     } catch (error) {
       console.error('Failed to save preview:', error);
-      toast.error("保存失败", { id: 'saving-preview' });
+      toast.error(t("保存失败"), { id: 'saving-preview' });
     }
   };
 
@@ -485,31 +487,31 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
     return (
       <div className="h-full flex flex-col overflow-hidden">
         <div className="p-3 pb-2 border-b shrink-0">
-          <h3 className="font-medium text-sm">预览角色设定图</h3>
+          <h3 className="font-medium text-sm">{t("预览角色设定图")}</h3>
         </div>
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-3 space-y-4 pb-32">
             <div className="relative rounded-lg overflow-hidden border-2 border-amber-500/50 bg-muted">
               <img 
                 src={previewUrl} 
-                alt="角色设定预览"
+                alt={t("角色设定预览")}
                 className="w-full h-auto"
               />
               <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-                预览
+                {t("预览")}
               </div>
             </div>
           </div>
         </ScrollArea>
         <div className="p-3 border-t space-y-2 shrink-0">
           <Button onClick={handleSavePreview} className="w-full">
-            保存设定图
+            {t("保存设定图")}
           </Button>
           <Button onClick={handleCreateAndGenerate} variant="outline" className="w-full" disabled={isGenerating}>
-            重新生成
+            {t("重新生成")}
           </Button>
           <Button onClick={handleDiscardPreview} variant="ghost" className="w-full text-muted-foreground" size="sm">
-            放弃并返回
+            {t("放弃并返回")}
           </Button>
         </div>
       </div>
@@ -519,18 +521,18 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="p-3 pb-2 border-b shrink-0">
-        <h3 className="font-medium text-sm">生成控制台</h3>
+        <h3 className="font-medium text-sm">{t("生成控制台")}</h3>
       </div>
       
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-3 space-y-4">
           {/* Character name */}
           <div className="space-y-2">
-            <Label className="text-xs">角色名称</Label>
+            <Label className="text-xs">{t("角色名称")}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="例如：小明、机器猫"
+              placeholder={t("例如：小明、机器猫")}
               disabled={isGenerating}
             />
           </div>
@@ -538,27 +540,27 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
           {/* Gender and Age */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-2">
-              <Label className="text-xs">性别</Label>
+              <Label className="text-xs">{t("性别")}</Label>
               <Select value={gender} onValueChange={setGender} disabled={isGenerating}>
                 <SelectTrigger>
-                  <SelectValue placeholder="选择" />
+                  <SelectValue placeholder={t("选择")} />
                 </SelectTrigger>
                 <SelectContent>
                   {GENDER_PRESETS.map((g) => (
-                    <SelectItem key={g.id} value={g.id}>{g.label}</SelectItem>
+                    <SelectItem key={g.id} value={g.id}>{t(g.label)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">年龄段</Label>
+              <Label className="text-xs">{t("年龄段")}</Label>
               <Select value={age} onValueChange={setAge} disabled={isGenerating}>
                 <SelectTrigger>
-                  <SelectValue placeholder="选择" />
+                  <SelectValue placeholder={t("选择")} />
                 </SelectTrigger>
                 <SelectContent>
                   {AGE_PRESETS.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>
+                    <SelectItem key={a.id} value={a.id}>{t(a.label)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -567,22 +569,22 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
 
           {/* Personality */}
           <div className="space-y-2">
-            <Label className="text-xs">性格特征</Label>
+            <Label className="text-xs">{t("性格特征")}</Label>
             <Input
               value={personality}
               onChange={(e) => setPersonality(e.target.value)}
-              placeholder="开朗、勇敢..."
+              placeholder={t("开朗、勇敢...")}
               disabled={isGenerating}
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label className="text-xs">角色描述</Label>
+            <Label className="text-xs">{t("角色描述")}</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="详细描述角色外观..."
+              placeholder={t("详细描述角色外观...")}
               className="min-h-[80px] text-sm resize-none"
               disabled={isGenerating}
             />
@@ -604,18 +606,18 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                   ) : (
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   )}
-                  <span className="text-xs font-medium">AI 校准信息</span>
+                  <span className="text-xs font-medium">{t("AI 校准信息")}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {isManuallyModified ? (
                     <>
                       <AlertTriangle className="h-3 w-3 text-amber-500" />
-                      <span className="text-[10px] text-amber-500">已修改</span>
+                      <span className="text-[10px] text-amber-500">{t("已修改")}</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="h-3 w-3 text-green-500" />
-                      <span className="text-[10px] text-green-500">已校准</span>
+                      <span className="text-[10px] text-green-500">{t("已校准")}</span>
                     </>
                   )}
                 </div>
@@ -627,7 +629,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                   {/* 6层身份锚点 */}
                   {identityAnchors && (
                     <div className="space-y-2">
-                      <Label className="text-[10px] text-muted-foreground">① 骨相层</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t("① 骨相层")}</Label>
                       <div className="grid grid-cols-3 gap-1">
                         <Input
                           value={identityAnchors.faceShape || ''}
@@ -635,7 +637,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, faceShape: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="脸型"
+                          placeholder={t("脸型")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
@@ -645,7 +647,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, jawline: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="下颂"
+                          placeholder={t("下颂")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
@@ -655,13 +657,13 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, cheekbones: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="颚骨"
+                          placeholder={t("颚骨")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
                       </div>
                       
-                      <Label className="text-[10px] text-muted-foreground">② 五官层</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t("② 五官层")}</Label>
                       <div className="grid grid-cols-2 gap-1">
                         <Input
                           value={identityAnchors.eyeShape || ''}
@@ -669,7 +671,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, eyeShape: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="眼型"
+                          placeholder={t("眼型")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
@@ -679,7 +681,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, noseShape: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="鼻型"
+                          placeholder={t("鼻型")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
@@ -689,7 +691,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, lipShape: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="唇型"
+                          placeholder={t("唇型")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
@@ -699,13 +701,13 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, eyeDetails: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="眼部细节"
+                          placeholder={t("眼部细节")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
                       </div>
                       
-                      <Label className="text-[10px] text-muted-foreground">③ 辨识标记层（最强锚点）</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t("③ 辨识标记层（最强锚点）")}</Label>
                       <Input
                         value={identityAnchors.uniqueMarks?.join(', ') || ''}
                         onChange={(e) => {
@@ -713,12 +715,12 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                           setIdentityAnchors({ ...identityAnchors, uniqueMarks: marks.length > 0 ? marks : [] });
                           setIsManuallyModified(true);
                         }}
-                        placeholder="特征标记，用逗号分隔"
+                        placeholder={t("特征标记，用逗号分隔")}
                         className="h-7 text-[10px]"
                         disabled={isGenerating}
                       />
                       
-                      <Label className="text-[10px] text-muted-foreground">④ 色彩锚点层（Hex色值）</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t("④ 色彩锚点层（Hex色值）")}</Label>
                       <div className="grid grid-cols-4 gap-1">
                         <div className="flex items-center gap-1">
                           <input
@@ -734,7 +736,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             className="w-6 h-6 rounded cursor-pointer"
                             disabled={isGenerating}
                           />
-                          <span className="text-[9px] text-muted-foreground">瞳</span>
+                          <span className="text-[9px] text-muted-foreground">{t("瞳")}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <input
@@ -750,7 +752,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             className="w-6 h-6 rounded cursor-pointer"
                             disabled={isGenerating}
                           />
-                          <span className="text-[9px] text-muted-foreground">发</span>
+                          <span className="text-[9px] text-muted-foreground">{t("发")}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <input
@@ -766,7 +768,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             className="w-6 h-6 rounded cursor-pointer"
                             disabled={isGenerating}
                           />
-                          <span className="text-[9px] text-muted-foreground">肤</span>
+                          <span className="text-[9px] text-muted-foreground">{t("肤")}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <input
@@ -782,23 +784,23 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             className="w-6 h-6 rounded cursor-pointer"
                             disabled={isGenerating}
                           />
-                          <span className="text-[9px] text-muted-foreground">唇</span>
+                          <span className="text-[9px] text-muted-foreground">{t("唇")}</span>
                         </div>
                       </div>
                       
-                      <Label className="text-[10px] text-muted-foreground">⑤ 皮肤纹理层</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t("⑤ 皮肤纹理层")}</Label>
                       <Input
                         value={identityAnchors.skinTexture || ''}
                         onChange={(e) => {
                           setIdentityAnchors({ ...identityAnchors, skinTexture: e.target.value || undefined });
                           setIsManuallyModified(true);
                         }}
-                        placeholder="皮肤纹理描述"
+                        placeholder={t("皮肤纹理描述")}
                         className="h-7 text-[10px]"
                         disabled={isGenerating}
                       />
                       
-                      <Label className="text-[10px] text-muted-foreground">⑥ 发型锚点层</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t("⑥ 发型锚点层")}</Label>
                       <div className="grid grid-cols-2 gap-1">
                         <Input
                           value={identityAnchors.hairStyle || ''}
@@ -806,7 +808,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, hairStyle: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="发型"
+                          placeholder={t("发型")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
@@ -816,7 +818,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setIdentityAnchors({ ...identityAnchors, hairlineDetails: e.target.value || undefined });
                             setIsManuallyModified(true);
                           }}
-                          placeholder="发际线细节"
+                          placeholder={t("发际线细节")}
                           className="h-7 text-[10px]"
                           disabled={isGenerating}
                         />
@@ -827,7 +829,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                   {/* 负面提示词 */}
                   {charNegativePrompt && (
                     <div className="space-y-2 pt-2 border-t">
-                      <Label className="text-[10px] text-muted-foreground">负面提示词</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t("负面提示词")}</Label>
                       <Input
                         value={charNegativePrompt.avoid?.join(', ') || ''}
                         onChange={(e) => {
@@ -835,7 +837,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                           setCharNegativePrompt({ ...charNegativePrompt, avoid: avoidList });
                           setIsManuallyModified(true);
                         }}
-                        placeholder="避免元素，用逗号分隔"
+                        placeholder={t("避免元素，用逗号分隔")}
                         className="h-7 text-[10px]"
                         disabled={isGenerating}
                       />
@@ -846,7 +848,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                           setCharNegativePrompt({ ...charNegativePrompt, styleExclusions: exclusions.length > 0 ? exclusions : undefined });
                           setIsManuallyModified(true);
                         }}
-                        placeholder="风格排除，用逗号分隔"
+                        placeholder={t("风格排除，用逗号分隔")}
                         className="h-7 text-[10px]"
                         disabled={isGenerating}
                       />
@@ -859,12 +861,12 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                     const showZh = effectiveLang === 'zh' || effectiveLang === 'zh+en';
                     const activePrompt = showZh ? visualPromptZh : visualPromptEn;
                     const setActivePrompt = showZh ? setVisualPromptZh : setVisualPromptEn;
-                    const langLabel = showZh ? '中文' : '英文';
+                    const langLabel = showZh ? t("中文") : t("英文");
                     if (!activePrompt) return null;
                     return (
                       <div className="space-y-2 pt-2 border-t">
                         <Label className="text-[10px] text-muted-foreground">
-                          视觉提示词（{langLabel}，修改后直接用于生成）
+                          {t("视觉提示词（{{language}}，修改后直接用于生成）", { language: langLabel })}
                         </Label>
                         <Textarea
                           value={activePrompt}
@@ -872,7 +874,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                             setActivePrompt(e.target.value);
                             setIsManuallyModified(true);
                           }}
-                          placeholder={`${langLabel}提示词`}
+                          placeholder={t("{{language}}提示词", { language: langLabel })}
                           className="min-h-[120px] text-xs resize-y"
                           disabled={isGenerating}
                         />
@@ -886,7 +888,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
 
           {/* Style */}
           <div className="space-y-2">
-            <Label className="text-xs">视觉风格</Label>
+            <Label className="text-xs">{t("视觉风格")}</Label>
             <StylePicker
               value={styleId}
               onChange={(id) => setStyleId(id)}
@@ -897,7 +899,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
           {/* Reference images */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs">参考图片</Label>
+              <Label className="text-xs">{t("参考图片")}</Label>
               <span className="text-xs text-muted-foreground">{referenceImages.length}/3</span>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -905,7 +907,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                 <div key={i} className="relative group">
                   <img
                     src={img}
-                    alt={`参考图 ${i + 1}`}
+                    alt={t("参考图 {{count}}", { count: i + 1 })}
                     className="w-14 h-14 object-cover rounded-md border"
                   />
                   <button
@@ -932,7 +934,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                     onClick={() => document.getElementById('gen-panel-ref-image')?.click()}
                   >
                     <ImagePlus className="h-4 w-4" />
-                    <span className="text-[10px]">上传</span>
+                    <span className="text-[10px]">{t("上传")}</span>
                   </div>
                 </>
               )}
@@ -941,7 +943,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
 
           {/* Sheet elements */}
           <div className="space-y-2">
-            <Label className="text-xs">生成内容</Label>
+            <Label className="text-xs">{t("生成内容")}</Label>
             <div className="space-y-1.5">
               {SHEET_ELEMENTS.map((element) => (
                 <div
@@ -958,7 +960,7 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                     checked={selectedElements.includes(element.id)}
                     disabled={isGenerating}
                   />
-                  <span>{element.label}</span>
+                  <span>{t(element.label)}</span>
                 </div>
               ))}
             </div>
@@ -974,12 +976,12 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
               {isGenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  生成中...
+                  {t("生成中...")}
                 </>
               ) : (
                 <>
                   <FileImage className="h-4 w-4 mr-2" />
-                  生成设定图
+                  {t("生成设定图")}
                 </>
               )}
             </Button>
@@ -1111,13 +1113,13 @@ export function GenerationPanel({ selectedCharacter, onCharacterCreated }: Gener
                 
                 const text = lines.join('\n');
                 navigator.clipboard.writeText(text);
-                toast.success('角色数据已复制到剪贴板');
+                toast.success(t("角色数据已复制到剪贴板"));
               }}
               className="w-full"
               disabled={isGenerating}
             >
               <Copy className="h-4 w-4 mr-2" />
-              复制角色数据
+              {t("复制角色数据")}
             </Button>
           </div>
         </div>

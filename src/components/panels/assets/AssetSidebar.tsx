@@ -3,6 +3,8 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 /**
  * AssetSidebar - 资产面板左侧导航树
  * 可插拔设计，后续可扩展素材库、作品库等子模块
@@ -57,6 +59,7 @@ const NAV_MODULES: NavModule[] = [
 ];
 
 export function AssetSidebar({ activeSection, onSectionChange }: AssetSidebarProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState<Set<string>>(
     new Set(NAV_MODULES.map((m) => m.id))
   );
@@ -76,7 +79,7 @@ export function AssetSidebar({ activeSection, onSectionChange }: AssetSidebarPro
       <div className="px-3 py-3 border-b border-border shrink-0">
         <div className="flex items-center gap-2">
           <FolderOpen className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold">个人资产库</span>
+          <span className="text-sm font-semibold">{t("个人资产库")}</span>
         </div>
       </div>
 
@@ -95,7 +98,7 @@ export function AssetSidebar({ activeSection, onSectionChange }: AssetSidebarPro
                 <ChevronRight className="w-3 h-3" />
               )}
               <mod.icon className="w-3.5 h-3.5" />
-              {mod.label}
+              {t(mod.label)}
             </button>
 
             {/* 子项 */}
@@ -113,7 +116,7 @@ export function AssetSidebar({ activeSection, onSectionChange }: AssetSidebarPro
                     onClick={() => onSectionChange(child.id)}
                   >
                     <child.icon className="w-3.5 h-3.5" />
-                    {child.label}
+                    {t(child.label)}
                   </button>
                 ))}
               </div>

@@ -27,6 +27,7 @@ import {
 import { useDirectorStore, useActiveDirectorProject, type SplitScene } from "@/stores/director-store";
 import { useCharacterLibraryStore } from "@/stores/character-library-store";
 import { useSceneStore } from "@/stores/scene-store";
+import { t } from "@/lib/i18n/translate";
 import {
   getFeatureConfig,
   getFeatureNotConfiguredMessage,
@@ -415,7 +416,7 @@ export function useSClassGeneration() {
         }
 
         if (!videoUrl) {
-          throw lastVideoError || new Error("视频生成失败：没有可用 API Key");
+          throw lastVideoError || new Error(t("视频生成失败：没有可用 API Key"));
         }
 
         // 7. 保存视频到本地
@@ -502,7 +503,7 @@ export function useSClassGeneration() {
     ): Promise<GroupGenerationResult[]> => {
       const projectId = activeProjectId;
       if (!projectId) {
-        toast.error("无活跃项目");
+        toast.error(t("无活跃项目"));
         return [];
       }
 
@@ -510,7 +511,7 @@ export function useSClassGeneration() {
       const groups = projectData.shotGroups;
 
       if (groups.length === 0) {
-        toast.error("没有镜头组");
+        toast.error(t("没有镜头组"));
         return [];
       }
 
@@ -520,7 +521,7 @@ export function useSClassGeneration() {
       );
 
       if (groupsToGenerate.length === 0) {
-        toast.info("所有镜头组已生成或正在生成中");
+        toast.info(t("所有镜头组已生成或正在生成中"));
         return [];
       }
 
@@ -533,7 +534,7 @@ export function useSClassGeneration() {
 
       for (let i = 0; i < groupsToGenerate.length; i++) {
         if (abortRef.current) {
-          toast.warning("已中止批量生成");
+          toast.warning(t("已中止批量生成"));
           break;
         }
 
@@ -598,7 +599,7 @@ export function useSClassGeneration() {
     async (sceneId: number): Promise<boolean> => {
       const scene = splitScenes.find((s: SplitScene) => s.id === sceneId);
       if (!scene) {
-        toast.error("未找到分镜");
+        toast.error(t("未找到分镜"));
         return false;
       }
 
@@ -610,7 +611,7 @@ export function useSClassGeneration() {
 
       const keyManager = featureConfig.keyManager;
       if (!keyManager.getCurrentKey()) {
-        toast.error("请先在设置中配置视频生成 API Key");
+        toast.error(t("请先在设置中配置视频生成 API Key"));
         return false;
       }
       const projectId = activeProjectId;
@@ -701,7 +702,7 @@ export function useSClassGeneration() {
         }
 
         if (!videoUrl) {
-          throw lastVideoError || new Error("视频生成失败：没有可用 API Key");
+          throw lastVideoError || new Error(t("视频生成失败：没有可用 API Key"));
         }
 
         const localUrl = await saveVideoLocally(videoUrl, sceneId);
@@ -738,7 +739,7 @@ export function useSClassGeneration() {
 
   const abortGeneration = useCallback(() => {
     abortRef.current = true;
-    toast.info("正在中止生成...");
+    toast.info(t("正在中止生成..."));
   }, []);
 
   // ========== 重试单组 ==========
@@ -791,14 +792,14 @@ export function useSClassGeneration() {
     ): Promise<GroupGenerationResult | null> => {
       const projectId = activeProjectId;
       if (!projectId) {
-        toast.error('无活跃项目');
+        toast.error(t("无活跃项目"));
         return null;
       }
 
       const pd = getProjectData(projectId);
       const sourceGroup = pd.shotGroups.find(g => g.id === sourceGroupId);
       if (!sourceGroup || !sourceGroup.videoUrl) {
-        toast.error('源组无已完成视频，无法延长');
+        toast.error(t("源组无已完成视频，无法延长"));
         return null;
       }
 

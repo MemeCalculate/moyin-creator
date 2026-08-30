@@ -37,6 +37,7 @@ import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { useProjectStore } from '@/stores/project-store';
 import { toast } from "sonner";
 import { matchSceneAndViewpoint, matchSceneAndViewpointSync, type ViewpointMatchResult } from '@/lib/scene/viewpoint-matcher';
+import { t } from "@/lib/i18n/translate";
 
 // 状态图标
 function StatusIcon({ status }: { status?: CompletionStatus }) {
@@ -705,8 +706,8 @@ export function DirectorContextPanel() {
         </div>
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center text-muted-foreground text-sm">
-            <p>暂无剧本数据</p>
-            <p className="mt-1">请先在剧本面板解析剧本</p>
+            <p>{t("暂无剧本数据")}</p>
+            <p className="mt-1">{t("请先在剧本面板解析剧本")}</p>
           </div>
         </div>
         <div className="p-3 border-t">
@@ -840,7 +841,7 @@ export function DirectorContextPanel() {
                                 e.stopPropagation();
                                 handleAddSceneToSplitScenes(scene);
                               }}
-                              title="添加所有分镜到分镜编辑"
+                              title={t("添加所有分镜到分镜编辑")}
                             >
                               <Plus className="h-3 w-3 text-green-500" />
                             </Button>
@@ -853,7 +854,7 @@ export function DirectorContextPanel() {
                                 e.stopPropagation();
                                 handleSendScene(scene);
                               }}
-                              title="发送整个场景到AI导演生成图片"
+                              title={t("发送整个场景到AI导演生成图片")}
                             >
                               <Send className="h-3 w-3 text-primary" />
                             </Button>
@@ -874,7 +875,7 @@ export function DirectorContextPanel() {
                                         "flex-1 flex items-center gap-2 px-2 py-1 rounded hover:bg-muted text-left",
                                         isShotSelected && "bg-primary/10 ring-1 ring-primary/30"
                                       )}
-                                      title="单击: 发送到AI导演输入 | 双击: 直接添加到分镜编辑"
+                                      title={t("单击: 发送到AI导演输入 | 双击: 直接添加到分镜编辑")}
                                     >
                                       <span className="text-xs font-mono text-muted-foreground w-5">
                                         {String(shot.index).padStart(2, "0")}
@@ -895,7 +896,7 @@ export function DirectorContextPanel() {
                                         e.stopPropagation();
                                         handleAddShotToSplitScenes(shot, scene);
                                       }}
-                                      title="添加到分镜编辑"
+                                      title={t("添加到分镜编辑")}
                                     >
                                       <Plus className="h-3 w-3 text-green-500" />
                                     </Button>
@@ -919,8 +920,8 @@ export function DirectorContextPanel() {
       <div className="p-3 border-t space-y-2">
         {/* 模式说明 */}
         <div className="text-[10px] text-muted-foreground space-y-1">
-          <p><span className="text-green-500">+</span> 添加到分镜（单独生成图片）</p>
-          <p><span className="text-primary">→</span> 发送到输入（批量生成省钱）</p>
+          <p><span className="text-green-500">+</span> {t("添加到分镜（单独生成图片）")}</p>
+          <p><span className="text-primary">→</span> {t("发送到输入（批量生成省钱）")}</p>
         </div>
         <Button
           variant="outline"

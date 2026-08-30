@@ -12,6 +12,7 @@
  *   - Text prompt for fine-grained control
  */
 
+import { useTranslation } from "react-i18next";
 import { useState, useRef, useCallback, useEffect } from "react";
 import {
   type Character,
@@ -76,6 +77,7 @@ interface WardrobeModalProps {
 }
 
 export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalProps) {
+  const { t } = useTranslation();
   const { addVariation, updateVariation, deleteVariation } = useCharacterLibraryStore();
   const { addMediaFromUrl, getOrCreateCategoryFolder } = useMediaStore();
   const { activeProjectId } = useProjectStore();
@@ -112,7 +114,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
 
     const remaining = MAX_CLOTHING_REFS - newClothingRefs.length;
     if (remaining <= 0) {
-      toast.error(`最多上传 ${MAX_CLOTHING_REFS} 张参考图`);
+      toast.error(t("最多上传 {{count}} 张参考图", { count: MAX_CLOTHING_REFS }));
       return;
     }
 
@@ -120,7 +122,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
 
     filesToProcess.forEach((file) => {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} 超过 5MB 限制`);
+        toast.error(t("{{name}} 超过 5MB 限制", { name: file.name }));
         return;
       }
       const reader = new FileReader();
@@ -147,7 +149,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
   // ---- Add Variation ----
   const handleAddVariation = () => {
     if (!newVariationName.trim()) {
-      toast.error("请输入变体名称");
+      toast.error(t("请输入变体名称"));
       return;
     }
 
@@ -158,7 +160,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
     });
 
     resetAddForm();
-    toast.success("变体已添加");
+    toast.success(t("变体已添加"));
   };
 
   const handleQuickAdd = (preset: typeof VARIATION_PRESETS[number]) => {
@@ -166,7 +168,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
       name: preset.name,
       visualPrompt: preset.prompt,
     });
-    toast.success(`已添加 "${preset.name}" 变体`);
+    toast.success(t('已添加 "{{name}}" 变体', { name: t(preset.name) }));
   };
 
   const resetAddForm = () => {
@@ -178,9 +180,9 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
 
   // ---- Delete Variation ----
   const handleDeleteVariation = (variationId: string, name: string) => {
-    if (confirm(`确定要删除变体 "${name}" 吗？`)) {
+    if (confirm(t("确定要删除变体 {{name}} 吗？", { name }))) {
       deleteVariation(character.id, variationId);
-      toast.success("变体已删除");
+      toast.success(t("变体已删除"));
     }
   };
 
@@ -194,7 +196,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
 
     // Need base character image for face consistency
     if (!characterBaseImage) {
-      toast.error("请先生成角色基础定妆照，以保持一致性");
+      toast.error(t("请先生成角色基础定妆照，以保持一致性"));
       return;
     }
 
@@ -213,10 +215,10 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
         imageUrl,
       });
 
-      toast.success("变体图片生成完成，请预览确认");
+      toast.success(t("变体图片生成完成，请预览确认"));
     } catch (error) {
       const err = error as Error;
-      toast.error(`生成失败: ${err.message}`);
+      toast.error(t("生成失败: {{message}}", { message: err.message }));
     } finally {
       setGeneratingVariationId(null);
     }
@@ -231,7 +233,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
     const ts = Date.now();
     const safeName = `${character.name}_${varName}_${ts}`.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_]/g, '_');
 
-    toast.loading("正在保存图片到本地...", { id: 'saving-wardrobe' });
+    toast.loading(t("正在保存图片到本地..."), { id: 'saving-wardrobe' });
 
     try {
       // 1. Persist image locally (same as generation-panel)
@@ -259,10 +261,10 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
       });
 
       setPreviewData(null);
-      toast.success("变体图片已保存到本地！", { id: 'saving-wardrobe' });
+      toast.success(t("变体图片已保存到本地！"), { id: 'saving-wardrobe' });
     } catch (error) {
       console.error('[Wardrobe] Failed to save preview:', error);
-      toast.error("保存失败", { id: 'saving-wardrobe' });
+      toast.error(t("保存失败"), { id: 'saving-wardrobe' });
     }
   };
 
@@ -278,9 +280,9 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
         <DialogContent className="max-w-lg max-h-[80vh] p-0 gap-0 flex flex-col">
           <div className="px-6 pt-6 pb-3 shrink-0">
             <DialogHeader>
-              <DialogTitle>预览变体图片 - {variation?.name}</DialogTitle>
+              <DialogTitle>{t("预览变体图片 - {{name}}", { name: variation?.name || "" })}</DialogTitle>
               <DialogDescription>
-                确认图片是否满意，满意则保存
+                {t("确认图片是否满意，满意则保存")}
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -293,7 +295,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                 className="w-full h-auto"
               />
               <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-                预览
+                {t("预览")}
               </div>
             </div>
           </div>
@@ -302,7 +304,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
             <div className="flex gap-2">
               <Button onClick={handleSavePreview} className="flex-1">
                 <Check className="h-4 w-4 mr-2" />
-                保存
+                {t("保存")}
               </Button>
               <Button 
                 onClick={() => handleGenerateVariation(variation!)} 
@@ -310,11 +312,11 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                 disabled={generatingVariationId !== null}
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
-                重新生成
+                {t("重新生成")}
               </Button>
             </div>
             <Button onClick={handleDiscardPreview} variant="ghost" className="w-full">
-              放弃并返回
+              {t("放弃并返回")}
             </Button>
           </div>
         </DialogContent>
@@ -330,10 +332,10 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shirt className="h-5 w-5" />
-              {character.name} 的衣橱
+              {t("{{name}} 的衣橱", { name: character.name })}
             </DialogTitle>
             <DialogDescription>
-              管理角色的不同造型变体，AI 生成时将保持面部特征一致
+              {t("管理角色的不同造型变体，AI 生成时将保持面部特征一致")}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -356,14 +358,14 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h4 className="font-medium text-sm">{character.name}</h4>
-                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">基础定妆照</span>
+                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{t("基础定妆照")}</span>
               </div>
               <p className="text-xs text-muted-foreground truncate mt-0.5">
-                {character.visualTraits || character.description || '未设置视觉描述'}
+                {character.visualTraits || character.description || t("未设置视觉描述")}
               </p>
               {!characterBaseImage && (
                 <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                  ⚠ 请先生成角色基础图片，衣橱变体需要基础定妆照作为参考
+                  {t("⚠ 请先生成角色基础图片，衣橱变体需要基础定妆照作为参考")}
                 </p>
               )}
             </div>
@@ -372,7 +374,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
           {/* Existing variations */}
           {variations.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-sm font-medium">已有变体 ({variations.length})</Label>
+              <Label className="text-sm font-medium">{t("已有变体 ({{count}})", { count: variations.length })}</Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {variations.map((variation) => (
                   <div
@@ -390,7 +392,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                           variation.referenceImage && "cursor-pointer ring-offset-background hover:ring-2 hover:ring-primary/40 hover:ring-offset-1 transition-shadow"
                         )}
                         onDoubleClick={() => variation.referenceImage && setZoomedImageUrl(variation.referenceImage)}
-                        title={variation.referenceImage ? "双击放大查看" : undefined}
+                        title={variation.referenceImage ? t("双击放大查看") : undefined}
                       >
                         {variation.referenceImage ? (
                           <img 
@@ -428,7 +430,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                                 <img src={img} alt="ref" className="w-full h-full object-cover" />
                               </div>
                             ))}
-                            <span className="text-[10px] text-muted-foreground self-center">参考</span>
+                            <span className="text-[10px] text-muted-foreground self-center">{t("参考")}</span>
                           </div>
                         )}
 
@@ -443,17 +445,17 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                           {generatingVariationId === variation.id ? (
                             <>
                               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                              生成中...
+                              {t("生成中...")}
                             </>
                           ) : variation.referenceImage ? (
                             <>
                               <RotateCcw className="h-3 w-3 mr-1" />
-                              重新生成
+                              {t("重新生成")}
                             </>
                           ) : (
                             <>
                               <Wand2 className="h-3 w-3 mr-1" />
-                              生成图片
+                              {t("生成图片")}
                             </>
                           )}
                         </Button>
@@ -467,7 +469,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
 
           {/* Quick add presets */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">快速添加</Label>
+            <Label className="text-sm font-medium">{t("快速添加")}</Label>
             <div className="flex flex-wrap gap-2">
               {VARIATION_PRESETS.map((preset) => {
                 const exists = variations.some(v => v.name === preset.name);
@@ -483,12 +485,12 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                     {exists ? (
                       <>
                         <Check className="h-3 w-3 mr-1 text-green-500" />
-                        {preset.name}
+                        {t(preset.name)}
                       </>
                     ) : (
                       <>
                         <Plus className="h-3 w-3 mr-1" />
-                        {preset.name}
+                        {t(preset.name)}
                       </>
                     )}
                   </Button>
@@ -503,14 +505,14 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
               className="space-y-4 p-4 border rounded-lg bg-muted/30 min-w-0"
               onPointerDown={(e) => e.stopPropagation()}
             >
-              <Label className="text-sm font-medium">添加自定义变体</Label>
+              <Label className="text-sm font-medium">{t("添加自定义变体")}</Label>
 
               {/* Variation name */}
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">变体名称 *</Label>
+                <Label className="text-xs text-muted-foreground">{t("变体名称 *")}</Label>
                 <Input
                   ref={nameInputRef}
-                  placeholder="如：婚纱、披风装、校服、古风汉服"
+                  placeholder={t("如：婚纱、披风装、校服、古风汉服")}
                   value={newVariationName}
                   onChange={(e) => setNewVariationName(e.target.value)}
                   autoFocus
@@ -520,10 +522,10 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
               {/* Clothing reference images upload */}
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">
-                  服装参考图（可选，最多 {MAX_CLOTHING_REFS} 张）
+                  {t("服装参考图（可选，最多 {{count}} 张）", { count: MAX_CLOTHING_REFS })}
                 </Label>
                 <p className="text-[11px] text-muted-foreground">
-                  上传想要角色穿的衣服/造型照片，AI 会将角色融合到该服装中
+                  {t("上传想要角色穿的衣服/造型照片，AI 会将角色融合到该服装中")}
                 </p>
 
                 {/* Uploaded clothing refs */}
@@ -535,7 +537,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                     >
                       <img
                         src={img}
-                        alt={`服装参考 ${idx + 1}`}
+                        alt={t("服装参考 {{count}}", { count: idx + 1 })}
                         className="w-full h-full object-cover"
                       />
                       <button
@@ -545,7 +547,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                         <X className="h-3 w-3" />
                       </button>
                       <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-[9px] text-white text-center py-0.5">
-                        参考 {idx + 1}
+                        {t("参考 {{count}}", { count: idx + 1 })}
                       </div>
                     </div>
                   ))}
@@ -557,7 +559,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
                       className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 hover:border-primary/50 hover:bg-muted/50 transition-colors"
                     >
                       <Upload className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">上传</span>
+                      <span className="text-[10px] text-muted-foreground">{t("上传")}</span>
                     </button>
                   )}
                 </div>
@@ -574,15 +576,15 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
 
               {/* Visual prompt */}
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">视觉描述（可选）</Label>
+                <Label className="text-xs text-muted-foreground">{t("视觉描述（可选）")}</Label>
                 <Textarea
-                  placeholder="描述服装细节或整体造型，如：\n- 白色蕾丝婚纱，长拖尾，头戴花冠\n- elegant white lace wedding dress, long train, floral headpiece"
+                  placeholder={t("描述服装细节或整体造型，如：\n- 白色蕾丝婚纱，长拖尾，头戴花冠\n- elegant white lace wedding dress, long train, floral headpiece")}
                   value={newVariationPrompt}
                   onChange={(e) => setNewVariationPrompt(e.target.value)}
                   className="min-h-[72px]"
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  可用中文或英文描述，支持混合。有参考图时可简短描述补充细节
+                  {t("可用中文或英文描述，支持混合。有参考图时可简短描述补充细节")}
                 </p>
               </div>
 
@@ -590,11 +592,11 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
               <div className="flex gap-2 pt-1">
                 <Button size="sm" onClick={handleAddVariation} disabled={!newVariationName.trim()}>
                   <Check className="h-3 w-3 mr-1" />
-                  添加变体
+                  {t("添加变体")}
                 </Button>
                 <Button size="sm" variant="outline" onClick={resetAddForm}>
                   <X className="h-3 w-3 mr-1" />
-                  取消
+                  {t("取消")}
                 </Button>
               </div>
             </div>
@@ -605,15 +607,15 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
               onClick={() => setShowAddForm(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
-              添加自定义变体
+              {t("添加自定义变体")}
             </Button>
           )}
 
           {/* Tips */}
           <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
-            <p>💡 变体生成会参考角色基础定妆照，保持面部特征一致</p>
-            <p>💡 上传服装参考图可让 AI 更精准地生成目标造型</p>
-            <p>💡 建议先生成角色基础图片，再添加变体</p>
+            <p>{t("💡 变体生成会参考角色基础定妆照，保持面部特征一致")}</p>
+            <p>{t("💡 上传服装参考图可让 AI 更精准地生成目标造型")}</p>
+            <p>{t("💡 建议先生成角色基础图片，再添加变体")}</p>
           </div>
           </div>
         </div>
@@ -621,7 +623,7 @@ export function WardrobeModal({ character, open, onOpenChange }: WardrobeModalPr
         <div className="px-6 pb-6 pt-3 border-t shrink-0">
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              关闭
+              {t("关闭")}
             </Button>
           </DialogFooter>
         </div>

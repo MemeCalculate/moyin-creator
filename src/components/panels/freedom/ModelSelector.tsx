@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { useState, useMemo } from 'react';
 import { AlertTriangle, Check, ChevronsUpDown, Search, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -401,6 +403,7 @@ function isModelAllowedByPanelType(
 }
 
 export function ModelSelector({ type, value, onChange, className }: ModelSelectorProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -486,7 +489,7 @@ export function ModelSelector({ type, value, onChange, className }: ModelSelecto
             className={cn('w-full justify-between h-10', className)}
           >
             <span className="truncate">
-              {selectedModel ? selectedModel.name : value ? getModelDisplayName(value) : '选择模型...'}
+              {selectedModel ? selectedModel.name : value ? getModelDisplayName(value) : t("选择模型...")}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -495,7 +498,7 @@ export function ModelSelector({ type, value, onChange, className }: ModelSelecto
           <div className="flex items-center border-b px-3 py-2">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
-              placeholder="搜索模型..."
+              placeholder={t("搜索模型...")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="border-0 focus-visible:ring-0 h-8 px-0"
@@ -514,7 +517,7 @@ export function ModelSelector({ type, value, onChange, className }: ModelSelecto
                       {brand.displayName}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      可用 {brandAvailableCounts[brandId] ?? brandModels.length}
+                      {t("可用")} {brandAvailableCounts[brandId] ?? brandModels.length}
                     </span>
                   </div>
                   {brandModels.map((model) => (
@@ -544,9 +547,9 @@ export function ModelSelector({ type, value, onChange, className }: ModelSelecto
               {Object.keys(grouped).length === 0 && (
                 <div className="p-4 text-center text-sm text-muted-foreground space-y-2">
                   <Settings className="h-5 w-5 mx-auto mb-1 opacity-50" />
-                  <p>暂无可用模型</p>
+                  <p>{t("暂无可用模型")}</p>
                   <p className="text-xs">
-                    请先在设置 → 服务映射 → {type === 'image' ? '自由板块-图片' : '自由板块-视频'} 中勾选模型
+                    {t("请先在设置 → 服务映射 →")} {type === 'image' ? t("自由板块-图片") : t("自由板块-视频")} {t("中勾选模型")}
                   </p>
                 </div>
               )}
@@ -558,7 +561,7 @@ export function ModelSelector({ type, value, onChange, className }: ModelSelecto
         <div className="flex items-start gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-xs text-amber-700 dark:text-amber-300">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
-            当前已选模型不可用（可能已下线或被当前面板过滤），请重新选择可用模型。
+            {t("当前已选模型不可用（可能已下线或被当前面板过滤），请重新选择可用模型。")}
           </span>
         </div>
       )}

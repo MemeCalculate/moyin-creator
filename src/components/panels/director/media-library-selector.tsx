@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Check, ImageIcon, FolderOpen, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,7 @@ export function MediaLibrarySelector({
   onSelect,
   disabled,
 }: MediaLibrarySelectorProps) {
+  const { t } = useTranslation();
   void _sceneId; // Available for future use
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -86,23 +88,23 @@ export function MediaLibrarySelector({
         >
           <ImageIcon className="h-3 w-3" />
           <span className="max-w-[80px] truncate">
-            {isEndFrame ? '从素材库' : '从素材库'}
+            {t("从素材库")}
           </span>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-[480px] p-3" align="start">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-medium">
-            选择图片应用到{isEndFrame ? '尾帧' : '首帧'}
+            {t("选择图片应用到{{frame}}", { frame: t(isEndFrame ? "尾帧" : "首帧") })}
           </p>
           <span className="text-xs text-muted-foreground">
-            共 {filteredImages.length} 张图片
+            {t("共 {{count}} 张图片", { count: filteredImages.length })}
           </span>
         </div>
         
         {imageFiles.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">
-            素材库中没有图片，请先添加图片或生成四宫格
+            {t("素材库中没有图片，请先添加图片或生成四宫格")}
           </p>
         ) : (
           <div className="space-y-3">
@@ -118,7 +120,7 @@ export function MediaLibrarySelector({
                       : "bg-muted hover:bg-muted/80 text-muted-foreground"
                   )}
                 >
-                  全部
+                  {t("全部")}
                 </button>
                 {visibleFolders.map((folder) => (
                   <button
@@ -142,7 +144,7 @@ export function MediaLibrarySelector({
             <div className="max-h-[300px] overflow-y-auto">
               {filteredImages.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  该文件夹中没有图片
+                  {t("该文件夹中没有图片")}
                 </p>
               ) : (
                 <div className="grid grid-cols-4 gap-2">

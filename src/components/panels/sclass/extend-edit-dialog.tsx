@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Timer, Scissors, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n/translate";
 import {
   useSClassStore,
   type ShotGroup,
@@ -56,10 +57,10 @@ export interface ExtendEditDialogProps {
 // ==================== Constants ====================
 
 const EDIT_TYPE_OPTIONS: { value: EditType; label: string; desc: string }[] = [
-  { value: "plot_change", label: "剧情颠覆", desc: "保留画面风格，改变故事走向" },
-  { value: "character_swap", label: "角色替换", desc: "将视频中的角色替换为参考图中的角色" },
-  { value: "attribute_modify", label: "属性修改", desc: "改变角色服饰、发色、环境光照等属性" },
-  { value: "element_add", label: "元素添加", desc: "在现有画面上叠加新的视觉元素" },
+  { value: "plot_change", label: t("剧情颠覆"), desc: t("保留画面风格，改变故事走向") },
+  { value: "character_swap", label: t("角色替换"), desc: t("将视频中的角色替换为参考图中的角色") },
+  { value: "attribute_modify", label: t("属性修改"), desc: t("改变角色服饰、发色、环境光照等属性") },
+  { value: "element_add", label: t("元素添加"), desc: t("在现有画面上叠加新的视觉元素") },
 ];
 
 // ==================== Component ====================
@@ -127,7 +128,7 @@ export function ExtendEditDialog({
   }, [sourceGroup, mode, direction, duration, editType, description, addShotGroup, onConfirm, onOpenChange]);
 
   const isExtend = mode === "extend";
-  const title = isExtend ? "视频延长" : "视频编辑";
+  const title = isExtend ? t("视频延长") : t("视频编辑");
   const Icon = isExtend ? Timer : Scissors;
 
   return (
@@ -140,8 +141,8 @@ export function ExtendEditDialog({
           </DialogTitle>
           <DialogDescription>
             {isExtend
-              ? "基于已生成视频继续延长，支持向后或向前拓展"
-              : "对已生成视频进行剧情编辑、角色替换等操作"
+              ? t("基于已生成视频继续延长，支持向后或向前拓展")
+              : t("对已生成视频进行剧情编辑、角色替换等操作")
             }
           </DialogDescription>
         </DialogHeader>
@@ -156,7 +157,7 @@ export function ExtendEditDialog({
               muted
             />
             <div className="px-2 py-1 bg-muted/30 text-xs text-muted-foreground">
-              来源：{sourceGroup.name}
+              {t("来源：{{name}}", { name: sourceGroup.name })}
             </div>
           </div>
         )}
@@ -167,14 +168,14 @@ export function ExtendEditDialog({
             <>
               {/* 延长方向 */}
               <div className="space-y-1.5">
-                <Label className="text-xs">延长方向</Label>
+                <Label className="text-xs">{t("延长方向")}</Label>
                 <Select value={direction} onValueChange={(v) => setDirection(v as ExtendDirection)}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="backward">向后延长（默认）</SelectItem>
-                    <SelectItem value="forward">向前延长（前置内容）</SelectItem>
+                    <SelectItem value="backward">{t("向后延长（默认）")}</SelectItem>
+                    <SelectItem value="forward">{t("向前延长（前置内容）")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -182,7 +183,7 @@ export function ExtendEditDialog({
               {/* 延长时长 */}
               <div className="space-y-1.5">
                 <div className="flex justify-between">
-                  <Label className="text-xs">延长时长</Label>
+                  <Label className="text-xs">{t("延长时长")}</Label>
                   <span className="text-xs text-muted-foreground">{duration}s</span>
                 </div>
                 <Slider
@@ -203,7 +204,7 @@ export function ExtendEditDialog({
           {/* ========== 编辑模式参数 ========== */}
           {!isExtend && (
             <div className="space-y-1.5">
-              <Label className="text-xs">编辑类型</Label>
+              <Label className="text-xs">{t("编辑类型")}</Label>
               <Select value={editType} onValueChange={(v) => setEditType(v as EditType)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -225,15 +226,15 @@ export function ExtendEditDialog({
           {/* ========== 补充描述 ========== */}
           <div className="space-y-1.5">
             <Label className="text-xs">
-              补充描述
-              <span className="text-muted-foreground ml-1">（可选）</span>
+              {t("补充描述")}
+              <span className="text-muted-foreground ml-1">{t("（可选）")}</span>
             </Label>
             <textarea
               className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
               rows={3}
               placeholder={isExtend
-                ? "描述延长部分的画面内容，如：镜头缓缓拉远，角色渐行渐远..."
-                : "描述编辑目标，如：将白天场景改为夜晚，保持人物不变..."
+                ? t("描述延长部分的画面内容，如：镜头缓缓拉远，角色渐行渐远...")
+                : t("描述编辑目标，如：将白天场景改为夜晚，保持人物不变...")
               }
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -248,7 +249,7 @@ export function ExtendEditDialog({
             onClick={() => onOpenChange(false)}
             disabled={isGenerating}
           >
-            取消
+            {t("取消")}
           </Button>
           <Button
             size="sm"
@@ -263,12 +264,12 @@ export function ExtendEditDialog({
             {isGenerating ? (
               <>
                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                处理中
+                {t("处理中")}
               </>
             ) : (
               <>
                 <Icon className="h-3 w-3 mr-1" />
-                确认{isExtend ? "延长" : "编辑"}
+                {t("确认{{action}}", { action: isExtend ? t("延长") : t("编辑") })}
               </>
             )}
           </Button>

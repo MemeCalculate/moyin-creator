@@ -17,6 +17,7 @@ import {
 import { SOUND_EFFECT_PRESETS, type SoundEffectTag } from "@/stores/director-store";
 import { Volume2, X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n/translate";
 
 interface SoundEffectTagsProps {
   value: SoundEffectTag[];
@@ -35,10 +36,10 @@ const ALL_SOUND_EFFECTS = [
 
 // 分类名称映射
 const CATEGORY_LABELS: Record<keyof typeof SOUND_EFFECT_PRESETS, string> = {
-  nature: "🌿 自然环境",
-  action: "🏃 人物动作",
-  atmosphere: "🎭 氛围效果",
-  urban: "🏙️ 城市环境",
+  nature: t("🌿 自然环境"),
+  action: t("🏃 人物动作"),
+  atmosphere: t("🎭 氛围效果"),
+  urban: t("🏙️ 城市环境"),
 };
 
 export function SoundEffectTags({
@@ -94,11 +95,11 @@ export function SoundEffectTags({
             <PopoverTrigger asChild>
               <button className="inline-flex items-center gap-0.5 px-1.5 py-0.5 border border-dashed border-muted-foreground/30 hover:border-primary/50 rounded text-[10px] text-muted-foreground hover:text-foreground transition-colors">
                 <Plus className="h-2.5 w-2.5" />
-                音效
+                {t("音效")}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-64 p-2" align="start">
-              <p className="text-sm font-medium mb-2">选择音效 ({value.length}/{maxTags})</p>
+              <p className="text-sm font-medium mb-2">{t("选择音效 ({{selected}}/{{maximum}})", { selected: value.length, maximum: maxTags })}</p>
               <div className="max-h-[240px] overflow-y-auto space-y-2">
                 {(Object.keys(SOUND_EFFECT_PRESETS) as Array<keyof typeof SOUND_EFFECT_PRESETS>).map(
                   (category) => (

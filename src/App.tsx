@@ -2,6 +2,7 @@
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Layout } from "@/components/Layout";
 import { Toaster } from "@/components/ui/sonner";
 import { UpdateDialog } from "@/components/UpdateDialog";
@@ -16,6 +17,7 @@ import type { AvailableUpdateInfo } from "@/types/update";
 let hasTriggeredStartupUpdateCheck = false;
 
 function App() {
+  const { t } = useTranslation();
   const { theme } = useThemeStore();
   const { updateSettings, setUpdateSettings } = useAppSettingsStore();
   const [isMigrating, setIsMigrating] = useState(true);
@@ -123,7 +125,7 @@ function App() {
       <div className="h-screen w-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">正在初始化...</p>
+          <p className="text-muted-foreground">{t("common.loading")}</p>
         </div>
       </div>
     );

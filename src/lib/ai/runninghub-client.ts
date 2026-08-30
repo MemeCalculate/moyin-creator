@@ -6,6 +6,8 @@
  * 视角切换功能的API客户端
  */
 
+import i18n from '@/lib/i18n';
+
 import { retryOperation } from '@/lib/utils/retry';
 import type { HorizontalDirection, ElevationAngle, ShotSize } from './runninghub-angles';
 import { generateAnglePrompt } from './runninghub-angles';
@@ -38,10 +40,10 @@ export async function submitAngleSwitchTask(
 ): Promise<string> {
   const { referenceImage, anglePrompt, apiKey, baseUrl, appId, instanceType = 'default', usePersonalQueue = false } = params;
   if (!baseUrl) {
-    throw new Error('RunningHub Base URL 未配置');
+    throw new Error(i18n.t('RunningHub Base URL 未配置'));
   }
   if (!appId) {
-    throw new Error('RunningHub App ID 未配置');
+    throw new Error(i18n.t('RunningHub App ID 未配置'));
   }
 
   console.log('[RunningHub] Submitting angle switch task:', {
@@ -121,7 +123,7 @@ export async function submitAngleSwitchTask(
     if (error instanceof Error) {
       throw error;
     }
-    throw new Error('提交 RunningHub 任务失败');
+    throw new Error(i18n.t('提交 RunningHub 任务失败'));
   }
 }
 
@@ -135,7 +137,7 @@ export async function queryTaskStatus(
 ): Promise<RunningHubTaskResult> {
   try {
     if (!baseUrl) {
-      throw new Error('RunningHub Base URL 未配置');
+      throw new Error(i18n.t('RunningHub Base URL 未配置'));
     }
     const response = await fetch(`${normalizeBaseUrl(baseUrl)}/query`, {
       method: 'POST',
@@ -221,7 +223,7 @@ export async function pollTaskUntilComplete(
     }
   }
 
-  throw new Error('视角切换超时，请重试');
+  throw new Error(i18n.t('视角切换超时，请重试'));
 }
 
 /**

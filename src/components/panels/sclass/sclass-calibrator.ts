@@ -21,6 +21,7 @@ import type { Character } from '@/stores/character-library-store';
 import type { Scene } from '@/stores/scene-store';
 import { callFeatureAPI } from '@/lib/ai/feature-router';
 import { useSClassStore } from '@/stores/sclass-store';
+import { t } from "@/lib/i18n/translate";
 
 // ==================== 类型定义 ====================
 
@@ -81,7 +82,7 @@ export async function calibrateGroup(
   _sceneLibrary: Scene[],
 ): Promise<CalibrationResult> {
   if (scenes.length === 0) {
-    throw new Error('组内无镜头，无法校准');
+    throw new Error(t("组内无镜头，无法校准"));
   }
 
   const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 5), 0);
@@ -140,7 +141,7 @@ calibratedPrompt 必须覆盖全部 ${scenes.length} 个镜头，保持镜头编
   try {
     parsed = JSON.parse(cleaned);
   } catch {
-    throw new Error('AI 返回的 JSON 解析失败，请重试');
+    throw new Error(t("AI 返回的 JSON 解析失败，请重试"));
   }
 
   // ---- 校验 & 容错 ----
@@ -161,7 +162,7 @@ calibratedPrompt 必须覆盖全部 ${scenes.length} 个镜头，保持镜头编
   }
 
   if (!result.calibratedPrompt) {
-    throw new Error('AI 未返回有效的 calibratedPrompt');
+    throw new Error(t("AI 未返回有效的 calibratedPrompt"));
   }
 
   return result;

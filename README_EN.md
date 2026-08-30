@@ -36,6 +36,14 @@
 
 Each stage's output automatically flows into the next — no manual glue required. Supports multiple mainstream AI models, ideal for batch production of short dramas, anime series, trailers, and more.
 
+## Interface language
+
+Choose **Settings → Interface → Interface language**, then select System default, Simplified Chinese, or English. The preference is saved, applies immediately, and is synchronized to native file/directory dialogs and main-process messages. It is independent from screenplay, AI prompt, and AI output languages.
+
+### Contributors: adding a locale
+
+Renderer translation resources live in `src/lib/i18n/locales/` and use semantic `namespace.key` keys (for example, `settings.interfaceLanguage`); native Electron dialog and IPC strings live in `electron/i18n.ts`. To add a locale, copy `en.json`, preserve every leaf key and object shape, register it in both `src/lib/i18n/index.ts` and `electron/i18n.ts`, and run `npm run validate:localization`. Do not couple screenplay text, prompts, model/API IDs, or protocol fields to the interface locale.
+
 ## Features
 
 ### ⭐ S-Class Module — Seedance 2.0 Multimodal Creation

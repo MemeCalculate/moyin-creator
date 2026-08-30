@@ -1,3 +1,5 @@
+
+import { useTranslation } from "react-i18next";
 // Copyright (c) 2025 hotflow2024
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
@@ -97,6 +99,7 @@ function FolderContextMenu({
   onRename: (folder: MediaFolder) => void;
   onDelete: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   // System folders cannot be deleted or renamed
   if (folder.isSystem) {
     return <>{children}</>;
@@ -107,7 +110,7 @@ function FolderContextMenu({
       <ContextMenuContent>
         <ContextMenuItem onClick={() => onRename(folder)}>
           <Pencil className="h-4 w-4 mr-2" />
-          重命名
+          {t("重命名")}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -115,7 +118,7 @@ function FolderContextMenu({
           onClick={() => onDelete(folder.id)}
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          删除文件夹
+          {t("删除文件夹")}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -144,6 +147,7 @@ function MediaItemWithContextMenu({
   onSmartSplit?: (item: MediaFile) => void;
   onGenerateScenes?: (item: MediaFile) => void;
 }) {
+  const { t } = useTranslation();
   const isImage = item.type === 'image';
   
   return (
@@ -155,28 +159,28 @@ function MediaItemWithContextMenu({
           <>
             <ContextMenuItem onClick={() => onSmartSplit(item)}>
               <Scissors className="h-4 w-4 mr-2 text-yellow-500" />
-              智能切割
+              {t("智能切割")}
             </ContextMenuItem>
             <ContextMenuItem onClick={() => onGenerateScenes(item)}>
               <Film className="h-4 w-4 mr-2 text-blue-500" />
-              分镜生成
+              {t("分镜生成")}
             </ContextMenuItem>
             <ContextMenuSeparator />
           </>
         )}
         <ContextMenuItem onClick={() => onRename(item)}>
           <Pencil className="h-4 w-4 mr-2" />
-          重命名
+          {t("重命名")}
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger>
             <FolderInput className="h-4 w-4 mr-2" />
-            移动到
+            {t("移动到")}
           </ContextMenuSubTrigger>
           <ContextMenuSubContent>
             <ContextMenuItem onClick={() => onMove(item.id, null)}>
               <Home className="h-4 w-4 mr-2" />
-              根目录
+              {t("根目录")}
             </ContextMenuItem>
             {folders.map((f) => (
               <ContextMenuItem key={f.id} onClick={() => onMove(item.id, f.id)}>
@@ -189,7 +193,7 @@ function MediaItemWithContextMenu({
         <ContextMenuSeparator />
         <ContextMenuItem onClick={() => onExport(item)}>
           <Download className="h-4 w-4 mr-2" />
-          导出
+          {t("导出")}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -197,7 +201,7 @@ function MediaItemWithContextMenu({
           onClick={(e) => onRemove(e, item.id)}
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          删除
+          {t("删除")}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -205,6 +209,7 @@ function MediaItemWithContextMenu({
 }
 
 export function MediaView() {
+  const { t } = useTranslation();
   const { 
     mediaFiles, 
     folders,
@@ -254,7 +259,7 @@ export function MediaView() {
   const processFiles = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return;
     if (!activeProject) {
-      toast.error("没有活动项目");
+      toast.error(t("没有活动项目"));
       return;
     }
 
@@ -267,10 +272,10 @@ export function MediaView() {
       for (const item of processedItems) {
         await addMediaFile(activeProject.id, { ...item, folderId: uploadFolderId });
       }
-      toast.success(`已添加 ${processedItems.length} 个文件`);
+      toast.success(t("已添加 {{count}} 个文件", { count: processedItems.length }));
     } catch (error) {
       console.error("Error processing files:", error);
-      toast.error("处理文件失败");
+      toast.error(t("处理文件失败"));
     } finally {
       setIsProcessing(false);
       setProgress(0);
@@ -298,11 +303,11 @@ export function MediaView() {
   const handleRemove = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!activeProject) {
-      toast.error("没有活动项目");
+      toast.error(t("没有活动项目"));
       return;
     }
     await removeMediaFile(activeProject.id, id);
-    toast.success("已删除");
+    toast.success(t("已删除"));
   };
 
   const handlePreview = (item: MediaFile) => {
@@ -316,7 +321,7 @@ export function MediaView() {
 
   const handleExport = async (item: MediaFile) => {
     if (!item.url) {
-      toast.error('文件URL不可用');
+      toast.error(t("文件URL不可用"));
       return;
     }
     try {
@@ -332,16 +337,16 @@ export function MediaView() {
               : [{ name: 'Image', extensions: ['png', 'jpg', 'jpeg', 'gif'] }],
           });
           if (result.success) {
-            toast.success(`已导出: ${item.name}`);
+            toast.success(t("已导出: {{name}}", { name: item.name }));
           } else if (result.canceled) {
             // User canceled, do nothing
           } else if (result.error) {
-            toast.error(`导出失败: ${result.error}`);
+            toast.error(t("导出失败: {{error}}", { error: result.error }));
           }
           return;
         }
         
-        toast.error('请重启应用以启用导出功能');
+        toast.error(t("请重启应用以启用导出功能"));
         return;
       }
       
@@ -352,10 +357,10 @@ export function MediaView() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      toast.success(`已导出: ${item.name}`);
+      toast.success(t("已导出: {{name}}", { name: item.name }));
     } catch (error) {
       const err = error as Error;
-      toast.error(`导出失败: ${err.message}`);
+      toast.error(t("导出失败: {{error}}", { error: err.message }));
     }
   };
 
@@ -374,7 +379,7 @@ export function MediaView() {
     
     // 切换到导演面板
     setActiveTab('director');
-    toast.success('已载入图片，请点击“切割场景”开始智能切割');
+    toast.success(t("已载入图片，请点击“切割场景”开始智能切割"));
   };
 
   // AI 导演功能 - 分镜生成（直接进入编辑状态，作为单张分镜）
@@ -455,7 +460,7 @@ export function MediaView() {
     
     // 切换到导演面板
     setActiveTab('director');
-    toast.success('已创建分镜，可以开始生成视频');
+    toast.success(t("已创建分镜，可以开始生成视频"));
   };
 
   const formatDuration = (duration: number) => {
@@ -566,7 +571,7 @@ export function MediaView() {
     addFolder(newFolderName.trim(), currentFolderId, projectId);
     setNewFolderName("");
     setNewFolderDialogOpen(false);
-    toast.success(`文件夹「${newFolderName}」已创建`);
+    toast.success(t("文件夹「{{name}}」已创建", { name: newFolderName }));
   };
 
   // Handle rename
@@ -579,19 +584,19 @@ export function MediaView() {
     }
     setRenameTarget(null);
     setRenameDialogOpen(false);
-    toast.success("已重命名");
+    toast.success(t("已重命名"));
   };
 
   // Handle folder delete
   const handleDeleteFolder = (id: string) => {
     deleteFolder(id);
-    toast.success("文件夹已删除");
+    toast.success(t("文件夹已删除"));
   };
 
   // Handle move to folder
   const handleMoveToFolder = (mediaId: string, folderId: string | null) => {
     moveToFolder(mediaId, folderId);
-    toast.success("已移动");
+    toast.success(t("已移动"));
   };
 
   // Open rename dialog for folder
@@ -642,7 +647,7 @@ export function MediaView() {
         return (
           <div className="w-full h-full bg-muted/30 flex flex-col items-center justify-center text-muted-foreground rounded">
             <Video className="h-6 w-6 mb-1" />
-            <span className="text-xs">Video</span>
+            <span className="text-xs">{t("视频")}</span>
           </div>
         );
       }
@@ -650,7 +655,7 @@ export function MediaView() {
       return (
         <div className="w-full h-full bg-green-500/20 flex flex-col items-center justify-center text-muted-foreground rounded border border-green-500/20">
           <Music className="h-6 w-6 mb-1" />
-          <span className="text-xs">Audio</span>
+          <span className="text-xs">{t("音频")}</span>
           {item.duration && (
             <span className="text-xs opacity-70">{formatDuration(item.duration)}</span>
           )}
@@ -679,9 +684,9 @@ export function MediaView() {
       {/* Header */}
       <div className="p-3 pb-2 bg-panel">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold text-sm">素材库</h2>
+          <h2 className="font-semibold text-sm">{t("素材库")}</h2>
           <span className="text-xs text-muted-foreground">
-            {currentFolders.length} 文件夹, {filteredMediaItems.length} 文件
+            {currentFolders.length} {t("文件夹")}, {filteredMediaItems.length} {t("文件")}
           </span>
         </div>
 
@@ -692,7 +697,7 @@ export function MediaView() {
             className="hover:text-primary flex items-center gap-1 shrink-0"
           >
             <Home className="h-3 w-3" />
-            根目录
+            {t("根目录")}
           </button>
           {breadcrumbPath.map((folder) => (
             <span key={folder.id} className="flex items-center gap-1 shrink-0">
@@ -720,7 +725,7 @@ export function MediaView() {
             ) : (
               <CloudUpload className="h-4 w-4 mr-2" />
             )}
-            上传
+            {t("上传")}
           </Button>
 
           <TooltipProvider>
@@ -735,7 +740,7 @@ export function MediaView() {
                   <FolderPlus className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>新建文件夹</TooltipContent>
+              <TooltipContent>{t("新建文件夹")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
 
@@ -756,7 +761,7 @@ export function MediaView() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {viewMode === "grid" ? "列表视图" : "网格视图"}
+                {viewMode === "grid" ? t("列表视图") : t("网格视图")}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -769,13 +774,13 @@ export function MediaView() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => { setSortBy("name"); setSortOrder("asc"); }}>
-                名称 {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
+                {t("名称")} {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => { setSortBy("type"); setSortOrder("asc"); }}>
-                类型 {sortBy === "type" && (sortOrder === "asc" ? "↑" : "↓")}
+                {t("类型")} {sortBy === "type" && (sortOrder === "asc" ? "↑" : "↓")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => { setSortBy("duration"); setSortOrder("asc"); }}>
-                时长 {sortBy === "duration" && (sortOrder === "asc" ? "↑" : "↓")}
+                {t("时长")} {sortBy === "duration" && (sortOrder === "asc" ? "↑" : "↓")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -791,15 +796,15 @@ export function MediaView() {
         {currentFolders.length === 0 && filteredMediaItems.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-lg">
             <CloudUpload className="h-12 w-12 mb-2 opacity-50" />
-            <p className="text-sm">拖放文件到这里</p>
-            <p className="text-xs">或点击上传按钮</p>
+            <p className="text-sm">{t("拖放文件到这里")}</p>
+            <p className="text-xs">{t("或点击上传按钮")}</p>
           </div>
         ) : viewMode === "grid" ? (
           <div className="space-y-3">
             {/* System category folders */}
             {systemFolders.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1.5 font-medium">素材分类</p>
+                <p className="text-xs text-muted-foreground mb-1.5 font-medium">{t("素材分类")}</p>
                 <div
                   className="grid gap-2"
                   style={{ gridTemplateColumns: "repeat(auto-fill, 100px)" }}
@@ -815,7 +820,7 @@ export function MediaView() {
                       >
                         <div className="w-[100px] h-[100px] rounded overflow-hidden bg-primary/5 flex flex-col items-center justify-center border border-primary/20 hover:border-primary/50 gap-1">
                           <IconComp className="h-8 w-8 text-primary/70" />
-                          <span className="text-[10px] text-muted-foreground">{count} 项</span>
+                          <span className="text-[10px] text-muted-foreground">{count} {t("项")}</span>
                         </div>
                         <p className="text-xs mt-1 truncate text-center font-medium">{folder.name}</p>
                       </div>
@@ -829,7 +834,7 @@ export function MediaView() {
               <div>
                 {systemFolders.length > 0 && (customFolders.length > 0 || filteredMediaItems.length > 0) && (
                   <p className="text-xs text-muted-foreground mb-1.5 font-medium">
-                    {currentFolderId === null ? '自定义文件夹' : '内容'}
+                    {currentFolderId === null ? t('自定义文件夹') : t('内容')}
                   </p>
                 )}
                 <div
@@ -851,7 +856,7 @@ export function MediaView() {
                         >
                           <div className="w-[100px] h-[100px] rounded overflow-hidden bg-muted/50 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 hover:border-primary/50 gap-1">
                             <Folder className="h-8 w-8 text-primary/70" />
-                            <span className="text-[10px] text-muted-foreground">{count} 项</span>
+                            <span className="text-[10px] text-muted-foreground">{count} {t("项")}</span>
                           </div>
                           <p className="text-xs mt-1 truncate text-center">{folder.name}</p>
                         </div>
@@ -915,7 +920,7 @@ export function MediaView() {
             {/* System folders in list view */}
             {systemFolders.length > 0 && (
               <>
-                <p className="text-xs text-muted-foreground px-2 pt-1 font-medium">素材分类</p>
+                <p className="text-xs text-muted-foreground px-2 pt-1 font-medium">{t("素材分类")}</p>
                 {systemFolders.map((folder) => {
                   const IconComp = getFolderIcon(folder);
                   const count = folderFileCounts[folder.id] || 0;
@@ -930,7 +935,7 @@ export function MediaView() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm truncate font-medium">{folder.name}</p>
-                        <p className="text-xs text-muted-foreground">{count} 项</p>
+                        <p className="text-xs text-muted-foreground">{count} {t("项")}</p>
                       </div>
                     </div>
                   );
@@ -941,7 +946,7 @@ export function MediaView() {
             {customFolders.length > 0 && (
               <>
                 {systemFolders.length > 0 && (
-                  <p className="text-xs text-muted-foreground px-2 pt-2 font-medium">自定义文件夹</p>
+                  <p className="text-xs text-muted-foreground px-2 pt-2 font-medium">{t("自定义文件夹")}</p>
                 )}
                 {customFolders.map((folder) => {
                   const count = folderFileCounts[folder.id] || 0;
@@ -961,7 +966,7 @@ export function MediaView() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm truncate">{folder.name}</p>
-                          <p className="text-xs text-muted-foreground">{count} 项</p>
+                          <p className="text-xs text-muted-foreground">{count} {t("项")}</p>
                         </div>
                       </div>
                     </FolderContextMenu>
@@ -1017,7 +1022,7 @@ export function MediaView() {
                     <p className="text-xs text-muted-foreground">
                       {item.type}
                       {item.duration && ` · ${formatDuration(item.duration)}`}
-                      {item.source && item.source !== 'upload' && ' · AI生成'}
+                      {item.source && item.source !== 'upload' && ` · ${t('AI生成')}`}
                     </p>
                   </div>
                 </div>
@@ -1031,20 +1036,20 @@ export function MediaView() {
       <Dialog open={newFolderDialogOpen} onOpenChange={setNewFolderDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>新建文件夹</DialogTitle>
+            <DialogTitle>{t("新建文件夹")}</DialogTitle>
           </DialogHeader>
           <Input
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
-            placeholder="文件夹名称"
+            placeholder={t("文件夹名称")}
             onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
             autoFocus
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setNewFolderDialogOpen(false)}>
-              取消
+              {t("取消")}
             </Button>
-            <Button onClick={handleCreateFolder}>创建</Button>
+            <Button onClick={handleCreateFolder}>{t("创建")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1053,20 +1058,20 @@ export function MediaView() {
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>重命名</DialogTitle>
+            <DialogTitle>{t("重命名")}</DialogTitle>
           </DialogHeader>
           <Input
             value={renameTarget?.name || ''}
             onChange={(e) => setRenameTarget(prev => prev ? { ...prev, name: e.target.value } : null)}
-            placeholder="新名称"
+            placeholder={t("新名称")}
             onKeyDown={(e) => e.key === 'Enter' && handleRename()}
             autoFocus
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenameDialogOpen(false)}>
-              取消
+              {t("取消")}
             </Button>
-            <Button onClick={handleRename}>确定</Button>
+            <Button onClick={handleRename}>{t("确定")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

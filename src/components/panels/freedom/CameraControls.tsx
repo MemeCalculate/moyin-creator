@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from "react-i18next";
 import { cn } from '@/lib/utils';
 import {
   CAMERA_OPTIONS,
@@ -176,12 +177,13 @@ export function CameraControls({
   onCameraChange, onLensChange, onFocalLengthChange, onApertureChange,
   className,
 }: CameraControlsProps) {
+  const { t } = useTranslation();
   return (
     <div className={cn('flex gap-2', className)}>
-      <ScrollColumn items={CAMERA_OPTIONS} value={camera} onChange={onCameraChange} label="机身" />
-      <ScrollColumn items={LENS_OPTIONS} value={lens} onChange={onLensChange} label="镜头" />
-      <ScrollColumn items={FOCAL_OPTIONS} value={focalLength} onChange={onFocalLengthChange} label="焦距" />
-      <ScrollColumn items={APERTURE_OPTIONS} value={aperture} onChange={onApertureChange} label="光圈" />
+      <ScrollColumn items={CAMERA_OPTIONS} value={camera} onChange={onCameraChange} label={t("机身")} />
+      <ScrollColumn items={LENS_OPTIONS} value={lens} onChange={onLensChange} label={t("镜头")} />
+      <ScrollColumn items={FOCAL_OPTIONS} value={focalLength} onChange={onFocalLengthChange} label={t("焦距")} />
+      <ScrollColumn items={APERTURE_OPTIONS} value={aperture} onChange={onApertureChange} label={t("光圈")} />
     </div>
   );
 }

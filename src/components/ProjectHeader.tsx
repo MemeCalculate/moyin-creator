@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useProjectStore } from "@/stores/project-store";
 import { useScriptStore } from "@/stores/script-store";
 import { useMediaPanelStore, stages } from "@/stores/media-panel-store";
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 export type SaveStatus = "saved" | "saving" | "unsaved";
 
 export function ProjectHeader() {
+  const { t } = useTranslation();
   const { activeProject } = useProjectStore();
   const { activeStage, activeEpisodeIndex, backToSeries } = useMediaPanelStore();
   const scriptStore = useScriptStore();
@@ -72,7 +74,7 @@ export function ProjectHeader() {
       {/* Left: Project Name + Stage + Episode Breadcrumb */}
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium text-white truncate max-w-[200px]">
-          {activeProject?.name || "未命名项目"}
+          {activeProject?.name || t("未命名项目")}
         </span>
         {activeEpisodeIndex != null && (
           <>
@@ -80,9 +82,9 @@ export function ProjectHeader() {
             <button
               className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
               onClick={backToSeries}
-              title="返回全剧视图"
+              title={t("返回全剧视图")}
             >
-              第{activeEpisodeIndex}集
+              {t("第{{number}}集", { number: activeEpisodeIndex })}
             </button>
           </>
         )}
@@ -101,13 +103,13 @@ export function ProjectHeader() {
 
       {/* Right: Save Status */}
       <div className="flex items-center gap-2">
-        <SaveStatusIndicator status={saveStatus} />
+        <SaveStatusIndicator status={saveStatus} t={t} />
       </div>
     </div>
   );
 }
 
-function SaveStatusIndicator({ status }: { status: SaveStatus }) {
+function SaveStatusIndicator({ status, t }: { status: SaveStatus; t: (key: string) => string }) {
   return (
     <div
       className={cn(
@@ -120,19 +122,19 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
       {status === "saved" && (
         <>
           <Check className="w-3 h-3" />
-          <span>Saved</span>
+          <span>{t("已保存")}</span>
         </>
       )}
       {status === "saving" && (
         <>
           <Loader2 className="w-3 h-3 animate-spin" />
-          <span>Saving...</span>
+          <span>{t("保存中...")}</span>
         </>
       )}
       {status === "unsaved" && (
         <>
           <CloudOff className="w-3 h-3" />
-          <span>Unsaved</span>
+          <span>{t("未保存")}</span>
         </>
       )}
     </div>

@@ -3,6 +3,8 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 "use client";
 
+import { t } from "@/lib/i18n/translate";
+
 /**
  * Shot List Component
  * Displays shots with character variation selection and generation controls
@@ -133,14 +135,14 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
         imageProgress: 100,
         imageUrl,
       });
-      toast.success(`镜头 ${shot.index} 图片生成完成`);
+      toast.success(t('镜头 {{index}} 图片生成完成', { index: shot.index }));
     } catch (error) {
       const err = error as Error;
       updateShot(projectId, shot.id, {
         imageStatus: 'failed',
         imageError: err.message,
       });
-      toast.error(`镜头 ${shot.index} 生成失败: ${err.message}`);
+      toast.error(t('镜头 {{index}} 生成失败: {{message}}', { index: shot.index, message: err.message }));
     } finally {
       setGeneratingShotId(null);
     }
@@ -149,7 +151,7 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
   // Handle single shot video generation
   const handleGenerateVideo = useCallback(async (shot: Shot) => {
     if (!shot.imageUrl) {
-      toast.error('请先生成图片');
+      toast.error(t('请先生成图片'));
       return;
     }
 
@@ -191,14 +193,14 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
         videoProgress: 100,
         videoUrl,
       });
-      toast.success(`镜头 ${shot.index} 视频生成完成`);
+      toast.success(t('镜头 {{index}} 视频生成完成', { index: shot.index }));
     } catch (error) {
       const err = error as Error;
       updateShot(projectId, shot.id, {
         videoStatus: 'failed',
         videoError: err.message,
       });
-      toast.error(`镜头 ${shot.index} 视频生成失败: ${err.message}`);
+      toast.error(t('镜头 {{index}} 视频生成失败: {{message}}', { index: shot.index, message: err.message }));
     } finally {
       setGeneratingShotId(null);
     }
@@ -208,7 +210,7 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
   const handleBatchGenerateImages = useCallback(async () => {
     const pendingShots = shots.filter(s => s.imageStatus !== 'completed');
     if (pendingShots.length === 0) {
-      toast.info('所有镜头已生成图片');
+      toast.info(t('所有镜头已生成图片'));
       return;
     }
 
@@ -230,7 +232,7 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
     setBatchProgress(projectId, {
       current: 0,
       total: pendingShots.length,
-      message: `正在生成 0/${pendingShots.length}`,
+      message: t('正在生成 {{current}}/{{total}}', { current: 0, total: pendingShots.length }),
     });
 
     await batchGenerateShotImages(
@@ -255,7 +257,7 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
         setBatchProgress(projectId, {
           current: completed,
           total: pendingShots.length,
-          message: `正在生成 ${completed}/${pendingShots.length}`,
+          message: t('正在生成 {{current}}/{{total}}', { current: completed, total: pendingShots.length }),
         });
       },
       (shotId, error) => {
@@ -267,14 +269,14 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
         setBatchProgress(projectId, {
           current: completed,
           total: pendingShots.length,
-          message: `正在生成 ${completed}/${pendingShots.length}`,
+          message: t('正在生成 {{current}}/{{total}}', { current: completed, total: pendingShots.length }),
         });
       }
     );
 
     setIsGenerating(false);
     setBatchProgress(projectId, null);
-    toast.success(`批量生成完成: ${completed}/${pendingShots.length}`);
+    toast.success(t('批量生成完成: {{completed}}/{{total}}', { completed, total: pendingShots.length }));
   }, [shots, projectId, updateShot, setBatchProgress, getStyleTokensLocal]);
 
   // Handle character variation change
@@ -304,7 +306,7 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
       {/* Header with batch actions */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          图片: {stats.imagesCompleted}/{stats.total} · 视频: {stats.videosCompleted}/{stats.total}
+          {t('图片: {{images}}/{{total}} · 视频: {{videos}}/{{total}}', { images: stats.imagesCompleted, videos: stats.videosCompleted, total: stats.total })}
         </div>
         <Button
           size="sm"
@@ -314,12 +316,12 @@ export function ShotList({ projectId, shots, styleId }: ShotListProps) {
           {isGenerating ? (
             <>
               <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              生成中...
+              {t('生成中...')}
             </>
           ) : (
             <>
               <Play className="h-4 w-4 mr-1" />
-              批量生成图片
+              {t('批量生成图片')}
             </>
           )}
         </Button>
@@ -377,7 +379,7 @@ function ShotCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">镜头 {shot.index}</span>
+            <span className="font-medium text-sm">{t('镜头 {{index}}', { index: shot.index })}</span>
             <span className="text-xs text-muted-foreground">{shot.shotSize}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
@@ -390,7 +392,7 @@ function ShotCard({
           <div className="w-16 h-10 rounded overflow-hidden flex-shrink-0">
             <img
               src={shot.imageUrl}
-              alt={`Shot ${shot.index}`}
+              alt={t('镜头 {{index}} 预览', { index: shot.index })}
               className="w-full h-full object-cover"
             />
           </div>
@@ -434,7 +436,7 @@ function ShotCard({
               disabled={isGenerating}
             >
               <ImageIcon className="h-3 w-3 mr-1" />
-              {shot.imageStatus === 'completed' ? '重新生成' : '生成图片'}
+              {shot.imageStatus === 'completed' ? t("重新生成") : t("生成图片")}
             </Button>
 
             {shot.imageStatus === 'completed' && (
@@ -446,7 +448,7 @@ function ShotCard({
                 disabled={isGenerating || shot.videoStatus === 'generating'}
               >
                 <Video className="h-3 w-3 mr-1" />
-                {shot.videoStatus === 'completed' ? '重新生成' : '生成视频'}
+                {shot.videoStatus === 'completed' ? t("重新生成") : t("生成视频")}
               </Button>
             )}
           </div>
@@ -519,7 +521,7 @@ function CharacterVariationSelector({
       </PopoverTrigger>
       <PopoverContent className="w-48 p-1" align="start">
         <div className="text-xs font-medium px-2 py-1 text-muted-foreground">
-          选择造型
+          {t('选择造型')}
         </div>
         <button
           className={cn(
@@ -529,7 +531,7 @@ function CharacterVariationSelector({
           onClick={() => onSelect(null)}
         >
           <User className="h-4 w-4" />
-          <span>默认形象</span>
+          <span>{t('默认形象')}</span>
           {!selectedVariationId && <Check className="h-3 w-3 ml-auto text-primary" />}
         </button>
         {variations.map((variation) => (
@@ -558,7 +560,7 @@ function CharacterVariationSelector({
         ))}
         {variations.length === 0 && (
           <div className="px-2 py-2 text-xs text-muted-foreground">
-            暂无其他造型
+            {t('暂无其他造型')}
           </div>
         )}
       </PopoverContent>

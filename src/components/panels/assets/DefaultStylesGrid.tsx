@@ -3,18 +3,27 @@
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 /**
  * DefaultStylesGrid - 内置风格网格浏览（只读）
  * 按分类分组展示 48 个预设风格
  */
 
 import { useState } from "react";
-import { STYLE_CATEGORIES, type StylePreset } from "@/lib/constants/visual-styles";
+import {
+  STYLE_CATEGORIES,
+  getStyleCategoryLabel,
+  getStyleDisplayDescription,
+  getStyleDisplayName,
+  type StylePreset,
+} from "@/lib/constants/visual-styles";
 import { StyleCard } from "./StyleCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 export function DefaultStylesGrid() {
+  const { t, i18n } = useTranslation();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(STYLE_CATEGORIES.map((c) => c.id))
   );
@@ -33,9 +42,9 @@ export function DefaultStylesGrid() {
     <ScrollArea className="h-full">
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">默认风格</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t("默认风格")}</h2>
           <span className="text-xs text-muted-foreground">
-            {STYLE_CATEGORIES.reduce((n, c) => n + c.styles.length, 0)} 个预设
+            {STYLE_CATEGORIES.reduce((n, c) => n + c.styles.length, 0)} {t("个预设")}
           </span>
         </div>
 
@@ -51,7 +60,7 @@ export function DefaultStylesGrid() {
               ) : (
                 <ChevronRight className="w-3.5 h-3.5" />
               )}
-              {category.name}
+              {getStyleCategoryLabel(category.id, i18n.language)}
               <span className="text-muted-foreground/60 ml-1">({category.styles.length})</span>
             </button>
 
@@ -61,8 +70,8 @@ export function DefaultStylesGrid() {
                 {category.styles.map((style: StylePreset) => (
                   <StyleCard
                     key={style.id}
-                    name={style.name}
-                    description={style.description}
+                    name={getStyleDisplayName(style, i18n.language)}
+                    description={getStyleDisplayDescription(style, i18n.language)}
                     category={style.category}
                     isSelected={selectedId === style.id}
                     onClick={() => setSelectedId(style.id)}

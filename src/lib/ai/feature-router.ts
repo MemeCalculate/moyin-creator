@@ -16,6 +16,8 @@
  *   // Use config.apiKey and config.provider in API call
  */
 
+import i18n from '@/lib/i18n';
+
 import { useAPIConfigStore, type AIFeature, type IProvider, AI_FEATURES } from '@/stores/api-config-store';
 import { parseApiKeys, getProviderKeyManager, ApiKeyManager } from '@/lib/api-key-manager';
 
@@ -267,10 +269,10 @@ export async function callFeatureAPI(
   const model = options?.modelOverride || config.model || config.models?.[0];
   const baseUrl = config.baseUrl?.replace(/\/+$/, '');
   if (!baseUrl) {
-    throw new Error('请先在设置中配置 Base URL');
+    throw new Error(i18n.t('请先在设置中配置 Base URL'));
   }
   if (!model) {
-    throw new Error('请先在设置中配置模型');
+    throw new Error(i18n.t('请先在设置中配置模型'));
   }
   
   console.log(`[callFeatureAPI] 功能: ${feature}`);

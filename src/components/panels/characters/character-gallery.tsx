@@ -8,6 +8,7 @@
  * Folder navigation, breadcrumb, and character card grid
  */
 
+import { useTranslation } from "react-i18next";
 import { useState, useMemo, useEffect } from "react";
 import { useCharacterLibraryStore, type Character, type CharacterFolder } from "@/stores/character-library-store";
 import { useAppSettingsStore } from "@/stores/app-settings-store";
@@ -60,6 +61,7 @@ interface CharacterGalleryProps {
 }
 
 export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: CharacterGalleryProps) {
+  const { t } = useTranslation();
   const {
     characters,
     folders,
@@ -160,14 +162,14 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
 
   const handleCreateFolder = () => {
     if (!newFolderName.trim()) {
-      toast.error("请输入文件夹名称");
+      toast.error(t("请输入文件夹名称"));
       return;
     }
     const projectId = resourceSharing.shareCharacters ? undefined : activeProjectId || undefined;
     addFolder(newFolderName.trim(), currentFolderId, projectId);
     setNewFolderName("");
     setShowNewFolderDialog(false);
-    toast.success("文件夹已创建");
+    toast.success(t("文件夹已创建"));
   };
 
   const handleRenameFolder = () => {
@@ -175,23 +177,23 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
     renameFolder(renamingFolder.id, renameValue.trim());
     setRenamingFolder(null);
     setRenameValue("");
-    toast.success("文件夹已重命名");
+    toast.success(t("文件夹已重命名"));
   };
 
   const handleDeleteFolder = (id: string) => {
-    if (confirm("确定要删除此文件夹吗？文件夹内的角色将移动到上级目录。")) {
+    if (confirm(t("确定要删除此文件夹吗？文件夹内的角色将移动到上级目录。"))) {
       deleteFolder(id);
-      toast.success("文件夹已删除");
+      toast.success(t("文件夹已删除"));
     }
   };
 
   const handleDeleteCharacter = (char: Character) => {
-    if (confirm(`确定要删除角色 "${char.name}" 吗？`)) {
+    if (confirm(t("确定要删除角色 {{name}} 吗？", { name: char.name }))) {
       deleteCharacter(char.id);
       if (selectedCharacterId === char.id) {
         onCharacterSelect(null);
       }
-      toast.success("角色已删除");
+      toast.success(t("角色已删除"));
     }
   };
 
@@ -218,7 +220,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
             onClick={() => setCurrentFolder(null)}
           >
             <Home className="h-3.5 w-3.5" />
-            角色库
+            {t("角色库")}
           </Button>
           {breadcrumbPath.map((folder) => (
             <div key={folder.id} className="flex items-center">
@@ -242,7 +244,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索角色..."
+              placeholder={t("搜索角色...")}
               className="h-8 pl-7 text-sm"
             />
           </div>
@@ -255,7 +257,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
                 className="h-8 px-2 rounded-r-none text-xs"
                 onClick={() => setEpisodeViewScope('episode')}
               >
-                本集
+                {t("本集")}
               </Button>
               <Button
                 variant={episodeViewScope === 'all' ? 'secondary' : 'ghost'}
@@ -263,7 +265,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
                 className="h-8 px-2 rounded-l-none text-xs"
                 onClick={() => setEpisodeViewScope('all')}
               >
-                全剧
+                {t("全剧")}
               </Button>
             </div>
           )}
@@ -274,7 +276,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
             onClick={() => setShowNewFolderDialog(true)}
           >
             <FolderPlus className="h-3.5 w-3.5 mr-1" />
-            新建
+            {t("新建")}
           </Button>
           <div className="flex border rounded-md">
             <Button
@@ -302,7 +304,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
         {/* Folders */}
         {subFolders.length > 0 && (
           <div className="mb-4">
-            <div className="text-xs text-muted-foreground mb-2">文件夹</div>
+            <div className="text-xs text-muted-foreground mb-2">{t("文件夹")}</div>
             <div className={cn(
               viewMode === "grid" 
                 ? "grid grid-cols-3 gap-2" 
@@ -347,7 +349,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
         {currentCharacters.length > 0 ? (
           <div>
             <div className="text-xs text-muted-foreground mb-2">
-              角色 ({currentCharacters.length})
+              {t("角色 ({{count}})", { count: currentCharacters.length })}
             </div>
             <div className={cn(
               viewMode === "grid" 
@@ -362,7 +364,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
                   onDelete={() => handleDeleteCharacter(char)}
                   onMove={(folderId) => {
                     moveToFolder(char.id, folderId);
-                    toast.success("角色已移动");
+                    toast.success(t("角色已移动"));
                   }}
                 >
                   <div
@@ -379,7 +381,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
                         {/* Grid view */}
                         <div
                           className="aspect-square rounded bg-muted flex items-center justify-center overflow-hidden mb-2 cursor-zoom-in"
-                          title="双击查看大图"
+                          title={t("双击查看大图")}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
                             if (char.thumbnailUrl) setPreviewImageUrl(char.thumbnailUrl);
@@ -398,7 +400,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
                         <div className="text-center">
                           <p className="text-sm font-medium truncate">{char.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {char.views.length > 0 ? `${char.views.length} 视图` : "未生成"}
+                            {char.views.length > 0 ? t("{{count}} 视图", { count: char.views.length }) : t("未生成")}
                           </p>
                         </div>
                       </>
@@ -419,7 +421,7 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{char.name}</p>
                           <p className="text-xs text-muted-foreground truncate">
-                            {char.description || "暂无描述"}
+                            {char.description || t("暂无描述")}
                           </p>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -440,10 +442,10 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
                 <User className="h-6 w-6 text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">
-                {searchQuery ? "没有找到匹配的角色" : "还没有角色"}
+                {searchQuery ? t("没有找到匹配的角色") : t("还没有角色")}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                使用左侧控制台创建角色
+                {t("使用左侧控制台创建角色")}
               </p>
             </div>
           )
@@ -463,20 +465,20 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
       <Dialog open={showNewFolderDialog} onOpenChange={setShowNewFolderDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>新建文件夹</DialogTitle>
+            <DialogTitle>{t("新建文件夹")}</DialogTitle>
           </DialogHeader>
           <Input
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
-            placeholder="文件夹名称"
+            placeholder={t("文件夹名称")}
             onKeyDown={(e) => e.key === "Enter" && handleCreateFolder()}
             autoFocus
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNewFolderDialog(false)}>
-              取消
+              {t("取消")}
             </Button>
-            <Button onClick={handleCreateFolder}>创建</Button>
+            <Button onClick={handleCreateFolder}>{t("创建")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -485,20 +487,20 @@ export function CharacterGallery({ onCharacterSelect, selectedCharacterId }: Cha
       <Dialog open={!!renamingFolder} onOpenChange={(open) => !open && setRenamingFolder(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>重命名文件夹</DialogTitle>
+            <DialogTitle>{t("重命名文件夹")}</DialogTitle>
           </DialogHeader>
           <Input
             value={renameValue}
             onChange={(e) => setRenameValue(e.target.value)}
-            placeholder="文件夹名称"
+            placeholder={t("文件夹名称")}
             onKeyDown={(e) => e.key === "Enter" && handleRenameFolder()}
             autoFocus
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenamingFolder(null)}>
-              取消
+              {t("取消")}
             </Button>
-            <Button onClick={handleRenameFolder}>保存</Button>
+            <Button onClick={handleRenameFolder}>{t("保存")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -518,18 +520,19 @@ function FolderContextMenu({
   onRename: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem onClick={onRename}>
           <Pencil className="h-4 w-4 mr-2" />
-          重命名
+          {t("重命名")}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem className="text-destructive" onClick={onDelete}>
           <Trash2 className="h-4 w-4 mr-2" />
-          删除文件夹
+          {t("删除文件夹")}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -550,6 +553,7 @@ function CharacterContextMenu({
   onDelete: () => void;
   onMove: (folderId: string | null) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
@@ -557,12 +561,12 @@ function CharacterContextMenu({
         <ContextMenuSub>
           <ContextMenuSubTrigger>
             <FolderInput className="h-4 w-4 mr-2" />
-            移动到
+            {t("移动到")}
           </ContextMenuSubTrigger>
           <ContextMenuSubContent>
             <ContextMenuItem onClick={() => onMove(null)}>
               <Home className="h-4 w-4 mr-2" />
-              根目录
+              {t("根目录")}
             </ContextMenuItem>
             {folders.map((f) => (
               <ContextMenuItem key={f.id} onClick={() => onMove(f.id)}>
@@ -575,7 +579,7 @@ function CharacterContextMenu({
         <ContextMenuSeparator />
         <ContextMenuItem className="text-destructive" onClick={onDelete}>
           <Trash2 className="h-4 w-4 mr-2" />
-          删除角色
+          {t("删除角色")}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

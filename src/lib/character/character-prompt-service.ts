@@ -18,6 +18,7 @@
 import { useScriptStore } from '@/stores/script-store';
 import { callFeatureAPI } from '@/lib/ai/feature-router';
 import type { CharacterVariation } from '@/stores/character-library-store';
+import i18n from '@/lib/i18n';
 
 // ==================== 类型定义 ====================
 
@@ -86,18 +87,18 @@ export async function generateCharacterDesign(
   const project = store.projects[projectId];
   
   if (!project) {
-    throw new Error('项目不存在');
+    throw new Error(i18n.t('项目不存在'));
   }
   
   const scriptData = project.scriptData;
   if (!scriptData) {
-    throw new Error('剧本数据不存在');
+    throw new Error(i18n.t('剧本数据不存在'));
   }
   
   // 找到目标角色
   const character = scriptData.characters.find(c => c.id === characterId);
   if (!character) {
-    throw new Error('角色不存在');
+    throw new Error(i18n.t('角色不存在'));
   }
   
   // 收集角色相关的上下文信息
@@ -308,7 +309,7 @@ ${context.characterAppearances.length > 0
     };
   } catch (e) {
     console.error('[CharacterDesign] Failed to parse AI response:', result);
-    throw new Error('解析角色设计失败');
+    throw new Error(i18n.t('解析角色设计失败'));
   }
 }
 

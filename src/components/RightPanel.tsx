@@ -2,9 +2,11 @@
 // Licensed under AGPL-3.0-or-later. See LICENSE for details.
 // Commercial licensing available. See COMMERCIAL_LICENSE.md.
 import { useMediaPanelStore } from "@/stores/media-panel-store";
+import { useTranslation } from "react-i18next";
 import { DirectorContextPanel } from "@/components/panels/director/context-panel";
 
 export function RightPanel() {
+  const { t } = useTranslation();
   const { activeTab } = useMediaPanelStore();
 
   // 根据当前Tab显示不同内容
@@ -20,7 +22,7 @@ export function RightPanel() {
       default:
         return (
           <div className="flex-1 min-w-0 flex items-center justify-center text-muted-foreground text-sm">
-            <p>待定</p>
+            <p>{t("待定")}</p>
           </div>
         );
     }
@@ -29,7 +31,7 @@ export function RightPanel() {
   return (
     <div className="h-full min-w-0 flex flex-col overflow-hidden bg-panel">
       <div className="p-3 border-b border-border">
-        <h3 className="font-medium text-sm">属性</h3>
+        <h3 className="font-medium text-sm">{t("属性")}</h3>
       </div>
       {renderContent()}
     </div>

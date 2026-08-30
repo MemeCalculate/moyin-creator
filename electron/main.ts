@@ -9,6 +9,7 @@ import http from 'node:http'
 import os from 'node:os'
 import packageMetadata from '../package.json'
 import type { AvailableUpdateInfo, OpenExternalResult, UpdateCheckResult, UpdateManifest } from '../src/types/update'
+import { localizeFilterName, mainMessage, setMainLocale } from './i18n'
 
 // electron-vite 构建后的目录结构
 //
@@ -106,7 +107,7 @@ function getDefaultBaiduCode() {
 async function fetchUpdateManifest() {
   const manifestUrl = getUpdateManifestUrl()
   if (!manifestUrl) {
-    throw new Error('未配置版本清单地址')
+    throw new Error(mainMessage('manifestUrlMissing'))
   }
 
   const requestUrl = new URL(manifestUrl)
@@ -114,12 +115,12 @@ async function fetchUpdateManifest() {
 
   const response = await net.fetch(requestUrl.toString())
   if (!response.ok) {
-    throw new Error(`版本清单请求失败 (${response.status})`)
+    throw new Error(mainMessage('manifestRequestFailed', { status: response.status }))
   }
 
   const rawManifest = await response.json() as Partial<UpdateManifest>
   if (!isNonEmptyString(rawManifest.version)) {
-    throw new Error('版本清单缺少有效的 version 字段')
+    throw new Error(mainMessage('manifestVersionMissing'))
   }
 
   return {
@@ -159,7 +160,7 @@ async function resolveAvailableUpdate(currentVersion: string): Promise<Available
 
 function createWindow() {
   win = new BrowserWindow({
-    title: '魔因漫创',
+    title: mainMessage('appName'),
     width: 1400,
     height: 900,
     minWidth: 1200,
@@ -215,6 +216,13 @@ app.on('activate', () => {
     createWindow()
   }
 })
+// The renderer updates this when the interface preference changes. It controls
+// native dialogs and human-readable IPC errors only; payload schemas stay unchanged.
+ipcMain.handle('set-interface-locale', async (_event, locale: unknown) => {
+  setMainLocale(locale)
+  win?.setTitle(mainMessage('appName'))
+})
+
 // ==================== Storage Config ====================
 type StorageConfig = {
   // Single base path for all data (projects + media)
@@ -285,10 +293,10 @@ function pathsConflict(source: string, dest: string): string | null {
     return null // Same path is OK, handled elsewhere
   }
   if (isSubdirectory(source, dest)) {
-    return '目标路径不能是当前路径的子目录'
+    return mainMessage('targetInsideCurrent')
   }
   if (isSubdirectory(dest, source)) {
-    return '当前路径不能是目标路径的子目录'
+    return mainMessage('currentInsideTarget')
   }
   return null
 }
@@ -610,13 +618,13 @@ async function fetchBuffer(url: string, timeoutMs: number = 45000) {
     })
 
     if (!response.ok) {
-      throw new Error(`请求失败: ${response.status}`)
+      throw new Error(mainMessage('requestFailed', { status: response.status }))
     }
 
     const arrayBuffer = await response.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     if (buffer.length === 0) {
-      throw new Error('获取到的图片为空')
+      throw new Error(mainMessage('imageEmpty'))
     }
 
     return {
@@ -625,7 +633,7 @@ async function fetchBuffer(url: string, timeoutMs: number = 45000) {
     }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`请求超时 (${Math.round(timeoutMs / 1000)}s)`)
+      throw new Error(mainMessage('requestTimedOut', { seconds: Math.round(timeoutMs / 1000) }))
     }
     throw error
   } finally {
@@ -646,11 +654,11 @@ async function readImageSource(imageData: string): Promise<{ buffer: Buffer, mim
   const resolvedPath = resolveImageSourcePath(imageData)
   if (resolvedPath) {
     if (!fs.existsSync(resolvedPath)) {
-      throw new Error('本地图片不存在')
+      throw new Error(mainMessage('localImageNotFound'))
     }
     const buffer = fs.readFileSync(resolvedPath)
     if (buffer.length === 0) {
-      throw new Error('本地图片为空文件')
+      throw new Error(mainMessage('localImageEmpty'))
     }
     return {
       buffer,
@@ -660,7 +668,7 @@ async function readImageSource(imageData: string): Promise<{ buffer: Buffer, mim
 
   const rawBuffer = Buffer.from(imageData, 'base64')
   if (rawBuffer.length === 0) {
-    throw new Error('图片数据无效')
+    throw new Error(mainMessage('invalidImageData'))
   }
   return {
     buffer: rawBuffer,
@@ -684,7 +692,7 @@ async function toBase64Payload(imageData: string) {
   if (imageData.startsWith('data:')) {
     const parsed = parseDataUrl(imageData)
     if (!parsed) {
-      throw new Error('图片数据无效')
+      throw new Error(mainMessage('invalidImageData'))
     }
     return parsed.buffer.toString('base64')
   }
@@ -706,7 +714,7 @@ async function uploadImageHostFromMain({
   try {
     const uploadUrl = resolveImageHostUploadUrl(provider)
     if (!uploadUrl) {
-      return { success: false, error: '图床上传地址未配置' }
+      return { success: false, error: mainMessage('imageHostUrlMissing') }
     }
 
     const fieldName = provider.imageField || 'image'
@@ -775,7 +783,7 @@ async function uploadImageHostFromMain({
           ? errorMessage
           : typeof messageField === 'string'
             ? messageField
-            : text || `上传失败: ${response.status}`
+            : text || mainMessage('requestFailed', { status: response.status })
         return { success: false, error: message }
       }
 
@@ -801,17 +809,17 @@ async function uploadImageHostFromMain({
         platform: provider.platform,
         responsePreview: trimmedText.substring(0, 200),
       })
-      return { success: false, error: `图床 ${provider.name} 上传成功但未返回 URL` }
+      return { success: false, error: mainMessage('uploadSucceededWithoutUrl', { provider: provider.name }) }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        return { success: false, error: '上传超时，请稍后重试' }
+        return { success: false, error: mainMessage('uploadTimedOut') }
       }
-      return { success: false, error: error instanceof Error ? error.message : '上传失败' }
+      return { success: false, error: error instanceof Error ? error.message : mainMessage('uploadFailed') }
     } finally {
       clearTimeout(timeout)
     }
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : '上传失败' }
+    return { success: false, error: error instanceof Error ? error.message : mainMessage('uploadFailed') }
   }
 }
 
@@ -827,11 +835,11 @@ ipcMain.handle('save-image', async (_event, { url, category, filename }) => {
     if (url.startsWith('data:')) {
       const matches = url.match(/^data:[^;]+;base64,(.+)$/s)
       if (!matches) {
-        return { success: false, error: 'Invalid data URL format' }
+        return { success: false, error: mainMessage('invalidDataUrl') }
       }
       const buffer = Buffer.from(matches[1], 'base64')
       if (buffer.length === 0) {
-        return { success: false, error: 'Decoded base64 data is empty (0 bytes)' }
+        return { success: false, error: mainMessage('emptyDecodedData') }
       }
       fs.writeFileSync(filePath, buffer)
     } else {
@@ -842,14 +850,14 @@ ipcMain.handle('save-image', async (_event, { url, category, filename }) => {
     const stat = fs.statSync(filePath)
     if (stat.size === 0) {
       fs.unlinkSync(filePath) // Clean up empty file
-      return { success: false, error: 'Saved file is 0 bytes' }
+      return { success: false, error: mainMessage('emptySavedFile') }
     }
     
     // Return local path that can be used in the app
     return { success: true, localPath: `local-image://${category}/${safeName}` }
   } catch (error) {
     console.error('Failed to save image:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
@@ -902,7 +910,7 @@ ipcMain.handle('read-image-base64', async (_event, localPath: string) => {
     }
     
     if (!fs.existsSync(filePath)) {
-      return { success: false, error: 'File not found' }
+      return { success: false, error: mainMessage('fileNotFound') }
     }
     
     const data = fs.readFileSync(filePath)
@@ -920,7 +928,7 @@ ipcMain.handle('read-image-base64', async (_event, localPath: string) => {
     return { success: true, base64, mimeType, size: data.length }
   } catch (error) {
     console.error('Failed to read image:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
@@ -1056,6 +1064,7 @@ ipcMain.handle('storage-get-paths', async () => {
 
 ipcMain.handle('storage-select-directory', async () => {
   const result = await dialog.showOpenDialog({
+    title: mainMessage('selectDirectory'),
     properties: ['openDirectory', 'createDirectory'],
   })
   if (result.canceled || !result.filePaths[0]) return null
@@ -1065,9 +1074,9 @@ ipcMain.handle('storage-select-directory', async () => {
 // Validate if a directory contains valid data (projects/ subfolder with .json files or _p/ dirs)
 ipcMain.handle('storage-validate-data-dir', async (_event, dirPath: string) => {
   try {
-    if (!dirPath) return { valid: false, error: '路径不能为空' }
+    if (!dirPath) return { valid: false, error: mainMessage('pathRequired') }
     const target = normalizePath(dirPath)
-    if (!fs.existsSync(target)) return { valid: false, error: '目录不存在' }
+    if (!fs.existsSync(target)) return { valid: false, error: mainMessage('directoryNotFound') }
     
     // Check for projects/ subfolder with .json files or _p/ per-project dirs
     const projectsDir = path.join(target, 'projects')
@@ -1095,21 +1104,21 @@ ipcMain.handle('storage-validate-data-dir', async (_event, dirPath: string) => {
     }
     
     if (projectCount === 0 && mediaCount === 0) {
-      return { valid: false, error: '该目录不包含有效的数据（需要 projects/ 或 media/ 子目录）' }
+      return { valid: false, error: mainMessage('invalidDataDirectory') }
     }
     
     return { valid: true, projectCount, mediaCount }
   } catch (error) {
-    return { valid: false, error: String(error) }
+    return { valid: false, error: mainMessage('operationFailed') }
   }
 })
 
 // Link to existing data directory (no data movement)
 ipcMain.handle('storage-link-data', async (_event, dirPath: string) => {
   try {
-    if (!dirPath) return { success: false, error: '路径不能为空' }
+    if (!dirPath) return { success: false, error: mainMessage('pathRequired') }
     const target = normalizePath(dirPath)
-    if (!fs.existsSync(target)) return { success: false, error: '目录不存在' }
+    if (!fs.existsSync(target)) return { success: false, error: mainMessage('directoryNotFound') }
     
     // Validate it has data
     const projectsDir = path.join(target, 'projects')
@@ -1119,7 +1128,7 @@ ipcMain.handle('storage-link-data', async (_event, dirPath: string) => {
     const hasMedia = fs.existsSync(mediaDir)
     
     if (!hasProjects && !hasMedia) {
-      return { success: false, error: '该目录不包含有效的数据（需要 projects/ 或 media/ 子目录）' }
+      return { success: false, error: mainMessage('invalidDataDirectory') }
     }
     
     // Update config to point to this directory
@@ -1130,14 +1139,14 @@ ipcMain.handle('storage-link-data', async (_event, dirPath: string) => {
     return { success: true, path: target }
   } catch (error) {
     console.error('Failed to link data:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
 // Move all data to new location (single operation)
 ipcMain.handle('storage-move-data', async (_event, newPath: string) => {
   try {
-    if (!newPath) return { success: false, error: '路径不能为空' }
+    if (!newPath) return { success: false, error: mainMessage('pathRequired') }
     const target = normalizePath(newPath)
     const currentBase = getStorageBasePath()
     
@@ -1195,14 +1204,14 @@ ipcMain.handle('storage-move-data', async (_event, newPath: string) => {
     return { success: true, path: target }
   } catch (error) {
     console.error('Failed to move data:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
 // Export all data
 ipcMain.handle('storage-export-data', async (_event, targetPath: string) => {
   try {
-    if (!targetPath) return { success: false, error: '路径不能为空' }
+    if (!targetPath) return { success: false, error: mainMessage('pathRequired') }
     const exportDir = path.join(
       normalizePath(targetPath),
       `moyin-data-${new Date().toISOString().replace(/[:.]/g, '-')}`
@@ -1222,14 +1231,14 @@ ipcMain.handle('storage-export-data', async (_event, targetPath: string) => {
     return { success: true, path: exportDir }
   } catch (error) {
     console.error('Failed to export data:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
 // Import all data (with backup for safety)
 ipcMain.handle('storage-import-data', async (_event, sourcePath: string) => {
   try {
-    if (!sourcePath) return { success: false, error: '路径不能为空' }
+    if (!sourcePath) return { success: false, error: mainMessage('pathRequired') }
     const source = normalizePath(sourcePath)
     
     const sourceProjectsDir = path.join(source, 'projects')
@@ -1239,7 +1248,7 @@ ipcMain.handle('storage-import-data', async (_event, sourcePath: string) => {
     const hasProjects = fs.existsSync(sourceProjectsDir)
     const hasMedia = fs.existsSync(sourceMediaDir)
     if (!hasProjects && !hasMedia) {
-      return { success: false, error: '源目录不包含有效数据（需要 projects/ 或 media/ 子目录）' }
+      return { success: false, error: mainMessage('invalidSourceDirectory') }
     }
     
     // Create temporary backup for rollback
@@ -1302,7 +1311,7 @@ ipcMain.handle('storage-import-data', async (_event, sourcePath: string) => {
     }
   } catch (error) {
     console.error('Failed to import data:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
@@ -1335,16 +1344,16 @@ ipcMain.handle('storage-link-media-data', async (_event, dirPath: string) => {
 })
 
 ipcMain.handle('storage-move-project-data', async () => {
-  return { success: false, error: '请使用新的统一存储路径功能' }
+  return { success: false, error: mainMessage('useUnifiedStorage') }
 })
 ipcMain.handle('storage-move-media-data', async () => {
-  return { success: false, error: '请使用新的统一存储路径功能' }
+  return { success: false, error: mainMessage('useUnifiedStorage') }
 })
 
 ipcMain.handle('storage-export-project-data', async (_event, targetPath: string) => {
   // Redirect to unified export
   try {
-    if (!targetPath) return { success: false, error: '路径不能为空' }
+    if (!targetPath) return { success: false, error: mainMessage('pathRequired') }
     const exportDir = path.join(
       normalizePath(targetPath),
       `moyin-data-${new Date().toISOString().replace(/[:.]/g, '-')}`
@@ -1355,13 +1364,13 @@ ipcMain.handle('storage-export-project-data', async (_event, targetPath: string)
     await copyDir(getMediaRoot(), path.join(exportDir, 'media'))
     return { success: true, path: exportDir }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
 ipcMain.handle('storage-import-project-data', async (_event, sourcePath: string) => {
   try {
-    if (!sourcePath) return { success: false, error: '路径不能为空' }
+    if (!sourcePath) return { success: false, error: mainMessage('pathRequired') }
     const source = normalizePath(sourcePath)
     const projectsDir = path.join(source, 'projects')
     const mediaDir = path.join(source, 'media')
@@ -1417,14 +1426,14 @@ ipcMain.handle('storage-import-project-data', async (_event, sourcePath: string)
       throw importError
     }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
 ipcMain.handle('storage-export-media-data', async (_event, targetPath: string) => {
   // Legacy: redirect to unified export
   try {
-    if (!targetPath) return { success: false, error: '路径不能为空' }
+    if (!targetPath) return { success: false, error: mainMessage('pathRequired') }
     const exportDir = path.join(
       normalizePath(targetPath),
       `moyin-data-${new Date().toISOString().replace(/[:.]/g, '-')}`
@@ -1436,13 +1445,13 @@ ipcMain.handle('storage-export-media-data', async (_event, targetPath: string) =
     return { success: true, path: exportDir }
   } catch (error) {
     console.error('Failed to export data:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
 ipcMain.handle('storage-import-media-data', async (_event, sourcePath: string) => {
   try {
-    if (!sourcePath) return { success: false, error: '路径不能为空' }
+    if (!sourcePath) return { success: false, error: mainMessage('pathRequired') }
     const target = getMediaRoot()
     const source = normalizePath(sourcePath)
     if (source === target) return { success: true }
@@ -1473,7 +1482,7 @@ ipcMain.handle('storage-import-media-data', async (_event, sourcePath: string) =
     }
   } catch (error) {
     console.error('Failed to import media data:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
@@ -1495,7 +1504,7 @@ ipcMain.handle('storage-clear-cache', async (_event, options?: { olderThanDays?:
     return { success: true, clearedBytes }
   } catch (error) {
     console.error('Failed to clear cache:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
@@ -1533,7 +1542,7 @@ ipcMain.handle('app-updater-check', async (): Promise<UpdateCheckResult> => {
 ipcMain.handle('app-updater-open-link', async (_event, url: string): Promise<OpenExternalResult> => {
   const safeUrl = sanitizeExternalUrl(url)
   if (!safeUrl) {
-    return { success: false, error: '无效下载链接' }
+    return { success: false, error: mainMessage('invalidDownloadLink') }
   }
 
   try {
@@ -1571,13 +1580,14 @@ ipcMain.handle('save-file-dialog', async (_event, { localPath, defaultPath, filt
     }
     
     if (!sourcePath || !fs.existsSync(sourcePath)) {
-      return { success: false, error: 'Source file not found' }
+      return { success: false, error: mainMessage('sourceFileNotFound') }
     }
     
     // Show save dialog
     const result = await dialog.showSaveDialog({
+      title: mainMessage('saveFile'),
       defaultPath: defaultPath,
-      filters: filters,
+      filters: filters.map((filter) => ({ ...filter, name: localizeFilterName(filter.name) })),
     })
     
     if (result.canceled || !result.filePath) {
@@ -1590,7 +1600,7 @@ ipcMain.handle('save-file-dialog', async (_event, { localPath, defaultPath, filt
     return { success: true, filePath: result.filePath }
   } catch (error) {
     console.error('Failed to save file:', error)
-    return { success: false, error: String(error) }
+    return { success: false, error: mainMessage('operationFailed') }
   }
 })
 
@@ -1671,6 +1681,11 @@ protocol.registerSchemesAsPrivileged([{
 }])
 
 app.whenReady().then(() => {
+  // Native dialogs can be opened before the renderer has hydrated its saved
+  // preference. Start from Electron's system locale; the renderer immediately
+  // replaces this with the saved interface preference when one exists.
+  setMainLocale(app.getLocale())
+
   // Seed demo project on first run (before window creation)
   seedDemoProject()
 

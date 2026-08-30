@@ -16,6 +16,7 @@ import { useSceneStore } from "@/stores/scene-store";
 import { useResolvedImageUrl } from "@/hooks/use-resolved-image-url";
 import { useAppSettingsStore } from "@/stores/app-settings-store";
 import { useProjectStore } from "@/stores/project-store";
+import { t } from "@/lib/i18n/translate";
 import {
   Popover,
   PopoverContent,
@@ -204,7 +205,7 @@ export function SceneLibrarySelector({
             <div className="flex gap-3 flex-1">
               {/* 场景选择 - 第一列 */}
               <div className="w-[160px] shrink-0">
-                <Label className="text-xs text-muted-foreground mb-2 block">场景</Label>
+                <Label className="text-xs text-muted-foreground mb-2 block">{t("场景")}</Label>
                 <div className="max-h-[300px] overflow-y-auto space-y-1 pr-1">
                   {parentScenes.map((s) => {
                     const isSelected = selectedSceneLibraryId === s.id;
@@ -229,7 +230,7 @@ export function SceneLibrarySelector({
                         <div className="flex-1 min-w-0">
                           <span className="text-xs truncate block">{s.name}</span>
                           {hasViewpoints && (
-                            <span className="text-[10px] text-muted-foreground">有视角</span>
+                            <span className="text-[10px] text-muted-foreground">{t("有视角")}</span>
                           )}
                         </div>
                         {isSelected && <Check className="h-3 w-3 text-primary shrink-0" />}
@@ -242,7 +243,7 @@ export function SceneLibrarySelector({
               {/* 视角选择 - 第二列（如果有） */}
               {selectedSceneLibraryId && viewpointScenes.length > 0 && (
                 <div className="w-[140px] shrink-0 border-l pl-3">
-                  <Label className="text-xs text-muted-foreground mb-2 block">视角</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">{t("视角")}</Label>
                   <div className="max-h-[300px] overflow-y-auto space-y-1 pr-1">
                     <button
                       onClick={() => handleSelectViewpoint('')}
@@ -254,7 +255,7 @@ export function SceneLibrarySelector({
                       <div className="w-8 h-8 rounded bg-muted flex items-center justify-center shrink-0">
                         <MapPin className="h-3 w-3" />
                       </div>
-                      <span className="text-xs">不指定</span>
+                      <span className="text-xs">{t("不指定")}</span>
                       {!selectedViewpointId && <Check className="h-3 w-3 text-primary" />}
                     </button>
                     {viewpointScenes.map((v) => {
@@ -280,7 +281,7 @@ export function SceneLibrarySelector({
                           <div className="flex-1 min-w-0">
                             <span className="text-xs truncate block">{v.viewpointName || v.name}</span>
                             {hasSubViews && (
-                              <span className="text-[10px] text-muted-foreground">有四视图</span>
+                              <span className="text-[10px] text-muted-foreground">{t("有四视图")}</span>
                             )}
                           </div>
                           {isSelected && <Check className="h-3 w-3 text-primary shrink-0" />}
@@ -294,7 +295,7 @@ export function SceneLibrarySelector({
               {/* 四视图子场景选择 - 第三列（如果有） */}
               {selectedViewpointId && subViewScenes.length > 0 && (
                 <div className="w-[120px] shrink-0 border-l pl-3">
-                  <Label className="text-xs text-muted-foreground mb-2 block">四视图</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">{t("四视图")}</Label>
                   <div className="max-h-[300px] overflow-y-auto space-y-1 pr-1">
                     <button
                       onClick={() => handleSelectSubView('')}
@@ -306,7 +307,7 @@ export function SceneLibrarySelector({
                       <div className="w-8 h-8 rounded bg-muted flex items-center justify-center shrink-0">
                         <Layers className="h-3 w-3" />
                       </div>
-                      <span className="text-xs">不指定</span>
+                      <span className="text-xs">{t("不指定")}</span>
                       {!selectedSubViewId && <Check className="h-3 w-3 text-primary" />}
                     </button>
                     {subViewScenes.map((sv) => {
@@ -340,14 +341,14 @@ export function SceneLibrarySelector({
             
             {/* 右侧：参考图预览 */}
             <div className="w-[240px] shrink-0 border-l pl-3">
-              <Label className="text-xs text-muted-foreground mb-2 block">参考图预览</Label>
+              <Label className="text-xs text-muted-foreground mb-2 block">{t("参考图预览")}</Label>
               {previewRefImage ? (
                 <div className="w-full rounded-lg bg-muted flex items-center justify-center min-h-[120px] max-h-[240px] overflow-hidden">
                   <ResolvedImg src={previewRefImage} alt="参考图" className="max-w-full max-h-[240px] rounded-lg object-contain" />
                 </div>
               ) : (
                 <div className="w-full aspect-video rounded-lg bg-muted flex items-center justify-center">
-                  <span className="text-sm text-muted-foreground">请选择场景</span>
+                  <span className="text-sm text-muted-foreground">{t("请选择场景")}</span>
                 </div>
               )}
               {/* 选中路径显示 */}

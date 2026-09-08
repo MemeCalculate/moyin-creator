@@ -73,7 +73,14 @@ const STATIC_REGISTRY: Record<string, ModelLimits> = {
   'kimi-k2':                { contextWindow: 128000,   maxOutput: 8192   },
   'qwen3-max':              { contextWindow: 128000,   maxOutput: 8192   },
   'qwen3-max-preview':      { contextWindow: 128000,   maxOutput: 8192   },
-  'minimax-m2.1':           { contextWindow: 128000,   maxOutput: 8192   },
+
+  // ==================== MiniMax 系列 ====================
+  // MiniMax-M3: 512K context, 128K max output (default, supports image input)
+  // MiniMax-M2.7: 200K context, 8K max output (保守)
+  // MiniMax-M2.7-highspeed: 200K context, 8K max output (保守)
+  'minimax-m3':             { contextWindow: 512000,   maxOutput: 128000 },
+  'minimax-m2.7':           { contextWindow: 200000,   maxOutput: 8192   },
+  'minimax-m2.7-highspeed': { contextWindow: 200000,   maxOutput: 8192   },
 
   // ==================== 通用 prefix 规则 ====================
   // 注意：prefix 匹配按长度降序执行，长 key 优先

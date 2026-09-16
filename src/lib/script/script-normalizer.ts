@@ -80,6 +80,10 @@ export function preprocessLineBreaks(text: string): { text: string; inserted: bo
     /(?<!\n)(?<![\u4e00-\u9fa5：年龄身份性格])(?=[\u4e00-\u9fa5]{2,6}[：:][（(「])/g,
     '\n'
   );
+  result = result.replace(
+    /(?<=[。！？；;）\)」】])(?=[\u4e00-\u9fa5A-Za-z0-9路]{2,8}[：:](?!\s*(?:年龄|年两|身份|性格|职业|关系|外貌|特点|特征|关键行为|人物|角色|场景|地点|时间|大纲|备注|补充|注)))/g,
+    '\n'
+  );
   
   // 6. 补充/注释段前换行
   result = result.replace(

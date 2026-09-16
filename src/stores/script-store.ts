@@ -4,7 +4,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { createProjectScopedStorage } from "@/lib/project-storage";
-import type { ScriptData, Shot, Episode, ScriptScene, ScriptCharacter, EpisodeRawScript, ProjectBackground, PromptLanguage, CalibrationStrictness, FilteredCharacterRecord, SeriesMeta } from "@/types/script";
+import type { CanonicalScriptDocument, ScriptData, Shot, Episode, ScriptScene, ScriptCharacter, EpisodeRawScript, ProjectBackground, PromptLanguage, CalibrationStrictness, FilteredCharacterRecord, SeriesMeta } from "@/types/script";
 
 export type ParseStatus = "idle" | "parsing" | "ready" | "error";
 export type ShotListStatus = "idle" | "generating" | "ready" | "error";
@@ -58,6 +58,7 @@ const defaultCalibrationState = (): ScriptCalibrationState => ({
 });
 export interface ScriptProjectData {
   rawScript: string;
+  standardizedScript?: string;
   language: string;
   targetDuration: string;
   styleId: string;
@@ -79,6 +80,8 @@ export interface ScriptProjectData {
   episodeRawScripts: EpisodeRawScript[];        // 鍚勯泦鍘熷鍓ф湰鍐呭
   metadataMarkdown: string;                     // 鑷姩鐢熸垚鐨勯」鐩厓鏁版嵁 MD锛堜綔涓?AI 鐢熸垚鐨勫叏灞€鍙傝€冿級
   metadataGeneratedAt?: number;                 // 鍏冩暟鎹敓鎴愭椂闂?
+  standardizationReport?: CanonicalScriptDocument | null;
+  standardizationGeneratedAt?: number;
   promptLanguage: PromptLanguage;               // 鎻愮ず璇嶈瑷€閫夐」锛堥粯璁や粎涓枃锛?
   calibrationStrictness: CalibrationStrictness;  // AI瑙掕壊鏍″噯涓ユ牸搴?
   lastFilteredCharacters: FilteredCharacterRecord[];  // 涓婃鏍″噯琚繃婊ょ殑瑙掕壊锛堢敤浜庢仮澶嶏級
@@ -95,6 +98,7 @@ interface ScriptStoreActions {
   setActiveProjectId: (id: string | null) => void;
   ensureProject: (projectId: string) => void;
   setRawScript: (projectId: string, rawScript: string) => void;
+  setStandardizedScript: (projectId: string, standardizedScript: string) => void;
   setLanguage: (projectId: string, language: string) => void;
   setTargetDuration: (projectId: string, duration: string) => void;
   setStyleId: (projectId: string, styleId: string) => void;
@@ -134,6 +138,7 @@ interface ScriptStoreActions {
   setEpisodeRawScripts: (projectId: string, scripts: EpisodeRawScript[]) => void;
   updateEpisodeRawScript: (projectId: string, episodeIndex: number, updates: Partial<EpisodeRawScript>) => void;
   setMetadataMarkdown: (projectId: string, markdown: string) => void;
+  setStandardizationReport: (projectId: string, report: CanonicalScriptDocument | null) => void;
   setPromptLanguage: (projectId: string, lang: PromptLanguage) => void;
   setCalibrationState: (projectId: string, updates: Partial<ScriptCalibrationState>) => void;
   setSingleShotCalibrationStatus: (projectId: string, shotId: string, status: ScriptCalibrationStatus) => void;
@@ -153,6 +158,7 @@ const defaultInputDraft: ScriptInputDraft = {
 
 const defaultProjectData = (): ScriptProjectData => ({
   rawScript: "",
+  standardizedScript: "",
   language: "涓枃",
   targetDuration: "60s",
   styleId: "2d_ghibli",
@@ -174,6 +180,8 @@ const defaultProjectData = (): ScriptProjectData => ({
   episodeRawScripts: [],
   metadataMarkdown: '',
   metadataGeneratedAt: undefined,
+  standardizationReport: null,
+  standardizationGeneratedAt: undefined,
   promptLanguage: 'zh',
   calibrationStrictness: 'normal',
   lastFilteredCharacters: [],
@@ -287,6 +295,21 @@ export const useScriptStore = create<ScriptStore>()(
             [projectId]: {
               ...state.projects[projectId],
               rawScript,
+              updatedAt: Date.now(),
+            },
+          },
+        }));
+      },
+
+      setStandardizedScript: (projectId, standardizedScript) => {
+        get().ensureProject(projectId);
+        set((state) => ({
+          projects: {
+            ...state.projects,
+            [projectId]: {
+              ...state.projects[projectId],
+              standardizedScript,
+              standardizationGeneratedAt: Date.now(),
               updatedAt: Date.now(),
             },
           },
@@ -938,6 +961,21 @@ export const useScriptStore = create<ScriptStore>()(
               ...state.projects[projectId],
               metadataMarkdown: markdown,
               metadataGeneratedAt: Date.now(),
+              updatedAt: Date.now(),
+            },
+          },
+        }));
+      },
+
+      setStandardizationReport: (projectId, report) => {
+        get().ensureProject(projectId);
+        set((state) => ({
+          projects: {
+            ...state.projects,
+            [projectId]: {
+              ...state.projects[projectId],
+              standardizationReport: report,
+              standardizationGeneratedAt: Date.now(),
               updatedAt: Date.now(),
             },
           },

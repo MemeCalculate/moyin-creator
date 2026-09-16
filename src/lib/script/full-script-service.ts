@@ -12,6 +12,7 @@
  */
 
 import type {
+  CanonicalScriptDocument,
   EpisodeRawScript,
   ProjectBackground,
   PromptLanguage,
@@ -20,11 +21,10 @@ import type {
   SceneRawContent,
 } from "@/types/script";
 import {
-  parseFullScript,
-  convertToScriptData,
   parseScenes,
 } from "./episode-parser";
-import { normalizeScriptFormat, analyzeScriptStructureWithAI, applyAIAnalysis, preprocessLineBreaks } from "./script-normalizer";
+import { preprocessLineBreaks } from "./script-normalizer";
+import { standardizeScriptForImport } from "./script-standardizer";
 import { populateSeriesMetaFromImport } from "./series-meta-sync";
 import { callFeatureAPI } from "@/lib/ai/feature-router";
 import { processBatched } from "@/lib/ai/batch-processor";
@@ -48,6 +48,8 @@ export interface ImportResult {
   projectBackground?: ProjectBackground; // 兼容字段
   episodes: EpisodeRawScript[];
   scriptData: ScriptData | null;
+  standardizationReport?: CanonicalScriptDocument;
+  standardizedScript?: string;
   error?: string;
 }
 
@@ -76,86 +78,78 @@ export async function importFullScript(
   projectId: string,
   importSettings?: { styleId?: string; promptLanguage?: PromptLanguage }
 ): Promise<ImportResult> {
+  const store = useScriptStore.getState();
+  let standardizationReport: CanonicalScriptDocument | undefined;
+  let standardizedScript: string | undefined;
+
   try {
-    // -1. 预处理：为单行/超长行文本自动插入换行
-    const preprocessed = preprocessLineBreaks(fullText);
-    const processedText = preprocessed.text;
-    
-    // 0. AI 结构检测（第一步）→ 正则兗底
-    let normalizeResult;
-    const aiAnalysis = await analyzeScriptStructureWithAI(processedText);
-    
-    if (aiAnalysis) {
-      // AI 检测成功：基于 AI 结果插入标记 + 补全大纲
-      normalizeResult = applyAIAnalysis(processedText, aiAnalysis);
-      console.log('[importFullScript] AI 结构检测完成:', normalizeResult.changes);
-    } else {
-      // AI 不可用或失败：降级到正则兗底
-      normalizeResult = normalizeScriptFormat(processedText);
-      if (normalizeResult.changes.length > 0) {
-        console.log('[importFullScript] 正则兜底归一化:', normalizeResult.changes);
-      }
-    }
-    
-    // 1. 解析归一化后的文本
-    const { background, episodes } = parseFullScript(normalizeResult.normalized);
-    
-    if (episodes.length === 0) {
+    store.setRawScript(projectId, fullText);
+
+    const standardization = standardizeScriptForImport(fullText);
+    standardizationReport = standardization.document;
+    standardizedScript = standardization.document.canonicalText;
+
+    store.setStandardizedScript(projectId, standardizedScript);
+    store.setStandardizationReport(projectId, standardizationReport);
+
+    if (!standardization.success || standardization.hasFatalIssues || !standardization.parseResult) {
+      const fatalDiagnostic = standardization.document.diagnostics.find(
+        (diagnostic) => diagnostic.severity === "fatal"
+      );
+      const errorMessage =
+        fatalDiagnostic?.message ||
+        (!standardization.success ? "剧本标准化失败" : "剧本标准化后仍无法识别结构");
+
+      store.setParseStatus(projectId, "error", errorMessage);
+
       return {
         success: false,
         background: null,
         episodes: [],
         scriptData: null,
-        error: "未能解析出任何集数，请检查剧本格式",
+        standardizationReport,
+        standardizedScript,
+        error: errorMessage,
       };
     }
-    
-    // 1.5 用 AI 的 era/genre 覆盖正则检测值（AI 更准确）
-    if (normalizeResult.aiAnalysis) {
-      if (normalizeResult.aiAnalysis.era) {
-        background.era = normalizeResult.aiAnalysis.era;
-      }
-      if (normalizeResult.aiAnalysis.genre) {
-        background.genre = normalizeResult.aiAnalysis.genre;
-      }
-    }
-    
-    // 2. 转换为 ScriptData 格式
-    const scriptData = convertToScriptData(background, episodes);
-    
-    // 3. 保存到 store（原文保存，归一化文本仅用于解析）
-    const store = useScriptStore.getState();
+
+    const { background, episodes, scriptData } = standardization.parseResult;
+
     store.setProjectBackground(projectId, background);
     store.setEpisodeRawScripts(projectId, episodes);
     store.setScriptData(projectId, scriptData);
-    store.setRawScript(projectId, fullText);
     store.setParseStatus(projectId, "ready");
-    
-    // 4. 构建剧级元数据（SeriesMeta）— 用户选的风格和语言直接传入
-    const aiResult = normalizeResult.aiAnalysis || null;
-    const seriesMeta = populateSeriesMetaFromImport(background, scriptData, aiResult, importSettings);
+
+    const seriesMeta = populateSeriesMetaFromImport(background, scriptData, null, importSettings);
     store.setSeriesMeta(projectId, seriesMeta);
-    
-    // 5. 自动生成项目元数据 MD（作为 AI 生成的全局参考）
+
     const metadataMd = exportProjectMetadata(projectId);
     store.setMetadataMarkdown(projectId, metadataMd);
     console.log('[importFullScript] 元数据已自动生成，长度:', metadataMd.length);
-    
+
     return {
       success: true,
       background,
       projectBackground: background, // 同时返回两个字段兼容
       episodes,
       scriptData,
+      standardizationReport,
+      standardizedScript,
     };
   } catch (error) {
     console.error("Import error:", error);
+
+    const errorMessage = error instanceof Error ? error.message : "导入失败";
+    store.setParseStatus(projectId, "error", errorMessage);
+
     return {
       success: false,
       background: null,
       episodes: [],
       scriptData: null,
-      error: error instanceof Error ? error.message : "导入失败",
+      standardizationReport,
+      standardizedScript,
+      error: errorMessage,
     };
   }
 }
